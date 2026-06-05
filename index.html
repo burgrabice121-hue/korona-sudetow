@@ -279,11 +279,7 @@ section { position: relative; }
   padding: 6rem 2.5rem;
 }
 .about-inner {
-  max-width: 1100px; margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5rem;
-  align-items: start;
+  max-width: 900px; margin: 0 auto;
 }
 .about-text p {
   font-size: 16px;
@@ -591,7 +587,7 @@ footer {
 ══════════════════════════════════════════════ */
 @media (max-width: 800px) {
   .hero-inner { grid-template-columns: 1fr; gap: 2.5rem; }
-  .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+  .about-inner { }
   .zones-grid { grid-template-columns: 1fr; }
   nav { padding: 0 1.2rem; }
   .nav-links { display: none; }
@@ -851,6 +847,31 @@ footer {
       <p class="lang-pl"><strong>Podział na 8 grup górskich</strong> opiera się na wyraźnych granicach morfologicznych: grupy oddzielone są rozległymi obniżeniami tektonicznymi (Kotlina Kłodzka, Rów Górnej Nysy), przełomowymi odcinkami dolin rzecznych lub wyraźnymi progami geomorfologicznymi. Każda grupa tworzy zwarty masyw ze wspólną historią geologiczną i czytelnym obliczem krajobrazowym — tak jak zwarte Sudety Wschodnie wokół Masywu Śnieżnika i Wysokiego Jesionika oddziela od Sudetów Środkowych głęboka Kotlina Kłodzka.</p>
       <p class="lang-en" style="display:none"><strong>The division into 8 mountain groups</strong> is based on clear morphological boundaries: groups are separated by broad tectonic depressions (Kłodzko Basin, Upper Nysa Graben), river gorges or distinct geomorphological thresholds. Each group forms a compact massif with a shared geological history and a recognisable landscape character — just as the compact Eastern Sudetes around the Śnieżnik Massif and High Jeseník are separated from the Central Sudetes by the deep Kłodzko Basin.</p>
 
+      <h3 class="lang-pl" style="margin-top:2.5rem;font-size:1.15rem;color:var(--pine)">Podział Sudetów na 8 grup górskich</h3>
+      <h3 class="lang-en" style="display:none;margin-top:2.5rem;font-size:1.15rem;color:var(--pine)">Division of the Sudetes into 8 mountain groups</h3>
+      <p class="lang-pl" style="font-size:0.92rem;margin-bottom:1rem">Sudety dzielą się geograficznie na osiem głównych grup górskich, widocznych na mapie po kliknięciu przycisku <em>Grupy górskie</em>:</p>
+      <p class="lang-en" style="display:none;font-size:0.92rem;margin-bottom:1rem">The Sudetes are geographically divided into eight major mountain groups, visible on the map by clicking <em>Mountain groups</em>:</p>
+      <div class="grupy-desc-grid lang-pl">
+        <div class="grupy-card" style="--gc:#8338EC"><span class="gc-num">1</span><strong>Sudety Łużyckie</strong><small>Góry Łużyckie, Płaskowyż Budziszyński, Pogórze Łużyckie, Kotlina Żytawska</small></div>
+        <div class="grupy-card" style="--gc:#0077B6"><span class="gc-num">2</span><strong>Sudety Zachodnie</strong><small>Karkonosze, Góry Izerskie, Kotlina Jeleniogórska, Pogórze Karkonoskie, Rudawy Janowickie</small></div>
+        <div class="grupy-card" style="--gc:#06B49A"><span class="gc-num">3</span><strong>Sudety Kaczawskie</strong><small>Góry Kaczawskie, Pogórze Izerskie, Pogórze Kaczawskie</small></div>
+        <div class="grupy-card" style="--gc:#C4983A"><span class="gc-num">4</span><strong>Sudety Środkowe</strong><small>Góry Kamienne, Góry Sowie, Góry Stołowe, Góry Wałbrzyskie, Kotlina Kłodzka, Góry Bardzkie</small></div>
+        <div class="grupy-card" style="--gc:#E76F51"><span class="gc-num">5</span><strong>Sudety Orlickie</strong><small>Góry Orlickie, Góry Bystrzyckie, Pogórze Orlickie, Zábřežská vrchovina, Rów Górnej Nysy</small></div>
+        <div class="grupy-card" style="--gc:#C1121F"><span class="gc-num">6</span><strong>Sudety Wschodnie</strong><small>Masyw Śnieżnika, Wysoki Jesionik, Góry Złote, Sokoli Grzbiet, Góry Złotogórskie</small></div>
+        <div class="grupy-card" style="--gc:#4CAF50"><span class="gc-num">7</span><strong>Sudety Kulmowe</strong><small>Niski Jesionik, Góry Opawskie, Pogórze Opawskie, Pogórze Witkowskie, Pogórze Trszickie</small></div>
+        <div class="grupy-card" style="--gc:#FF9F1C"><span class="gc-num">8</span><strong>Przedgórze Sudeckie</strong><small>Masyw Ślęży, Wzgórza Niemczańsko-Strzelińskie, Wzgórza Strzegomskie, Obniżenie Podsudeckie</small></div>
+      </div>
+      <div class="grupy-desc-grid lang-en" style="display:none">
+        <div class="grupy-card" style="--gc:#8338EC"><span class="gc-num">1</span><strong>Lusatian Sudetes</strong><small>Lusatian Mts, Budziszyn Plateau, Lusatian Foothills, Zittau Basin</small></div>
+        <div class="grupy-card" style="--gc:#0077B6"><span class="gc-num">2</span><strong>Western Sudetes</strong><small>Karkonosze/Krkonoše, Izer Mts, Jelenia Góra Basin, Karkonosze Foothills, Rudawy Janowickie</small></div>
+        <div class="grupy-card" style="--gc:#06B49A"><span class="gc-num">3</span><strong>Northern Sudetes</strong><small>Kaczawa Mts, Izer Foothills, Kaczawa Foothills</small></div>
+        <div class="grupy-card" style="--gc:#C4983A"><span class="gc-num">4</span><strong>Central Sudetes</strong><small>Kamienne Mts, Sowie Mts, Table Mts, Wałbrzych Mts, Kłodzko Basin, Bardzkie Mts</small></div>
+        <div class="grupy-card" style="--gc:#E76F51"><span class="gc-num">5</span><strong>Orlické Sudetes</strong><small>Orlické hory, Bystřické hory, Orlické Foothills, Zábřežská vrchovina, Upper Nysa Graben</small></div>
+        <div class="grupy-card" style="--gc:#C1121F"><span class="gc-num">6</span><strong>Eastern Sudetes</strong><small>Śnieżnik Massif, High Jeseník, Rychlebské hory, Eagle Ridge, Zlatohorská vrchovina</small></div>
+        <div class="grupy-card" style="--gc:#4CAF50"><span class="gc-num">7</span><strong>Culm Sudetes</strong><small>Low Jeseník, Opava Mts, Opava Foothills, Witków Foothills, Tršice Foothills</small></div>
+        <div class="grupy-card" style="--gc:#FF9F1C"><span class="gc-num">8</span><strong>Sudetic Foreland</strong><small>Ślęża Massif, Niemcza–Strzelin Hills, Strzegom Hills, Sub-Sudetic Depression</small></div>
+      </div>
+
       <h2 class="section-title lang-pl" style="margin-top:2.5rem">Co to jest <em>wybitność</em>?</h2>
       <h2 class="section-title lang-en" style="display:none;margin-top:2.5rem">What is <em>prominence</em>?</h2>
       <p class="lang-pl"><strong>Wybitność topograficzna</strong> (zwana też prominencją lub MDW — Minimalną Deniwelacją Wybitności) to wysokość szczytu mierzona ponad najniższą przełęczą oddzielającą go od najbliższego wyższego wierzchołka. Jest to miara geograficznej samodzielności szczytu — niezależna od wysokości bezwzględnej.</p>
@@ -878,69 +899,44 @@ footer {
         </div>
       </div>
 
-      <h3 class="lang-pl" style="margin-top:2.5rem;font-size:1.15rem;color:var(--pine)">Podział Sudetów na 8 grup górskich</h3>
-      <h3 class="lang-en" style="display:none;margin-top:2.5rem;font-size:1.15rem;color:var(--pine)">Division of the Sudetes into 8 mountain groups</h3>
-      <p class="lang-pl" style="font-size:0.92rem;margin-bottom:1rem">Sudety dzielą się geograficznie na osiem głównych grup górskich, widocznych na mapie po kliknięciu przycisku <em>Grupy górskie</em>:</p>
-      <p class="lang-en" style="display:none;font-size:0.92rem;margin-bottom:1rem">The Sudetes are geographically divided into eight major mountain groups, visible on the map by clicking <em>Mountain groups</em>:</p>
-      <div class="grupy-desc-grid lang-pl">
-        <div class="grupy-card" style="--gc:#8338EC"><span class="gc-num">1</span><strong>Sudety Łużyckie</strong><small>Góry Łużyckie, Płaskowyż Budziszyński, Pogórze Łużyckie, Kotlina Żytawska</small></div>
-        <div class="grupy-card" style="--gc:#0077B6"><span class="gc-num">2</span><strong>Sudety Zachodnie</strong><small>Karkonosze, Góry Izerskie, Kotlina Jeleniogórska, Pogórze Karkonoskie, Rudawy Janowickie</small></div>
-        <div class="grupy-card" style="--gc:#06B49A"><span class="gc-num">3</span><strong>Sudety Kaczawskie</strong><small>Góry Kaczawskie, Pogórze Izerskie, Pogórze Kaczawskie</small></div>
-        <div class="grupy-card" style="--gc:#C4983A"><span class="gc-num">4</span><strong>Sudety Środkowe</strong><small>Góry Kamienne, Góry Sowie, Góry Stołowe, Góry Wałbrzyskie, Kotlina Kłodzka, Góry Bardzkie</small></div>
-        <div class="grupy-card" style="--gc:#E76F51"><span class="gc-num">5</span><strong>Sudety Orlickie</strong><small>Góry Orlickie, Góry Bystrzyckie, Pogórze Orlickie, Zábřežská vrchovina, Rów Górnej Nysy</small></div>
-        <div class="grupy-card" style="--gc:#C1121F"><span class="gc-num">6</span><strong>Sudety Wschodnie</strong><small>Masyw Śnieżnika, Wysoki Jesionik, Góry Złote, Sokoli Grzbiet, Góry Złotogórskie</small></div>
-        <div class="grupy-card" style="--gc:#4CAF50"><span class="gc-num">7</span><strong>Sudety Kulmowe</strong><small>Niski Jesionik, Góry Opawskie, Pogórze Opawskie, Pogórze Witkowskie, Pogórze Trszickie</small></div>
-        <div class="grupy-card" style="--gc:#FF9F1C"><span class="gc-num">8</span><strong>Przedgórze Sudeckie</strong><small>Masyw Ślęży, Wzgórza Niemczańsko-Strzelińskie, Wzgórza Strzegomskie, Obniżenie Podsudeckie</small></div>
-      </div>
-      <div class="grupy-desc-grid lang-en" style="display:none">
-        <div class="grupy-card" style="--gc:#8338EC"><span class="gc-num">1</span><strong>Lusatian Sudetes</strong><small>Lusatian Mts, Budziszyn Plateau, Lusatian Foothills, Zittau Basin</small></div>
-        <div class="grupy-card" style="--gc:#0077B6"><span class="gc-num">2</span><strong>Western Sudetes</strong><small>Karkonosze/Krkonoše, Izer Mts, Jelenia Góra Basin, Karkonosze Foothills, Rudawy Janowickie</small></div>
-        <div class="grupy-card" style="--gc:#06B49A"><span class="gc-num">3</span><strong>Northern Sudetes</strong><small>Kaczawa Mts, Izer Foothills, Kaczawa Foothills</small></div>
-        <div class="grupy-card" style="--gc:#C4983A"><span class="gc-num">4</span><strong>Central Sudetes</strong><small>Kamienne Mts, Sowie Mts, Table Mts, Wałbrzych Mts, Kłodzko Basin, Bardzkie Mts</small></div>
-        <div class="grupy-card" style="--gc:#E76F51"><span class="gc-num">5</span><strong>Orlické Sudetes</strong><small>Orlické hory, Bystřické hory, Orlické Foothills, Zábřežská vrchovina, Upper Nysa Graben</small></div>
-        <div class="grupy-card" style="--gc:#C1121F"><span class="gc-num">6</span><strong>Eastern Sudetes</strong><small>Śnieżnik Massif, High Jeseník, Rychlebské hory, Eagle Ridge, Zlatohorská vrchovina</small></div>
-        <div class="grupy-card" style="--gc:#4CAF50"><span class="gc-num">7</span><strong>Culm Sudetes</strong><small>Low Jeseník, Opava Mts, Opava Foothills, Witków Foothills, Tršice Foothills</small></div>
-        <div class="grupy-card" style="--gc:#FF9F1C"><span class="gc-num">8</span><strong>Sudetic Foreland</strong><small>Ślęża Massif, Niemcza–Strzelin Hills, Strzegom Hills, Sub-Sudetic Depression</small></div>
-      </div>
-    </div>
-
-    <div class="criteria-box fade-in">
-      <h3 class="lang-pl">Kryteria kwalifikacji</h3>
-      <h3 class="lang-en" style="display:none">Selection criteria</h3>
-      <div class="criterion">
-        <div class="criterion-num">I</div>
-        <div class="criterion-text">
-          <div class="criterion-title lang-pl">Wybitność ≥ 300 m</div>
-          <div class="criterion-title lang-en" style="display:none">Prominence ≥ 300 m</div>
-          <div class="criterion-desc lang-pl">Minimalna deniwelacja wybitności powyżej 300 metrów — szczyt jest wyraźnie geograficznie samodzielny w skali Sudetów.</div>
-          <div class="criterion-desc lang-en" style="display:none">A minimum topographic prominence of 300 m — the summit is clearly geographically independent at the scale of the Sudetes.</div>
+      <div class="criteria-box fade-in" style="margin-top:2.5rem">
+        <h3 class="lang-pl">Kryteria kwalifikacji</h3>
+        <h3 class="lang-en" style="display:none">Selection criteria</h3>
+        <div class="criterion">
+          <div class="criterion-num">I</div>
+          <div class="criterion-text">
+            <div class="criterion-title lang-pl">Wybitność ≥ 300 m</div>
+            <div class="criterion-title lang-en" style="display:none">Prominence ≥ 300 m</div>
+            <div class="criterion-desc lang-pl">Minimalna deniwelacja wybitności powyżej 300 metrów — szczyt jest wyraźnie geograficznie samodzielny w skali Sudetów.</div>
+            <div class="criterion-desc lang-en" style="display:none">A minimum topographic prominence of 300 m — the summit is clearly geographically independent at the scale of the Sudetes.</div>
+          </div>
         </div>
-      </div>
-      <div class="criterion">
-        <div class="criterion-num">II</div>
-        <div class="criterion-text">
-          <div class="criterion-title lang-pl">Izolacja topograficzna ≥ 10 km</div>
-          <div class="criterion-title lang-en" style="display:none">Topographic isolation ≥ 10 km</div>
-          <div class="criterion-desc lang-pl">Odległość do najbliższego wyższego punktu powyżej 10 km — szczyt jest ważną dominantą w swoim regionie, nawet przy niższej wybitności.</div>
-          <div class="criterion-desc lang-en" style="display:none">Distance to the nearest higher point exceeds 10 km — the summit is a significant landmark in its region, even with lower prominence.</div>
+        <div class="criterion">
+          <div class="criterion-num">II</div>
+          <div class="criterion-text">
+            <div class="criterion-title lang-pl">Izolacja topograficzna ≥ 10 km</div>
+            <div class="criterion-title lang-en" style="display:none">Topographic isolation ≥ 10 km</div>
+            <div class="criterion-desc lang-pl">Odległość do najbliższego wyższego punktu powyżej 10 km — szczyt jest ważną dominantą w swoim regionie, nawet przy niższej wybitności.</div>
+            <div class="criterion-desc lang-en" style="display:none">Distance to the nearest higher point exceeds 10 km — the summit is a significant landmark in its region, even with lower prominence.</div>
+          </div>
         </div>
-      </div>
-      <div class="criterion">
-        <div class="criterion-num">III</div>
-        <div class="criterion-text">
-          <div class="criterion-title lang-pl">Reprezentacja pasm</div>
-          <div class="criterion-title lang-en" style="display:none">Range representation</div>
-          <div class="criterion-desc lang-pl">Każde pasmo sudeckie powinno być reprezentowane przez co najmniej jeden szczyt — najwyższy lub o największej wybitności w danej jednostce geomorfologicznej.</div>
-          <div class="criterion-desc lang-en" style="display:none">Every Sudetic range must be represented by at least one summit — the highest or most prominent within that geomorphological unit.</div>
+        <div class="criterion">
+          <div class="criterion-num">III</div>
+          <div class="criterion-text">
+            <div class="criterion-title lang-pl">Reprezentacja pasm</div>
+            <div class="criterion-title lang-en" style="display:none">Range representation</div>
+            <div class="criterion-desc lang-pl">Każde pasmo sudeckie powinno być reprezentowane przez co najmniej jeden szczyt — najwyższy lub o największej wybitności w danej jednostce geomorfologicznej.</div>
+            <div class="criterion-desc lang-en" style="display:none">Every Sudetic range must be represented by at least one summit — the highest or most prominent within that geomorphological unit.</div>
+          </div>
         </div>
-      </div>
-      <div class="criterion">
-        <div class="criterion-num">IV</div>
-        <div class="criterion-text">
-          <div class="criterion-title lang-pl">Zasięg geograficzny</div>
-          <div class="criterion-title lang-en" style="display:none">Geographic scope</div>
-          <div class="criterion-desc lang-pl">Sudety w szerokim ujęciu geomorfologicznym — od Pogórza Zachodniołużyckiego (Hochstein) po Niski Jesionik (Słoneczna) i Pogórze Witkowskie (Strażna), łącznie z pogórzami i kotlinami.</div>
-          <div class="criterion-desc lang-en" style="display:none">The Sudetes in the broad geomorphological sense — from the Western Lusatian Foothills (Hochstein) to the Low Jeseníky (Slunečná) and Witków Foothills (Strážná), including foothill zones and basins.</div>
+        <div class="criterion">
+          <div class="criterion-num">IV</div>
+          <div class="criterion-text">
+            <div class="criterion-title lang-pl">Zasięg geograficzny</div>
+            <div class="criterion-title lang-en" style="display:none">Geographic scope</div>
+            <div class="criterion-desc lang-pl">Sudety w szerokim ujęciu geomorfologicznym — od Pogórza Zachodniołużyckiego (Hochstein) po Niski Jesionik (Słoneczna) i Pogórze Witkowskie (Strażna), łącznie z pogórzami i kotlinami.</div>
+            <div class="criterion-desc lang-en" style="display:none">The Sudetes in the broad geomorphological sense — from the Western Lusatian Foothills (Hochstein) to the Low Jeseníky (Slunečná) and Witków Foothills (Strážná), including foothill zones and basins.</div>
+          </div>
         </div>
       </div>
     </div>
