@@ -959,7 +959,7 @@ footer {
       </div>
       <div class="tb-sep"></div>
       <div class="prog-block" id="dks-prog-block" style="opacity:0.35;transition:opacity 0.5s">
-        <div class="prog-label"><span class="pl-name">💎 Diamentowa</span><span class="pl-count dk-count"><span id="dks-done">0</span>/29</span></div>
+        <div class="prog-label"><span class="pl-name">💎 Diamentowa</span><span class="pl-count dk-count"><span id="dks-done">0</span>/30</span></div>
         <div class="prog-bar"><div class="prog-fill dk-fill" id="dks-bar" style="width:0%"></div></div>
       </div>
       <div id="user-bar"></div>
@@ -1086,7 +1086,7 @@ const WKS = [
   { name:"Słoneczna",         cz:"Slunečná",          alt:802,  prom:168,  izol:19.1, pasmo:"Niski Jesionik",             strefa:"Wschodnie", kraj:"CZ",    lat:49.8394,  lng:17.4293,  note:"Najwyższy szczyt Nizkého Jeseníku" },
   { name:"Smrek",             cz:"Smrk",              alt:1125, prom:192,  izol:7.0,  pasmo:"Góry Złote",                 strefa:"Wschodnie", kraj:"CZ",    lat:50.2286,  lng:17.0336,  note:"Góry Złote — Rychlebské hory" },
   { name:"Borowa",            cz:"—",                 alt:853,  prom:222,  izol:5.0,  pasmo:"Góry Wałbrzyskie",           strefa:"Środkowe",  kraj:"PL",    lat:50.7228,  lng:16.3031,  note:"Najwyższy szczyt Gór Wałbrzyskich" },
-  { name:"Královecký Špičák",cz:"Královecký Špičák",  alt:881,  prom:353,  izol:8.0,  pasmo:"Góry Kamienne",              strefa:"Środkowe",  kraj:"CZ",    lat:50.6340,  lng:15.9760,  note:"Najwybitniejszy szczyt czeskiej części Gór Kamiennych" },
+  { name:"Královecký Špičák",cz:"Královecký Špičák",  alt:881,  prom:353,  izol:8.0,  pasmo:"Góry Kamienne",              strefa:"Środkowe",  kraj:"CZ",    lat:50.6575,  lng:15.9885,  note:"Najwybitniejszy szczyt czeskiej części Gór Kamiennych" },
   { name:"Hrazený",          cz:"Hrazený",           alt:608,  prom:160,  izol:15.5, pasmo:"Pogórze Łużyckie",           strefa:"Zachodnie", kraj:"CZ",    lat:50.9756,  lng:14.4258,  note:"Najwyższy szczyt całego Pogórza Łużyckiego" },
 ];
 
@@ -1118,8 +1118,9 @@ const DKS = [
   { name:"Jedlice",          cz:"—",             alt:354,  prom:75,  izol:24.5, pasmo:"Wzgórza Strzegomskie",             kraj:"PL",  lat:50.9897, lng:16.3151, note:"Wzgórza Strzegomskie" },
   { name:"Chlum",            cz:"Chlum",          alt:344,  prom:73,  izol:6.5,  pasmo:"Pogórze Trszickie",                kraj:"CZ",  lat:49.5408, lng:17.3574, note:"Pogórze Trszickie" },
   { name:"Valtenberg",       cz:"Valtenberg",     alt:587,  prom:220, izol:22.0, pasmo:"Pogórze Zachodniołużyckie",        kraj:"DE",  lat:51.0739, lng:14.2789, note:"Najwyższy szczyt Lausitzer Bergland w Saksonii" },
-  { name:"Cap",              cz:"Cap",            alt:786,  prom:251, izol:11.0, pasmo:"Góry Stołowe",                     kraj:"PL",  lat:50.4880, lng:16.3430, note:"Najwybitniejszy szczyt Gór Stołowych po stronie polskiej" },
-  { name:"Czorneboh",        cz:"Czorneboh",      alt:557,  prom:187, izol:15.0, pasmo:"Pogórze Łużyckie",                 kraj:"DE",  lat:51.2333, lng:14.3833, note:"Dominanta Pogórza Łużyckiego w Saksonii" },
+  { name:"Cap",              cz:"Cap",            alt:786,  prom:251, izol:11.0, pasmo:"Góry Stołowe",                     kraj:"PL",  lat:50.5746, lng:16.1242, note:"Najwybitniejszy szczyt Gór Stołowych po stronie polskiej" },
+  { name:"Czorneboh",        cz:"Czorneboh",      alt:557,  prom:187, izol:15.0, pasmo:"Pogórze Łużyckie",                 kraj:"DE",  lat:51.1195, lng:14.5260, note:"Dominanta Pogórza Łużyckiego w Saksonii" },
+  { name:"Borówkowa",        cz:"Borůvková hora", alt:900,  prom:241, izol:11.0, pasmo:"Góry Złote",                       kraj:"PL/CZ", lat:50.3905, lng:16.9024, note:"Najwyższy szczyt polskiej części Gór Złotych" },
 ];
 
 /* ═══════════════════════════════════════════
@@ -1296,7 +1297,7 @@ function updateUI(){
   document.getElementById('dks-done').textContent = dksDone;
   document.getElementById('ks-bar').style.width   = (ksDone/8*100)+'%';
   document.getElementById('wks-bar').style.width  = (wksDone/20*100)+'%';
-  document.getElementById('dks-bar').style.width  = (dksDone/29*100)+'%';
+  document.getElementById('dks-bar').style.width  = (dksDone/30*100)+'%';
 
   // Achievements
   const setAch = (id, earned, cls='earned') => {
@@ -1309,7 +1310,7 @@ function updateUI(){
   setAch('ach-wks1', wksDone>=1,   'wks-earned');
   setAch('ach-wks',  wksDone===20, 'wks-earned');
   setAch('ach-dks1', dksDone>=1,   'dk-earned');
-  setAch('ach-dks',  dksDone===29, 'dk-earned');
+  setAch('ach-dks',  dksDone===30, 'dk-earned');
 
   // Unlock WKS
   if(ksDone===8 && !STATE.unlocked_wks){
@@ -1344,7 +1345,7 @@ function unlockLevel(type){
     document.getElementById('tab-dks').classList.remove('locked');
     dksMarkers.forEach(m=>m.setOpacity(1));
     document.getElementById('unlock-title').textContent = 'Wielka Korona zdobyta!';
-    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś wszystkie <strong>20 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 29 szczytów!';
+    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś wszystkie <strong>20 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 30 szczytów!';
     document.getElementById('unlock-close-btn').textContent = 'Zaczynam Diamentową Koronę →';
     document.getElementById('unlock-close-btn').onclick = function(){ closeUnlock('dks'); };
   }
@@ -1643,7 +1644,7 @@ async function loadRanking(){
       <td><div class="rank-name">${u.displayName||'Anonimowy'}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
       <td>${(u.wks||[]).length}/20 ${(u.wks||[]).length===20?'<span class="rank-crown wk">👑</span>':''}</td>
-      <td>${(u.dks||[]).length}/29 ${(u.dks||[]).length===29?'<span class="rank-crown dk">💎</span>':''}</td>
+      <td>${(u.dks||[]).length}/30 ${(u.dks||[]).length===30?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
 }
