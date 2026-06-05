@@ -785,9 +785,15 @@ footer {
     <a href="#about" data-pl="O projekcie" data-en="About">O projekcie</a>
     <a href="#map-section" data-pl="Mapa" data-en="Map">Mapa</a>
   </div>
-  <div class="lang-toggle">
-    <button class="lang-btn active" id="btn-pl" onclick="setLang('pl')">PL</button>
-    <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+  <div style="display:flex;align-items:center;gap:0.7rem">
+    <button id="share-btn" title="Udostępnij / Share" onclick="shareApp()" style="background:none;border:1px solid rgba(255,255,255,0.25);color:#E6EDF3;border-radius:6px;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;transition:background 0.2s">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      <span class="lang-pl">Udostępnij</span><span class="lang-en" style="display:none">Share</span>
+    </button>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btn-pl" onclick="setLang('pl')">PL</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
   </div>
 </nav>
 
@@ -971,7 +977,7 @@ footer {
   <div style="max-width:900px;margin:0 auto">
     <div class="section-label lang-pl fade-in">Jak to działa</div>
     <div class="section-label lang-en fade-in" style="display:none">How it works</div>
-    <h2 class="section-title lang-pl fade-in">Zacznij zdobywać <em>Sudety</em></h2>
+    <h2 class="section-title lang-pl fade-in">Zacznij poznawać, odkrywać i zdobywać <em>Sudety</em></h2>
     <h2 class="section-title lang-en fade-in" style="display:none">Start conquering <em>the Sudetes</em></h2>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.5rem;margin-top:2.5rem">
@@ -1101,7 +1107,7 @@ footer {
     </div>
     <div class="footer-copy" style="margin-top:1.5rem;line-height:2">
       Autor · Author: <strong style="color:var(--cream)">Wojciech Rogala</strong> · <a href="mailto:rogalaw@wp.pl" style="color:var(--clay)">rogalaw@wp.pl</a><br>
-      © 2025 Wojciech Rogala · Wielka Korona Sudetów · <span style="color:var(--clay)">v0.3 alfa</span><br>
+      © 2025 Wojciech Rogala · Wielka Korona Sudetów · <span style="color:var(--clay)">v0.4</span><br>
       <span style="font-size:9px;opacity:.7">Wszelkie prawa zastrzeżone. Kopiowanie, reprodukcja lub wykorzystywanie treści bez pisemnej zgody autora jest zabronione. · All rights reserved. Copying, reproduction or use of content without the author's written consent is prohibited.</span>
     </div>
   </div>
@@ -1118,6 +1124,22 @@ footer {
 
 <script>
 /* setLang dla PL/EN */
+function shareApp(){
+  const url = 'https://viasudetica.eu';
+  const title = 'Wielka Korona Sudetów';
+  const text = 'Trzypoziomowy system poznawania, zdobywania i odkrywania Sudetów — 58 szczytów po stronie polskiej, czeskiej i niemieckiej.';
+  if(navigator.share){
+    navigator.share({title, text, url}).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>{
+      const btn = document.getElementById('share-btn');
+      const orig = btn.innerHTML;
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> <span>Skopiowano!</span>';
+      setTimeout(()=>{ btn.innerHTML = orig; }, 2000);
+    }).catch(()=>{ prompt('Skopiuj link:', url); });
+  }
+}
+
 function setLang(l){
   document.getElementById('btn-pl').classList.toggle('active',l==='pl');
   document.getElementById('btn-en').classList.toggle('active',l==='en');
