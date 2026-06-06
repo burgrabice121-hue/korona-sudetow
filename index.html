@@ -290,6 +290,33 @@ section { position: relative; }
 .about-text p.en { display: none; }
 .about-text strong { color: var(--stone); font-weight: 600; }
 
+/* collapsible sections */
+.collapsible-extra {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+}
+.collapsible-extra.open {
+  max-height: 9999px;
+  opacity: 1;
+}
+.more-btn {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  margin: 0.6rem 0 1.2rem;
+  background: none;
+  border: 1px solid var(--fog);
+  border-radius: 20px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  color: var(--bark);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.more-btn:hover { background: var(--parchment); border-color: var(--clay); }
+.more-btn .arrow { display:inline-block; transition: transform 0.3s; }
+.more-btn.open .arrow { transform: rotate(180deg); }
+
 .criteria-box {
   background: var(--parchment);
   border-left: 3px solid var(--clay);
@@ -807,8 +834,8 @@ footer {
       <h1 class="hero-title">Wielka<br>Korona<br><em>Sudetów</em></h1>
       <p class="hero-subtitle lang-pl">The Great Crown of the Sudetes</p>
       <p class="hero-subtitle lang-en" style="display:none">Wielka Korona Sudetów</p>
-      <p class="hero-desc lang-pl">Trzypoziomowy system poznawania, zdobywania i odkrywania Sudetów: <strong>Korona Sudetów</strong> (8 szczytów), <strong>Wielka Korona Sudetów</strong> (20 szczytów) i <strong>Diamentowa Korona Sudetów</strong> (30 szczytów) — łącznie 58 najwybitniejszych i topograficznie samodzielnych wierzchołków całego łańcucha, od Pogórza Zachodniołużyckiego po Niski Jesionik, po stronie polskiej, czeskiej i niemieckiej.</p>
-      <p class="hero-desc lang-en" style="display:none">A three-tier system for conquering the Sudetes: <strong>Crown of the Sudetes</strong> (8 summits), <strong>Great Crown of the Sudetes</strong> (20 summits) and <strong>Diamond Crown of the Sudetes</strong> (30 summits) — 58 of the most prominent and topographically independent peaks of the entire range, from the Lusatian Highlands to the Low Jeseníky, across Poland, Czechia and Germany.</p>
+      <p class="hero-desc lang-pl">Trzypoziomowy system poznawania, zdobywania i odkrywania Sudetów — 58 najwybitniejszych i topograficznie samodzielnych wierzchołków całego łańcucha, od Pogórza Zachodniołużyckiego po Niski Jesionik, po stronie polskiej, czeskiej i niemieckiej.</p>
+      <p class="hero-desc lang-en" style="display:none">A three-tier system for exploring and conquering the Sudetes — 58 of the most prominent and topographically independent peaks of the entire range, from the Lusatian Highlands to the Low Jeseníky, across Poland, Czechia and Germany.</p>
       <div class="hero-stats">
         <div class="stat-item">
           <div class="stat-num">58</div>
@@ -847,44 +874,56 @@ footer {
       <p class="lang-pl"><strong>Sudety</strong> tworzą łańcuch górski — rozległy, wieloczłonowy system orograficzny rozciągający się na ok. 300 km wzdłuż granicy polsko-czeskiej i czesko-niemieckiej.</p>
       <p class="lang-en" style="display:none"><strong>The Sudetes</strong> form a mountain chain — a broad, multi-unit orographic system stretching some 300 km along the Polish-Czech and Czech-German border.</p>
 
-      <p class="lang-pl"><strong>Granice Sudetów</strong> wyznaczają czynniki morfologiczne: wewnątrz łańcucha dominują procesy <em>erozji</em> — rzeki wcinają się w twarde skały krystaliczne i piaskowcowe, tworząc głęboko wcięte doliny i ostre grzbiety. Na przedpolu przeważają procesy <em>akumulacji</em> — rzeki tracą energię i odkładają materiał, budując rozległe równiny i niecki (Równina Świdnicka, Obniżenie Podsudeckie). Ta granica między strefą z przeważającą erozją a strefą z przeważającą akumulacją wyznacza granicę łańcucha sudeckiego.</p>
-      <p class="lang-en" style="display:none"><strong>The boundaries of the Sudetes</strong> are determined by morphological factors: within the chain, <em>erosion</em> dominates — rivers cut deeply into hard crystalline and sandstone bedrock, producing incised valleys and sharp ridges. On the foreland, <em>accumulation</em> prevails — rivers lose energy and deposit sediment, forming broad plains and basins (Świdnica Plain, Sub-Sudetic Depression). This geomorphological boundary between the zone of erosion and the zone of accumulation defines the outer edge of the Sudetic chain.</p>
+      <button class="more-btn" onclick="toggleMore(this)">
+        <span class="lang-pl">Czytaj więcej ▾</span><span class="lang-en" style="display:none">Read more ▾</span>
+      </button>
+      <div class="collapsible-extra">
 
-      <p class="lang-pl">Opisując Sudety zastosowano naturalny podział na <strong>łańcuch górski</strong> (całe Sudety, podobnie jak Karpaty), <strong>grupę górską</strong> (np. Sudety Środkowe — analogicznie do Beskidów w Karpatach) oraz <strong>pasmo górskie</strong> (np. Góry Kamienne — odpowiednik Beskidu Żywieckiego w Beskidach).</p>
-      <p class="lang-en" style="display:none">The description of the Sudetes follows a natural hierarchy: <strong>mountain chain</strong> (the entire Sudetes, comparable to the Carpathians), <strong>mountain group</strong> (e.g. Central Sudetes — analogous to the Beskids within the Carpathians), and <strong>mountain range</strong> (e.g. Góry Kamienne — the equivalent of the Beskid Żywiecki within the Beskids).</p>
+        <p class="lang-pl"><strong>Granice Sudetów</strong> wyznaczają czynniki morfologiczne: wewnątrz łańcucha dominują procesy <em>erozji</em> — rzeki wcinają się w twarde skały krystaliczne i piaskowcowe, tworząc głęboko wcięte doliny i ostre grzbiety. Na przedpolu przeważają procesy <em>akumulacji</em> — rzeki tracą energię i odkładają materiał, budując rozległe równiny i niecki (Równina Świdnicka, Obniżenie Podsudeckie). Ta granica między strefą z przeważającą erozją a strefą z przeważającą akumulacją wyznacza granicę łańcucha sudeckiego.</p>
+        <p class="lang-en" style="display:none"><strong>The boundaries of the Sudetes</strong> are determined by morphological factors: within the chain, <em>erosion</em> dominates — rivers cut deeply into hard crystalline and sandstone bedrock, producing incised valleys and sharp ridges. On the foreland, <em>accumulation</em> prevails — rivers lose energy and deposit sediment, forming broad plains and basins (Świdnica Plain, Sub-Sudetic Depression). This geomorphological boundary between the zone of erosion and the zone of accumulation defines the outer edge of the Sudetic chain.</p>
 
-      <p class="lang-pl"><strong>Podział na 8 grup górskich</strong> opiera się na wyraźnych granicach geologicznych i morfologicznych: grupy oddzielone są rozległymi obniżeniami (np. Kotlina Kłodzka i Rów Górnej Nysy, Mohelnicka Brazda) lub szerokimi dolinami rzecznymi (dolina Nysy Łużyckiej, Białej Głuchołaskiej). Każda grupa tworzy zwarty masyw oparty o wspólne podłoże geologiczne (terran), historię rozwoju geologicznego i czytelnym, odróżniającym się od innych grup, obliczem krajobrazowym — tak jak zwarte Sudety Wschodnie wokół Masywu Śnieżnika i Wysokiego Jesionika oddziela od Sudetów Środkowych głęboka Kotlina Kłodzka.</p>
-      <p class="lang-en" style="display:none"><strong>The division into 8 mountain groups</strong> is based on clear morphological boundaries: groups are separated by broad tectonic depressions (Kłodzko Basin, Upper Nysa Graben), river gorges or distinct geomorphological thresholds. Each group forms a compact massif with a shared geological history and a recognisable landscape character — just as the compact Eastern Sudetes around the Śnieżnik Massif and High Jeseník are separated from the Central Sudetes by the deep Kłodzko Basin.</p>
+        <p class="lang-pl">Opisując Sudety zastosowano naturalny podział na <strong>łańcuch górski</strong> (całe Sudety, podobnie jak Karpaty), <strong>grupę górską</strong> (np. Sudety Środkowe — analogicznie do Beskidów w Karpatach) oraz <strong>pasmo górskie</strong> (np. Góry Kamienne — odpowiednik Beskidu Żywieckiego w Beskidach).</p>
+        <p class="lang-en" style="display:none">The description of the Sudetes follows a natural hierarchy: <strong>mountain chain</strong> (the entire Sudetes, comparable to the Carpathians), <strong>mountain group</strong> (e.g. Central Sudetes — analogous to the Beskids within the Carpathians), and <strong>mountain range</strong> (e.g. Góry Kamienne — the equivalent of the Beskid Żywiecki within the Beskids).</p>
 
-      <h3 class="lang-pl" style="margin-top:2.5rem;font-size:1.15rem;color:var(--pine)">Podział Sudetów na 8 grup górskich</h3>
-      <h3 class="lang-en" style="display:none;margin-top:2.5rem;font-size:1.15rem;color:var(--pine)">Division of the Sudetes into 8 mountain groups</h3>
-      <p class="lang-pl" style="font-size:0.92rem;margin-bottom:1rem">Zaproponowano podział Sudetów na osiem głównych grup górskich, widocznych na mapie po kliknięciu przycisku <em>Grupy górskie</em>. Granice pasm górskich, pogórzy i kotlin ustalono w taki sposób, aby ich granice zawierały się w granicach grupy, co ma swoje uzasadnienie w podłożu geologicznym, wspólnym rozwoju geomorfologicznym i współczesnym krajobrazie. Linie podziału na pasma prowadzono przede wszystkim przez doliny, przełęcze, kotliny lub strefy zmiany rzeźby, ignorowano granice polityczne i administracyjne. Stosowanie powyższych zasad doprowadziło do zaktualizowania granic pasm (np. Góry Opawskie), połączenia wcześniej rozdzielonych granicą (Góry Kamienne i Jastrzębie) lub wyznaczenia nowych pasm (Sokoli Grzbiet, Góry Złotogórskie, Pogórze Opawskie).</p>
-      <p class="lang-en" style="display:none;font-size:0.92rem;margin-bottom:1rem">The Sudetes are geographically divided into eight major mountain groups, visible on the map by clicking <em>Mountain groups</em>:</p>
-      <div class="grupy-desc-grid lang-pl">
-        <div class="grupy-card" style="--gc:#8338EC"><span class="gc-num">1</span><strong>Sudety Łużyckie</strong><small>Góry Łużyckie, Płaskowyż Budziszyński, Pogórze Łużyckie, Kotlina Żytawska</small></div>
-        <div class="grupy-card" style="--gc:#0077B6"><span class="gc-num">2</span><strong>Sudety Zachodnie</strong><small>Karkonosze, Góry Izerskie, Kotlina Jeleniogórska, Pogórze Karkonoskie, Rudawy Janowickie</small></div>
-        <div class="grupy-card" style="--gc:#06B49A"><span class="gc-num">3</span><strong>Sudety Kaczawskie</strong><small>Góry Kaczawskie, Pogórze Izerskie, Pogórze Kaczawskie</small></div>
-        <div class="grupy-card" style="--gc:#C4983A"><span class="gc-num">4</span><strong>Sudety Środkowe</strong><small>Góry Kamienne, Góry Sowie, Góry Stołowe, Góry Wałbrzyskie, Kotlina Kłodzka, Góry Bardzkie</small></div>
-        <div class="grupy-card" style="--gc:#E76F51"><span class="gc-num">5</span><strong>Sudety Orlickie</strong><small>Góry Orlickie, Góry Bystrzyckie, Pogórze Orlickie, Zábřežská vrchovina, Rów Górnej Nysy</small></div>
-        <div class="grupy-card" style="--gc:#C1121F"><span class="gc-num">6</span><strong>Sudety Wschodnie</strong><small>Masyw Śnieżnika, Wysoki Jesionik, Góry Złote, Sokoli Grzbiet, Góry Złotogórskie</small></div>
-        <div class="grupy-card" style="--gc:#4CAF50"><span class="gc-num">7</span><strong>Sudety Kulmowe</strong><small>Niski Jesionik, Góry Opawskie, Pogórze Opawskie, Pogórze Witkowskie, Pogórze Trszickie</small></div>
-        <div class="grupy-card" style="--gc:#FF9F1C"><span class="gc-num">8</span><strong>Przedgórze Sudeckie</strong><small>Masyw Ślęży, Wzgórza Niemczańsko-Strzelińskie, Wzgórza Strzegomskie, Obniżenie Podsudeckie</small></div>
-      </div>
-      <div class="grupy-desc-grid lang-en" style="display:none">
-        <div class="grupy-card" style="--gc:#8338EC"><span class="gc-num">1</span><strong>Lusatian Sudetes</strong><small>Lusatian Mts, Budziszyn Plateau, Lusatian Foothills, Zittau Basin</small></div>
-        <div class="grupy-card" style="--gc:#0077B6"><span class="gc-num">2</span><strong>Western Sudetes</strong><small>Karkonosze/Krkonoše, Izer Mts, Jelenia Góra Basin, Karkonosze Foothills, Rudawy Janowickie</small></div>
-        <div class="grupy-card" style="--gc:#06B49A"><span class="gc-num">3</span><strong>Northern Sudetes</strong><small>Kaczawa Mts, Izer Foothills, Kaczawa Foothills</small></div>
-        <div class="grupy-card" style="--gc:#C4983A"><span class="gc-num">4</span><strong>Central Sudetes</strong><small>Kamienne Mts, Sowie Mts, Table Mts, Wałbrzych Mts, Kłodzko Basin, Bardzkie Mts</small></div>
-        <div class="grupy-card" style="--gc:#E76F51"><span class="gc-num">5</span><strong>Orlické Sudetes</strong><small>Orlické hory, Bystřické hory, Orlické Foothills, Zábřežská vrchovina, Upper Nysa Graben</small></div>
-        <div class="grupy-card" style="--gc:#C1121F"><span class="gc-num">6</span><strong>Eastern Sudetes</strong><small>Śnieżnik Massif, High Jeseník, Rychlebské hory, Eagle Ridge, Zlatohorská vrchovina</small></div>
-        <div class="grupy-card" style="--gc:#4CAF50"><span class="gc-num">7</span><strong>Culm Sudetes</strong><small>Low Jeseník, Opava Mts, Opava Foothills, Witków Foothills, Tršice Foothills</small></div>
-        <div class="grupy-card" style="--gc:#FF9F1C"><span class="gc-num">8</span><strong>Sudetic Foreland</strong><small>Ślęża Massif, Niemcza–Strzelin Hills, Strzegom Hills, Sub-Sudetic Depression</small></div>
-      </div>
+        <p class="lang-pl"><strong>Podział na 8 grup górskich</strong> opiera się na wyraźnych granicach geologicznych i morfologicznych: grupy oddzielone są rozległymi obniżeniami (np. Kotlina Kłodzka i Rów Górnej Nysy, Mohelnicka Brazda) lub szerokimi dolinami rzecznymi (dolina Nysy Łużyckiej, Białej Głuchołaskiej). Każda grupa tworzy zwarty masyw oparty o wspólne podłoże geologiczne (terran), historię rozwoju geologicznego i czytelnym, odróżniającym się od innych grup, obliczem krajobrazowym — tak jak zwarte Sudety Wschodnie wokół Masywu Śnieżnika i Wysokiego Jesionika oddziela od Sudetów Środkowych głęboka Kotlina Kłodzka.</p>
+        <p class="lang-en" style="display:none"><strong>The division into 8 mountain groups</strong> is based on clear morphological boundaries: groups are separated by broad tectonic depressions (Kłodzko Basin, Upper Nysa Graben), river gorges or distinct geomorphological thresholds. Each group forms a compact massif with a shared geological history and a recognisable landscape character — just as the compact Eastern Sudetes around the Śnieżnik Massif and High Jeseník are separated from the Central Sudetes by the deep Kłodzko Basin.</p>
+
+        <h3 class="lang-pl" style="margin-top:2rem;font-size:1.15rem;color:var(--pine)">Podział Sudetów na 8 grup górskich</h3>
+        <h3 class="lang-en" style="display:none;margin-top:2rem;font-size:1.15rem;color:var(--pine)">Division of the Sudetes into 8 mountain groups</h3>
+        <p class="lang-pl" style="font-size:0.92rem;margin-bottom:1rem">Zaproponowano podział Sudetów na osiem głównych grup górskich, widocznych na mapie po kliknięciu przycisku <em>Grupy górskie</em>. Granice pasm górskich, pogórzy i kotlin ustalono w taki sposób, aby ich granice zawierały się w granicach grupy, co ma swoje uzasadnienie w podłożu geologicznym, wspólnym rozwoju geomorfologicznym i współczesnym krajobrazie. Linie podziału na pasma prowadzono przede wszystkim przez doliny, przełęcze, kotliny lub strefy zmiany rzeźby, ignorowano granice polityczne i administracyjne. Stosowanie powyższych zasad doprowadziło do zaktualizowania granic pasm (np. Góry Opawskie), połączenia wcześniej rozdzielonych granicą (Góry Kamienne i Jastrzębie) lub wyznaczenia nowych pasm (Sokoli Grzbiet, Góry Złotogórskie, Pogórze Opawskie).</p>
+        <p class="lang-en" style="display:none;font-size:0.92rem;margin-bottom:1rem">The Sudetes are geographically divided into eight major mountain groups, visible on the map by clicking <em>Mountain groups</em>:</p>
+        <div class="grupy-desc-grid lang-pl">
+          <div class="grupy-card" style="--gc:#8338EC"><span class="gc-num">1</span><strong>Sudety Łużyckie</strong><small>Góry Łużyckie, Płaskowyż Budziszyński, Pogórze Łużyckie, Kotlina Żytawska</small></div>
+          <div class="grupy-card" style="--gc:#0077B6"><span class="gc-num">2</span><strong>Sudety Zachodnie</strong><small>Karkonosze, Góry Izerskie, Kotlina Jeleniogórska, Pogórze Karkonoskie, Rudawy Janowickie</small></div>
+          <div class="grupy-card" style="--gc:#06B49A"><span class="gc-num">3</span><strong>Sudety Kaczawskie</strong><small>Góry Kaczawskie, Pogórze Izerskie, Pogórze Kaczawskie</small></div>
+          <div class="grupy-card" style="--gc:#C4983A"><span class="gc-num">4</span><strong>Sudety Środkowe</strong><small>Góry Kamienne, Góry Sowie, Góry Stołowe, Góry Wałbrzyskie, Kotlina Kłodzka, Góry Bardzkie</small></div>
+          <div class="grupy-card" style="--gc:#E76F51"><span class="gc-num">5</span><strong>Sudety Orlickie</strong><small>Góry Orlickie, Góry Bystrzyckie, Pogórze Orlickie, Zábřežská vrchovina, Rów Górnej Nysy</small></div>
+          <div class="grupy-card" style="--gc:#C1121F"><span class="gc-num">6</span><strong>Sudety Wschodnie</strong><small>Masyw Śnieżnika, Wysoki Jesionik, Góry Złote, Sokoli Grzbiet, Góry Złotogórskie</small></div>
+          <div class="grupy-card" style="--gc:#4CAF50"><span class="gc-num">7</span><strong>Sudety Kulmowe</strong><small>Niski Jesionik, Góry Opawskie, Pogórze Opawskie, Pogórze Witkowskie, Pogórze Trszickie</small></div>
+          <div class="grupy-card" style="--gc:#FF9F1C"><span class="gc-num">8</span><strong>Przedgórze Sudeckie</strong><small>Masyw Ślęży, Wzgórza Niemczańsko-Strzelińskie, Wzgórza Strzegomskie, Obniżenie Podsudeckie</small></div>
+        </div>
+        <div class="grupy-desc-grid lang-en" style="display:none">
+          <div class="grupy-card" style="--gc:#8338EC"><span class="gc-num">1</span><strong>Lusatian Sudetes</strong><small>Lusatian Mts, Budziszyn Plateau, Lusatian Foothills, Zittau Basin</small></div>
+          <div class="grupy-card" style="--gc:#0077B6"><span class="gc-num">2</span><strong>Western Sudetes</strong><small>Karkonosze/Krkonoše, Izer Mts, Jelenia Góra Basin, Karkonosze Foothills, Rudawy Janowickie</small></div>
+          <div class="grupy-card" style="--gc:#06B49A"><span class="gc-num">3</span><strong>Northern Sudetes</strong><small>Kaczawa Mts, Izer Foothills, Kaczawa Foothills</small></div>
+          <div class="grupy-card" style="--gc:#C4983A"><span class="gc-num">4</span><strong>Central Sudetes</strong><small>Kamienne Mts, Sowie Mts, Table Mts, Wałbrzych Mts, Kłodzko Basin, Bardzkie Mts</small></div>
+          <div class="grupy-card" style="--gc:#E76F51"><span class="gc-num">5</span><strong>Orlické Sudetes</strong><small>Orlické hory, Bystřické hory, Orlické Foothills, Zábřežská vrchovina, Upper Nysa Graben</small></div>
+          <div class="grupy-card" style="--gc:#C1121F"><span class="gc-num">6</span><strong>Eastern Sudetes</strong><small>Śnieżnik Massif, High Jeseník, Rychlebské hory, Eagle Ridge, Zlatohorská vrchovina</small></div>
+          <div class="grupy-card" style="--gc:#4CAF50"><span class="gc-num">7</span><strong>Culm Sudetes</strong><small>Low Jeseník, Opava Mts, Opava Foothills, Witków Foothills, Tršice Foothills</small></div>
+          <div class="grupy-card" style="--gc:#FF9F1C"><span class="gc-num">8</span><strong>Sudetic Foreland</strong><small>Ślęża Massif, Niemcza–Strzelin Hills, Strzegom Hills, Sub-Sudetic Depression</small></div>
+        </div>
+
+      </div><!-- /collapsible-extra -->
 
       <h2 class="section-title lang-pl" style="margin-top:2.5rem">3 Korony Sudetów</h2>
       <h2 class="section-title lang-en" style="display:none;margin-top:2.5rem">3 Crowns of the Sudetes</h2>
-      <p class="lang-pl"><strong>Korona Sudetów</strong> (8 szczytów) to najbardziej wybitne topograficznie wierzchołki — najważniejsze „koronne" szczyty całego łańcucha. <strong>Wielka Korona</strong> (20 szczytów) rozszerza listę o szczyty spełniające kryterium wybitności ≥ 300 m <em>lub</em> izolacji ≥ 10 km. <strong>Diamentowa Korona</strong> (30 szczytów) uzupełnia zestawienie o reprezentantów wszystkich pasm i pogórzy. Zestawienie opracowano na podstawie pomiarów własnych oraz danych KNSSP (KZKG RP), vrcholovka.cz, peakbagger.com oraz Wikipedii PL/CZ/DE.</p>
-      <p class="lang-en" style="display:none">The <strong>Crown of the Sudetes</strong> (8 summits) comprises the most topographically prominent peaks — the defining "crown" summits of the range. The <strong>Great Crown</strong> (20 summits) extends the list to all summits with prominence ≥ 300 m <em>or</em> isolation ≥ 10 km. The <strong>Diamond Crown</strong> (30 summits) completes the catalogue with representatives of every range and foothill zone. The list draws on data from KNSSP, vrcholovka.cz, peakbagger.com, and PL/CZ/DE Wikipedia.</p>
+      <p class="lang-pl"><strong>Korona Sudetów</strong> to najbardziej wybitne topograficznie wierzchołki — „koronne" szczyty całego łańcucha. <strong>Wielka Korona</strong> rozszerza listę o szczyty wybitne lub silnie izolowane. <strong>Diamentowa Korona</strong> uzupełnia zestawienie o reprezentantów wszystkich pasm i pogórzy — łącznie 58 szczytów.</p>
+      <p class="lang-en" style="display:none">The <strong>Crown of the Sudetes</strong> comprises the most topographically prominent peaks — the defining "crown" summits. The <strong>Great Crown</strong> extends the list with highly prominent or isolated summits. The <strong>Diamond Crown</strong> adds representatives of every range and foothill zone — 58 peaks in total.</p>
+
+      <button class="more-btn" onclick="toggleMore(this)">
+        <span class="lang-pl">Czytaj więcej ▾</span><span class="lang-en" style="display:none">Read more ▾</span>
+      </button>
+      <div class="collapsible-extra">
 
       <h3 class="lang-pl" style="margin-top:1.8rem;font-size:1.05rem;color:var(--bark)">Co to jest <em>wybitność</em>?</h3>
       <h3 class="lang-en" style="display:none;margin-top:1.8rem;font-size:1.05rem;color:var(--bark)">What is <em>prominence</em>?</h3>
@@ -899,6 +938,8 @@ footer {
       <p class="lang-en" style="display:none"><strong>Topographic isolation</strong> is the straight-line distance from a summit to the nearest point of higher elevation. It measures how far you must travel before finding a peak that rises above the given summit — regardless of the terrain in between.</p>
       <p class="lang-pl">Ślęża (718 m) ma izolację <strong>36 km</strong> — tyle dzieli ją od najbliższego wyższego szczytu. Biskupia Kopa (890 m) leży zaledwie <strong>5 km</strong> od Poprzeczej, ale jako najwyższy szczyt Sudetów Kulmowych i jedyny reprezentant Gór Opawskich spełnia kryteria kwalifikacji do Korony Sudetów. Izolacja uzupełnia wybitność: obejmuje szczyty ważne regionalnie, nawet jeśli ich deniwelacja ponad przełęczą jest stosunkowo niewielka.</p>
       <p class="lang-en" style="display:none">Ślęża (718 m) has an isolation of <strong>36 km</strong> — that is how far it stands from the nearest higher summit. Biskupia Kopa (890 m) lies only <strong>8 km</strong> from Praděd, yet as the highest point of the Opava Mountains and the sole representative of that range it earns its place in the Crown. Isolation complements prominence: it captures summits of regional importance even when their rise above the key col is relatively modest.</p>
+
+      </div><!-- /collapsible-extra -->
 
       <div class="zones-grid" style="margin-top:2.5rem">
         <div class="zone-card z">
@@ -918,7 +959,11 @@ footer {
         </div>
       </div>
 
-      <div class="criteria-box fade-in" style="margin-top:2.5rem">
+      <button class="more-btn" onclick="toggleMore(this)" style="margin-top:1rem">
+        <span class="lang-pl">Kryteria kwalifikacji ▾</span><span class="lang-en" style="display:none">Selection criteria ▾</span>
+      </button>
+      <div class="collapsible-extra">
+      <div class="criteria-box fade-in" style="margin-top:1rem">
         <h3 class="lang-pl">Kryteria kwalifikacji</h3>
         <h3 class="lang-en" style="display:none">Selection criteria</h3>
         <div class="criterion">
@@ -962,11 +1007,12 @@ footer {
           <div class="criterion-text">
             <div class="criterion-title lang-pl">Reprezentacja pasm</div>
             <div class="criterion-title lang-en" style="display:none">Range representation</div>
-            <div class="criterion-desc lang-pl">Każde pasmo sudeckie powinno być reprezentowane przez co najmniej jeden szczyt — najwyższy lub o największej wybitności w danej jednostce geomorfologicznej.</div>
-            <div class="criterion-desc lang-en" style="display:none">Every Sudetic range must be represented by at least one summit — the highest or most prominent within that geomorphological unit.</div>
+            <div class="criterion-desc lang-pl">Każde pasmo, pogórze i kotlina sudecka powinny być reprezentowane przez co najmniej jeden szczyt w zestawieniu Diamentowej Korony.</div>
+            <div class="criterion-desc lang-en" style="display:none">Every Sudetic range, foothill zone and basin should be represented by at least one summit in the Diamond Crown catalogue.</div>
           </div>
         </div>
       </div>
+      </div><!-- /collapsible-extra criteria -->
     </div>
   </div>
 </section>
@@ -994,8 +1040,8 @@ footer {
         <div style="font-size:1.8rem;margin-bottom:0.6rem">2️⃣</div>
         <div class="lang-pl" style="font-weight:600;margin-bottom:0.4rem">Znajdź szczyt na mapie</div>
         <div class="lang-en" style="display:none;font-weight:600;margin-bottom:0.4rem">Find a summit on the map</div>
-        <p class="lang-pl" style="font-size:0.9rem;line-height:1.6;margin:0">Złote kwadraty to szczyty <strong>Korony Sudetów</strong> (8 sztuk) — od nich zacznij przygodę. Kolorowe kółka to <strong>Wielka Korona</strong> (20), fioletowe kółka to <strong>Diamentowa Korona</strong> (30). Kolejne poziomy odblokowują się po ukończeniu poprzedniego.</p>
-        <p class="lang-en" style="display:none;font-size:0.9rem;line-height:1.6;margin:0">Gold squares mark the <strong>Crown of the Sudetes</strong> (8 summits) — start your adventure here. Coloured circles are the <strong>Great Crown</strong> (20), purple circles the <strong>Diamond Crown</strong> (30). Each level unlocks after completing the previous one.</p>
+        <p class="lang-pl" style="font-size:0.9rem;line-height:1.6;margin:0">Złote kwadraty to <strong>Korona</strong>, kolorowe kółka to <strong>Wielka Korona</strong>, fioletowe to <strong>Diamentowa</strong>. Zacznij od złotych — kolejne poziomy odblokują się po ukończeniu poprzedniego.</p>
+        <p class="lang-en" style="display:none;font-size:0.9rem;line-height:1.6;margin:0">Gold squares = <strong>Crown</strong>, coloured circles = <strong>Great Crown</strong>, purple circles = <strong>Diamond Crown</strong>. Start with the gold markers — each level unlocks after completing the previous one.</p>
       </div>
 
       <div class="fade-in" style="background:var(--snow);border-radius:8px;padding:1.5rem;border-top:3px solid var(--clay)">
@@ -1022,7 +1068,7 @@ footer {
 <section id="map-section">
   <div class="map-section-inner">
     <div class="map-header fade-in">
-      <div class="section-label lang-pl">Mapa interaktywna · Zdobywaj szczyty</div>
+      <div class="section-label lang-pl">Mapa interaktywna · Poznawaj · Eksploruj · Zdobywaj</div>
       <div class="section-label lang-en" style="display:none">Interactive map · Conquer the summits</div>
       <h2 class="section-title lang-pl">8 + 20 + 30 szczytów <em>do zdobycia</em></h2>
       <h2 class="section-title lang-en" style="display:none">8 + 20 + 30 summits <em>to conquer</em></h2>
@@ -1124,6 +1170,16 @@ footer {
 
 <script>
 /* setLang dla PL/EN */
+function toggleMore(btn){
+  const extra = btn.nextElementSibling;
+  const isOpen = extra.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  const pl = btn.querySelector('.lang-pl');
+  const en = btn.querySelector('.lang-en');
+  if(pl) pl.textContent = isOpen ? 'Zwiń ▲' : 'Czytaj więcej ▾';
+  if(en) en.textContent = isOpen ? 'Show less ▲' : 'Read more ▾';
+}
+
 function shareApp(){
   const url = 'https://viasudetica.eu';
   const title = 'Wielka Korona Sudetów';
