@@ -1440,8 +1440,8 @@ function updateUI(){
   document.getElementById('wks-done').textContent = wksDone;
   document.getElementById('dks-done').textContent = dksDone;
   document.getElementById('ks-bar').style.width   = (ksDone/8*100)+'%';
-  document.getElementById('wks-bar').style.width  = (wksDone/20*100)+'%';
-  document.getElementById('dks-bar').style.width  = (dksDone/30*100)+'%';
+  document.getElementById('wks-bar').style.width  = (wksDone/25*100)+'%';
+  document.getElementById('dks-bar').style.width  = (dksDone/25*100)+'%';
 
   // Achievements
   const setAch = (id, earned, cls='earned') => {
@@ -1524,7 +1524,7 @@ function renderList(type){
   const locked = (type==='wks'&&!STATE.unlocked_wks)||(type==='dks'&&!STATE.unlocked_dks);
 
   if(locked){
-    const prev = type==='wks'?{n:'Koronę Sudetów',cnt:8,done:STATE.ks.length}:{n:'Wielką Koronę',cnt:20,done:STATE.wks.length};
+    const prev = type==='wks'?{n:'Koronę Sudetów',cnt:8,done:STATE.ks.length}:{n:'Wielką Koronę',cnt:25,done:STATE.wks.length};
     el.innerHTML = `<div class="dk-locked-msg">
       <div class="lm-icon">🔒</div>
       <div class="lm-title">${type==='wks'?'Wielka Korona':'Diamentowa Korona'} zablokowana</div>
@@ -1770,7 +1770,7 @@ async function loadRanking(){
     snap.forEach(d=>{
       const u = d.data();
       if(_rankTab==='wk'  && (u.ks||[]).length<8)  return;
-      if(_rankTab==='dk'  && (u.dks||[]).length<28) return;
+      if(_rankTab==='dk'  && (u.dks||[]).length<25) return;
       rows.push(u);
     });
     rows.sort((a,b)=>{
@@ -1787,8 +1787,8 @@ async function loadRanking(){
       <td class="rank-medal">${medals[i]||i+1}</td>
       <td><div class="rank-name">${u.displayName||'Anonimowy'}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
-      <td>${(u.wks||[]).length}/20 ${(u.wks||[]).length===20?'<span class="rank-crown wk">👑</span>':''}</td>
-      <td>${(u.dks||[]).length}/30 ${(u.dks||[]).length===30?'<span class="rank-crown dk">💎</span>':''}</td>
+      <td>${(u.wks||[]).length}/25 ${(u.wks||[]).length===25?'<span class="rank-crown wk">👑</span>':''}</td>
+      <td>${(u.dks||[]).length}/25 ${(u.dks||[]).length===25?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
 }
