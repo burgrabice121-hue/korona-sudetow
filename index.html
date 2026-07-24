@@ -6,6 +6,7 @@
 <title>Wielka Korona Sudetów · The Great Crown of the Sudetes</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 <style>
 
 :root {
@@ -1114,6 +1115,10 @@ footer {
       <div class="ml-item"><div class="ml-dot" style="background:#4A8C5C"></div><span class="lang-pl">Sudety Środkowe</span><span class="lang-en" style="display:none">Central Sudetes</span></div>
       <div class="ml-item"><div class="ml-dot" style="background:#B8702A"></div><span class="lang-pl">Sudety Wschodnie</span><span class="lang-en" style="display:none">Eastern Sudetes</span></div>
       <div class="ml-item" style="margin-left:auto"><span style="font-family:var(--mono);font-size:10px;color:var(--bark)" class="lang-pl">✓ zielony = szczyt zdobyty</span><span style="font-family:var(--mono);font-size:10px;color:var(--bark);display:none" class="lang-en">✓ green = summit conquered</span></div>
+      <button id="sudety-btn" onclick="toggleSudety()" class="grupy-toggle-btn lang-pl">🔲 Granica Sudetów</button>
+      <button id="sudety-btn-en" onclick="toggleSudety()" class="grupy-toggle-btn lang-en" style="display:none">🔲 Sudetes boundary</button>
+      <button id="pasma-btn" onclick="togglePasma()" class="grupy-toggle-btn active lang-pl">🏔 Pasma</button>
+      <button id="pasma-btn-en" onclick="togglePasma()" class="grupy-toggle-btn active lang-en" style="display:none">🏔 Ranges</button>
       <button id="grupy-btn" onclick="toggleGrupy()" class="grupy-toggle-btn lang-pl">🗺 Grupy górskie</button>
       <button id="grupy-btn-en" onclick="toggleGrupy()" class="grupy-toggle-btn lang-en" style="display:none">🗺 Mountain groups</button>
     </div>
@@ -1607,6 +1612,12 @@ const pasmaLayer=L.geoJSON(PASMA_GEOJSON,{style:f=>{const n=f.properties.name;co
 let grupyVisible=false;
 const grupyLayer=L.geoJSON(GRUPY_GEOJSON,{style:f=>{const c=GRUPY_COLORS[f.properties.id]||{fill:'#888',stroke:'#555'};return{fillColor:c.fill,fillOpacity:0.07,color:c.stroke,weight:2.5,opacity:0.85,dashArray:'8,5'};},onEachFeature:(f,l)=>{l.bindTooltip('<b>'+f.properties.name+'</b>',{sticky:true,className:'pasmo-tooltip',direction:'top',offset:[0,-4]});l.on('mouseover',function(){this.setStyle({fillOpacity:0.18,weight:3.5});});l.on('mouseout',function(){grupyLayer.resetStyle(this);});}});
 window.toggleGrupy=function(){grupyVisible=!grupyVisible;if(grupyVisible){grupyLayer.addTo(map);document.getElementById('grupy-btn').classList.add('active');}else{map.removeLayer(grupyLayer);document.getElementById('grupy-btn').classList.remove('active');}document.getElementById('grupy-legend').style.display=grupyVisible?'flex':'none';};
+const sudetyOutline=(function(){const buf=GRUPY_GEOJSON.features.map(f=>turf.buffer(f,1.5,{units:'kilometers'}));let u=buf[0];for(let i=1;i<buf.length;i++){u=turf.union(u,buf[i]);}return turf.buffer(u,-1.5,{units:'kilometers'});})();
+const sudetyLayer=L.geoJSON(sudetyOutline,{style:{fillColor:'transparent',fillOpacity:0,color:'#C0392B',weight:2.5,opacity:0.9,dashArray:'10,6'}});
+let sudetyVisible=false;
+window.toggleSudety=function(){sudetyVisible=!sudetyVisible;if(sudetyVisible){sudetyLayer.addTo(map);document.getElementById('sudety-btn').classList.add('active');document.getElementById('sudety-btn-en').classList.add('active');}else{map.removeLayer(sudetyLayer);document.getElementById('sudety-btn').classList.remove('active');document.getElementById('sudety-btn-en').classList.remove('active');}};
+let pasmaVisible=true;
+window.togglePasma=function(){pasmaVisible=!pasmaVisible;if(pasmaVisible){pasmaLayer.addTo(map);document.getElementById('pasma-btn').classList.add('active');document.getElementById('pasma-btn-en').classList.add('active');}else{map.removeLayer(pasmaLayer);document.getElementById('pasma-btn').classList.remove('active');document.getElementById('pasma-btn-en').classList.remove('active');};};
 const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');});},{threshold:0.1});
 document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
 
