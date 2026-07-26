@@ -629,6 +629,12 @@ footer {
   #sidebar { width: 100%; border-left: none; border-top: 1px solid #30363D; max-height: 320px; }
   .sb-tabs { justify-content: space-around; }
   .map-legend { flex-wrap: wrap; gap: 4px; }
+  #topbar { height: auto; flex-wrap: wrap; padding: 6px 10px; gap: 6px 8px; }
+  .tb-title { display: none; }
+  .tb-sep { display: none; }
+  .prog-block { min-width: 0; flex: 1 1 28%; }
+  #user-bar { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 6px; order: 10; }
+  .btn-reset { order: 11; margin-left: 0; }
 }
 
 /* ══════════════════════════════════════════════
@@ -666,7 +672,7 @@ footer {
 #map{flex:1}
 #sidebar{width:220px;background:#161B22;border-left:1px solid #30363D;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .sb-tabs{display:flex;border-bottom:1px solid #30363D;flex-shrink:0}
-.sb-tab{flex:1;padding:10px 0;text-align:center;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;color:#8B949E;border-bottom:2px solid transparent;transition:all .15s}
+.sb-tab{flex:1;padding:8px 0;text-align:center;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;color:#8B949E;border-bottom:2px solid transparent;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:3px}
 .sb-tab.active{color:#D4A017;border-bottom-color:#D4A017}
 .sb-tab.dk-tab.active{color:#A78BFA;border-bottom-color:#A78BFA}
 .sb-tab.locked{opacity:.4;cursor:not-allowed}
@@ -684,7 +690,7 @@ footer {
 .pr-info{flex:1;min-width:0}
 .pr-name{font-family:'Georgia',serif;font-size:11px;font-weight:600;color:#E6EDF3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pr-sub{font-size:10px;color:#8B949E;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pr-elev{font-family:'Courier New',monospace;font-size:9px;color:#4A5568;margin-top:2px}
+.pr-elev{font-family:'Courier New',monospace;font-size:9px;color:#8B949E;margin-top:2px}
 .sb-footer{border-top:1px solid #30363D;padding:10px 12px;flex-shrink:0;background:#1C2330}
 .ach-title{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#8B949E;margin-bottom:6px}
 .ach-grid{display:flex;gap:5px;flex-wrap:wrap}
@@ -700,7 +706,7 @@ footer {
 .pop-name{font-family:'Georgia',serif;font-size:13px;font-weight:700;color:#D4A017;margin-bottom:2px}
 .pop-sub{font-size:11px;color:#8B949E;margin-bottom:8px}
 .pop-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px 12px;margin-bottom:8px}
-.pop-sl{font-family:'Courier New',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#4A5568}
+.pop-sl{font-family:'Courier New',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#8B949E}
 .pop-sv{font-size:12px;font-weight:600;color:#E6EDF3}
 .pop-note{font-size:11px;color:#8B949E;font-style:italic;line-height:1.4;margin-bottom:8px}
 .pop-btn{width:100%;padding:7px;border-radius:3px;border:none;font-family:'Georgia',serif;font-size:11px;font-weight:600;letter-spacing:.05em;cursor:pointer;transition:all .2s}
@@ -777,7 +783,7 @@ footer {
 .rank-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--cream);vertical-align:top}
 .rank-table tr:hover td{background:rgba(255,255,255,.03)}
 .rank-medal{font-size:1.1rem}
-.rank-name{font-weight:600}
+.rank-name{font-weight:600;color:#E6EDF3}
 .rank-peaks{font-size:11px;color:var(--fog);margin-top:3px;line-height:1.5}
 .rank-date{font-family:'Courier New',monospace;font-size:10px;color:var(--fog)}
 .rank-crown{font-size:11px;padding:2px 8px;border-radius:10px;margin-left:6px}
@@ -788,7 +794,8 @@ footer {
 
 svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 .zone-name svg.ci{height:2em;width:auto;margin-right:.35em}
-.prog-label svg.ci,.sb-tab svg.ci,.ach svg.ci{height:1.1em;width:auto;margin-right:.25em}
+.prog-label svg.ci,.ach svg.ci{height:1.1em;width:auto;margin-right:.25em}
+.sb-tab svg.ci{height:1.4em;width:auto;margin:0}
 .unlock-icon svg.ci{height:2.4em;width:auto}
 </style>
 
@@ -1219,17 +1226,6 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
         <div class="sb-list" id="list-ks"></div>
         <div class="sb-list" id="list-wks" style="display:none"></div>
         <div class="sb-list" id="list-dks" style="display:none"></div>
-        <div class="sb-footer">
-          <div class="ach-title">Odznaki</div>
-          <div class="ach-grid">
-            <div class="ach" id="ach-1">🌄 Pierwsze wejście</div>
-            <div class="ach" id="ach-ks"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg> Korona Sudetów!</div>
-            <div class="ach" id="ach-wks1"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg> Wielka Korona — start</div>
-            <div class="ach" id="ach-wks">👑 Wielka Korona!</div>
-            <div class="ach" id="ach-dks1"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg> Diamentowa — start</div>
-            <div class="ach" id="ach-dks">🌟 Diamentowa Korona!</div>
-          </div>
-        </div>
       </div>
     </div>
     <div class="map-legend fade-in">
