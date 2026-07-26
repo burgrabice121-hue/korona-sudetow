@@ -1251,9 +1251,9 @@ function toggleMore(btn){
 }
 
 function shareApp(){
-  const url = 'https://viasudetica.eu';
+  const url = 'https://viasudetica.eu/';
   const title = 'Wielka Korona Sudetów';
-  const text = 'Trzypoziomowy system poznawania, zdobywania i odkrywania Sudetów — 58 szczytów po stronie polskiej, czeskiej i niemieckiej.';
+  const text = 'cześć, zapraszam cię do odkrywania Sudetów. Poznaj najwybitniejsze szczyty Sudetów po stronie polskiej, czeskiej i niemieckiej i zdobądź trzy sudeckie korony.\nhttps://viasudetica.eu/';
   if(navigator.share){
     navigator.share({title, text, url}).catch(()=>{});
   } else {
