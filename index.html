@@ -1188,16 +1188,14 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
       </div>
     </div>
     <div class="map-legend fade-in">
-      <div class="ml-item"><div class="ml-dot" style="background:#3B6E9E"></div><span class="lang-pl">Sudety Zachodnie</span><span class="lang-en" style="display:none">Western Sudetes</span></div>
-      <div class="ml-item"><div class="ml-dot" style="background:#4A8C5C"></div><span class="lang-pl">Sudety Środkowe</span><span class="lang-en" style="display:none">Central Sudetes</span></div>
-      <div class="ml-item"><div class="ml-dot" style="background:#B8702A"></div><span class="lang-pl">Sudety Wschodnie</span><span class="lang-en" style="display:none">Eastern Sudetes</span></div>
+
       <div class="ml-item" style="margin-left:auto"><span style="font-family:var(--mono);font-size:10px;color:var(--bark)" class="lang-pl">✓ zielony = szczyt zdobyty</span><span style="font-family:var(--mono);font-size:10px;color:var(--bark);display:none" class="lang-en">✓ green = summit conquered</span></div>
       <button id="sudety-btn" onclick="toggleSudety()" class="grupy-toggle-btn lang-pl">🔲 Granica Sudetów</button>
       <button id="sudety-btn-en" onclick="toggleSudety()" class="grupy-toggle-btn lang-en" style="display:none">🔲 Sudetes boundary</button>
-      <button id="pasma-btn" onclick="togglePasma()" class="grupy-toggle-btn active lang-pl">🏔 Pasma</button>
-      <button id="pasma-btn-en" onclick="togglePasma()" class="grupy-toggle-btn active lang-en" style="display:none">🏔 Ranges</button>
       <button id="grupy-btn" onclick="toggleGrupy()" class="grupy-toggle-btn lang-pl">🗺 Grupy górskie</button>
       <button id="grupy-btn-en" onclick="toggleGrupy()" class="grupy-toggle-btn lang-en" style="display:none">🗺 Mountain groups</button>
+      <button id="pasma-btn" onclick="togglePasma()" class="grupy-toggle-btn lang-pl">🏔 Pasma</button>
+      <button id="pasma-btn-en" onclick="togglePasma()" class="grupy-toggle-btn lang-en" style="display:none">🏔 Ranges</button>
     </div>
     <div id="grupy-legend" class="grupy-legend-row" style="display:none">
       <div class="ml-item"><div class="ml-line" style="background:#5F20B0"></div><span>Sudety Łużyckie</span></div>
@@ -1686,7 +1684,7 @@ const GRUPY_COLORS={1:{name:'Sudety Łużyckie',fill:'#8338EC',stroke:'#5F20B0'}
 function stripHoles(f){if(!f||!f.geometry)return f;if(f.geometry.type==='Polygon')f.geometry.coordinates=[f.geometry.coordinates[0]];else if(f.geometry.type==='MultiPolygon')f.geometry.coordinates=f.geometry.coordinates.map(p=>[p[0]]);return f;}
 function computeGrupy(){const gu={};for(let g=1;g<=8;g++){const mb=PASMA_GEOJSON.features.filter(f=>PASMO_GROUP[f.properties.name]===g);if(!mb.length)continue;let u=JSON.parse(JSON.stringify(mb[0]));for(let i=1;i<mb.length;i++){let member=JSON.parse(JSON.stringify(mb[i]));try{const buf=turf.buffer(member,0.01,{units:'kilometers'});if(buf){buf.properties=member.properties;member=buf;}}catch(e){}try{u=turf.union(u,member);}catch(e){}}u.properties={name:GRUPY_COLORS[g].name,id:g};gu[g]=stripHoles(u);}const res=[];for(let g=1;g<=8;g++){if(gu[g])res.push(gu[g]);}return{type:'FeatureCollection',features:res};}
 GRUPY_GEOJSON=computeGrupy();
-PASMA_GEOJSON.features.forEach(f=>{if(f.geometry.type==='Polygon'){f.geometry.coordinates=[f.geometry.coordinates[0]];}else if(f.geometry.type==='MultiPolygon'){f.geometry.coordinates=f.geometry.coordinates.map(p=>[p[0]]);}});const pasmaLayer=L.geoJSON(PASMA_GEOJSON,{style:f=>{const n=f.properties.name;const g=PASMO_GROUP[n]||0;const lv=PASMO_LEVEL[n]||'m';const hue=GRUPY_HUE[g]||0;const [sf,lf]=lv==='h'?[62,36]:lv==='m'?[38,56]:[28,68];return{fillColor:`hsl(${hue},${sf}%,${lf}%)`,fillOpacity:lv==='h'?0.28:lv==='m'?0.18:0.16,color:`hsl(${hue},${sf+12}%,${lf-14}%)`,weight:lv==='h'?1.5:1.2,opacity:0.7};},onEachFeature:(f,l)=>{l.bindTooltip(f.properties.name,{sticky:true,className:'pasmo-tooltip',direction:'top',offset:[0,-4]});l.on('mouseover',function(){this.setStyle({fillOpacity:0.28,weight:2,opacity:0.85});});l.on('mouseout',function(){pasmaLayer.resetStyle(this);});}}).addTo(map);
+PASMA_GEOJSON.features.forEach(f=>{if(f.geometry.type==='Polygon'){f.geometry.coordinates=[f.geometry.coordinates[0]];}else if(f.geometry.type==='MultiPolygon'){f.geometry.coordinates=f.geometry.coordinates.map(p=>[p[0]]);}});const pasmaLayer=L.geoJSON(PASMA_GEOJSON,{style:f=>{const n=f.properties.name;const g=PASMO_GROUP[n]||0;const lv=PASMO_LEVEL[n]||'m';const hue=GRUPY_HUE[g]||0;const [sf,lf]=lv==='h'?[62,36]:lv==='m'?[38,56]:[28,68];return{fillColor:`hsl(${hue},${sf}%,${lf}%)`,fillOpacity:lv==='h'?0.28:lv==='m'?0.18:0.16,color:`hsl(${hue},${sf+12}%,${lf-14}%)`,weight:lv==='h'?1.5:1.2,opacity:0.7};},onEachFeature:(f,l)=>{l.bindTooltip(f.properties.name,{sticky:true,className:'pasmo-tooltip',direction:'top',offset:[0,-4]});l.on('mouseover',function(){this.setStyle({fillOpacity:0.28,weight:2,opacity:0.85});});l.on('mouseout',function(){pasmaLayer.resetStyle(this);});}});
 let grupyVisible=false;
 const grupyLayer=L.geoJSON(GRUPY_GEOJSON,{style:f=>{const c=GRUPY_COLORS[f.properties.id]||{fill:'#888',stroke:'#555'};return{fillColor:c.fill,fillOpacity:0.07,color:c.stroke,weight:2.5,opacity:0.85,dashArray:'8,5'};},onEachFeature:(f,l)=>{l.bindTooltip('<b>'+f.properties.name+'</b>',{sticky:true,className:'pasmo-tooltip',direction:'top',offset:[0,-4]});l.on('mouseover',function(){this.setStyle({fillOpacity:0.18,weight:3.5});});l.on('mouseout',function(){grupyLayer.resetStyle(this);});}});
 window.toggleGrupy=function(){grupyVisible=!grupyVisible;if(grupyVisible){grupyLayer.addTo(map);document.getElementById('grupy-btn').classList.add('active');}else{map.removeLayer(grupyLayer);document.getElementById('grupy-btn').classList.remove('active');}document.getElementById('grupy-legend').style.display=grupyVisible?'flex':'none';};
@@ -1694,7 +1692,8 @@ let sudetyOutline=null; /* computed lazily on first toggle */
 const sudetyLayer=L.geoJSON(sudetyOutline,{style:{fillColor:'transparent',fillOpacity:0,color:'#C0392B',weight:2.5,opacity:0.9,dashArray:'10,6'}});
 let sudetyVisible=false;
 window.toggleSudety=function(){if(!sudetyOutline){let u=GRUPY_GEOJSON.features[0];for(let i=1;i<GRUPY_GEOJSON.features.length;i++){try{u=turf.union(u,GRUPY_GEOJSON.features[i]);}catch(e){}}sudetyOutline=stripHoles(u);sudetyLayer.addData(sudetyOutline);}sudetyVisible=!sudetyVisible;if(sudetyVisible){sudetyLayer.addTo(map);document.getElementById('sudety-btn').classList.add('active');document.getElementById('sudety-btn-en').classList.add('active');}else{map.removeLayer(sudetyLayer);document.getElementById('sudety-btn').classList.remove('active');document.getElementById('sudety-btn-en').classList.remove('active');}};
-let pasmaVisible=true;
+let pasmaVisible=false;
+toggleSudety();
 window.togglePasma=function(){pasmaVisible=!pasmaVisible;if(pasmaVisible){pasmaLayer.addTo(map);document.getElementById('pasma-btn').classList.add('active');document.getElementById('pasma-btn-en').classList.add('active');}else{map.removeLayer(pasmaLayer);document.getElementById('pasma-btn').classList.remove('active');document.getElementById('pasma-btn-en').classList.remove('active');};};
 const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');});},{threshold:0.1});
 document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
