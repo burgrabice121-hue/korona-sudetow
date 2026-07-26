@@ -623,6 +623,13 @@ footer {
   .hero-inner { padding: 3rem 1.2rem 2.5rem; }
   #about, #map-section, #peaks-section { padding-left: 1.2rem; padding-right: 1.2rem; }
 }
+@media (max-width: 600px) {
+  #the-map { height: auto; flex-direction: column; }
+  #map { height: 320px; min-height: 320px; }
+  #sidebar { width: 100%; border-left: none; border-top: 1px solid #30363D; max-height: 320px; }
+  .sb-tabs { justify-content: space-around; }
+  .map-legend { flex-wrap: wrap; gap: 4px; }
+}
 
 /* ══════════════════════════════════════════════
    FADE-IN
@@ -657,7 +664,7 @@ footer {
 .btn-reset:hover{border-color:#EF4444;color:#EF4444}
 #game-wrap{display:flex;height:580px;border:1px solid var(--fog);border-radius:6px;overflow:hidden;box-shadow:0 8px 40px rgba(44,42,37,.18)}
 #map{flex:1}
-#sidebar{width:300px;background:#161B22;border-left:1px solid #30363D;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+#sidebar{width:220px;background:#161B22;border-left:1px solid #30363D;display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .sb-tabs{display:flex;border-bottom:1px solid #30363D;flex-shrink:0}
 .sb-tab{flex:1;padding:10px 0;text-align:center;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;color:#8B949E;border-bottom:2px solid transparent;transition:all .15s}
 .sb-tab.active{color:#D4A017;border-bottom-color:#D4A017}
@@ -677,8 +684,7 @@ footer {
 .pr-info{flex:1;min-width:0}
 .pr-name{font-family:'Georgia',serif;font-size:11px;font-weight:600;color:#E6EDF3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pr-sub{font-size:10px;color:#8B949E;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pr-alt{font-family:'Courier New',monospace;font-size:10px;color:#4A5568;text-align:right;flex-shrink:0}
-.pr-alt span{display:block;font-size:8px;opacity:.6}
+.pr-elev{font-family:'Courier New',monospace;font-size:9px;color:#4A5568;margin-top:2px}
 .sb-footer{border-top:1px solid #30363D;padding:10px 12px;flex-shrink:0;background:#1C2330}
 .ach-title{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#8B949E;margin-bottom:6px}
 .ach-grid{display:flex;gap:5px;flex-wrap:wrap}
@@ -1207,8 +1213,8 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
       <div id="sidebar">
         <div class="sb-tabs">
           <div class="sb-tab active" id="tab-ks"  onclick="switchTab('ks')"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg> Korona</div>
-          <div class="sb-tab locked"   id="tab-wks" onclick="switchTab('wks')"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg> Wielka</div>
-          <div class="sb-tab dk-tab locked" id="tab-dks" onclick="switchTab('dks')"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg> Diamentowa</div>
+          <div class="sb-tab"          id="tab-wks" onclick="switchTab('wks')"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg> Wielka</div>
+          <div class="sb-tab dk-tab"        id="tab-dks" onclick="switchTab('dks')"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg> Diamentowa</div>
         </div>
         <div class="sb-list" id="list-ks"></div>
         <div class="sb-list" id="list-wks" style="display:none"></div>
@@ -1453,13 +1459,9 @@ function makeIcon(p, type, conquered){
 function buildPopup(p, type, idx){
   const arr = type==='ks'?STATE.ks:type==='wks'?STATE.wks:STATE.dks;
   const conq = arr.includes(idx);
-  const locked = (type==='wks' && !STATE.unlocked_wks) || (type==='dks' && !STATE.unlocked_dks);
   const iz = p.izol!==undefined?(p.izol%1===0?p.izol:p.izol.toFixed(1)):null;
   let btnHtml;
-  if(locked){
-    const prev = type==='wks'?'Koronę Sudetów':'Wielką Koronę';
-    btnHtml=`<button class="pop-btn locked-btn">🔒 Ukończ ${prev}</button>`;
-  } else if(conq){
+  if(conq){
     btnHtml=`<button class="pop-btn unconquer" onclick="togglePeak('${type}',${idx})">✗ Usuń zdobycie</button>`;
   } else {
     btnHtml=`<button class="pop-btn conquer" onclick="togglePeak('${type}',${idx})">⛰ Zdobyty!</button>`;
@@ -1502,7 +1504,6 @@ function placeMarkers(){
       .bindPopup(buildPopup(p,'wks',i),{maxWidth:250,minWidth:220})
       .addTo(map);
     m.on('popupopen',()=>{openPopupIdx=i;openPopupType='wks';});
-    if(!STATE.unlocked_wks) m.setOpacity(0.35);
     wksMarkers.push(m);
   });
 
@@ -1512,7 +1513,6 @@ function placeMarkers(){
       .bindPopup(buildPopup(p,'dks',i),{maxWidth:250,minWidth:220})
       .addTo(map);
     m.on('popupopen',()=>{openPopupIdx=i;openPopupType='dks';});
-    if(!STATE.unlocked_dks) m.setOpacity(0.25);
     dksMarkers.push(m);
   });
 }
@@ -1526,8 +1526,6 @@ window.togglePeak = function(type, idx){
     showAuthOverlay(function(){ window.togglePeak(type, idx); });
     return;
   }
-  if((type==='wks' && !STATE.unlocked_wks)||(type==='dks' && !STATE.unlocked_dks)) return;
-
   const arr = STATE[type];
   const pos = arr.indexOf(idx);
   if(pos===-1) arr.push(idx);
@@ -1590,8 +1588,8 @@ function updateUI(){
   document.getElementById('dks-prog-block').style.opacity = STATE.unlocked_dks ? '1' : '0.35';
 
   renderList('ks');
-  if(STATE.unlocked_wks) renderList('wks');
-  if(STATE.unlocked_dks) renderList('dks');
+  renderList('wks');
+  renderList('dks');
 }
 
 function unlockLevel(type){
@@ -1622,8 +1620,6 @@ window.closeUnlock = function(tab){
    TABS
 ═══════════════════════════════════════════ */
 window.switchTab = function(tab){
-  if(tab==='wks' && !STATE.unlocked_wks) return;
-  if(tab==='dks' && !STATE.unlocked_dks) return;
   currentTab = tab;
   ['ks','wks','dks'].forEach(t=>{
     document.getElementById('tab-'+t).classList.toggle('active', tab===t);
@@ -1638,19 +1634,6 @@ function renderList(type){
   const el = document.getElementById('list-'+type);
   const data = type==='ks'?KS:type==='wks'?WKS:DKS;
   const stateArr = STATE[type];
-  const locked = (type==='wks'&&!STATE.unlocked_wks)||(type==='dks'&&!STATE.unlocked_dks);
-
-  if(locked){
-    const prev = type==='wks'?{n:'Koronę Sudetów',cnt:8,done:STATE.ks.length}:{n:'Wielką Koronę',cnt:25,done:STATE.wks.length};
-    el.innerHTML = `<div class="dk-locked-msg">
-      <div class="lm-icon">🔒</div>
-      <div class="lm-title">${type==='wks'?'Wielka Korona':'Diamentowa Korona'} zablokowana</div>
-      <div class="lm-sub">Zdobądź wszystkie ${prev.cnt} szczytów ${prev.n}, aby odblokować ten poziom.</div>
-      <div class="lm-prog">${prev.done} / ${prev.cnt}</div>
-    </div>`;
-    return;
-  }
-
   const col = type==='ks'?COLOR_KS:type==='dks'?COLOR_DKS:null;
   el.innerHTML = data.map((p,i)=>{
     const conq = stateArr.includes(i);
@@ -1661,8 +1644,8 @@ function renderList(type){
       <div class="pr-info">
         <div class="pr-name">${p.name}</div>
         <div class="pr-sub">${p.pasmo}</div>
+        <div class="pr-elev">${p.alt} m n.p.m.</div>
       </div>
-      <div class="pr-alt">${p.alt}<span>m n.p.m.</span></div>
     </div>`;
   }).join('');
 }
@@ -1699,7 +1682,7 @@ updateUI();
 renderList('ks');
 renderList('wks');
 renderList('dks');
-if(STATE.unlocked_wks) document.getElementById('tab-wks').classList.remove('locked');
+
 if(STATE.unlocked_dks) document.getElementById('tab-dks').classList.remove('locked');
 // Naprawia renderowanie kafelków gdy mapa była ukryta podczas inicjalizacji
 setTimeout(()=>{ map.invalidateSize(); }, 300);
@@ -1858,7 +1841,7 @@ async function loadUserState(user){
       saveState(STATE);
       placeMarkers();
       updateUI();
-      if(STATE.unlocked_wks) document.getElementById('tab-wks').classList.remove('locked');
+      
       if(STATE.unlocked_dks) document.getElementById('tab-dks').classList.remove('locked');
     }
   } catch(e){ console.warn('Odczyt z Firebase nieudany', e); }
