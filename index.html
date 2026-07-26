@@ -416,7 +416,7 @@ section { position: relative; }
 .ml-dot { width: 11px; height: 11px; border-radius: 50%; }
 .ml-line { width: 22px; height: 3px; border-radius: 2px; flex-shrink: 0; }
 .grupy-toggle-btn { background: none; border: 1.5px solid var(--bark); color: var(--bark); font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
-.grupy-toggle-btn:hover { background: var(--bark); color: var(--snow); }
+@media (hover: hover) { .grupy-toggle-btn:hover { background: var(--bark); color: var(--snow); } }
 .grupy-toggle-btn.active { background: var(--bark); color: var(--snow); }
 .grupy-legend-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.6rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--bark); }
 .grupy-desc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
@@ -570,7 +570,7 @@ footer {
 .footer-copy {
   margin-top: 2rem;
   font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
-  color: var(--bark); text-transform: uppercase;
+  color: var(--fog); text-transform: uppercase;
 }
 
 /* ══════════════════════════════════════════════
@@ -1266,7 +1266,7 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
     <div class="footer-copy" style="margin-top:1.5rem;line-height:2">
       Autor · Author: <strong style="color:var(--cream)">Wojciech Rogala</strong> · <a href="mailto:rogalaw@wp.pl" style="color:var(--clay)">rogalaw@wp.pl</a><br>
       © 2025 Wojciech Rogala · Wielka Korona Sudetów · <span style="color:var(--clay)">v1.0</span><br>
-      <span style="font-size:9px;opacity:.7">Wszelkie prawa zastrzeżone. Kopiowanie, reprodukcja lub wykorzystywanie treści bez pisemnej zgody autora jest zabronione. · All rights reserved. Copying, reproduction or use of content without the author's written consent is prohibited.</span>
+      <span style="font-size:9px">Wszelkie prawa zastrzeżone. Kopiowanie, reprodukcja lub wykorzystywanie treści bez pisemnej zgody autora jest zabronione. · All rights reserved. Copying, reproduction or use of content without the author's written consent is prohibited.</span>
     </div>
   </div>
 </footer>
