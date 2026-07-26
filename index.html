@@ -624,7 +624,7 @@ footer {
   #about, #map-section, #peaks-section { padding-left: 1.2rem; padding-right: 1.2rem; }
 }
 @media (max-width: 600px) {
-  #the-map { height: auto; flex-direction: column; }
+  #game-wrap { height: auto; flex-direction: column; }
   #map { height: 320px; min-height: 320px; }
   #sidebar { width: 100%; border-left: none; border-top: 1px solid #30363D; max-height: 320px; }
   .sb-tabs { justify-content: space-around; }
@@ -635,6 +635,8 @@ footer {
   .prog-block { min-width: 0; flex: 1 1 28%; }
   #user-bar { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 6px; order: 10; }
   .btn-reset { order: 11; margin-left: 0; }
+  #map-section { padding: 1.5rem 1rem; }
+  .map-header { margin-bottom: 1rem; }
 }
 
 /* ══════════════════════════════════════════════
@@ -1230,7 +1232,6 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
     </div>
     <div class="map-legend fade-in">
 
-      <div class="ml-item" style="margin-left:auto"><span style="font-family:var(--mono);font-size:10px;color:var(--bark)" class="lang-pl">✓ zielony = szczyt zdobyty</span><span style="font-family:var(--mono);font-size:10px;color:var(--bark);display:none" class="lang-en">✓ green = summit conquered</span></div>
       <button id="sudety-btn" onclick="toggleSudety()" class="grupy-toggle-btn lang-pl">🔲 Granica Sudetów</button>
       <button id="sudety-btn-en" onclick="toggleSudety()" class="grupy-toggle-btn lang-en" style="display:none">🔲 Sudetes boundary</button>
       <button id="grupy-btn" onclick="toggleGrupy()" class="grupy-toggle-btn lang-pl">🗺 Grupy górskie</button>
