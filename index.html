@@ -799,6 +799,7 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 .prog-label svg.ci,.ach svg.ci{height:1.1em;width:auto;margin-right:.25em}
 .sb-tab svg.ci{height:1.4em;width:auto;margin:0}
 .unlock-icon svg.ci{height:2.4em;width:auto}
+.grupy-toggle-btn svg.ci{height:1.2em;width:auto;margin-right:.3em;vertical-align:-3px}
 </style>
 
 <!-- Firebase SDK -->
@@ -1186,8 +1187,8 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
     <div class="map-header fade-in">
       <div class="section-label lang-pl">Mapa interaktywna · Poznawaj · Eksploruj · Zdobywaj</div>
       <div class="section-label lang-en" style="display:none">Interactive map · Conquer the summits</div>
-      <h2 class="section-title lang-pl">8 + 25 + 25 szczytów <em>do zdobycia</em></h2>
-      <h2 class="section-title lang-en" style="display:none">8 + 25 + 25 summits <em>to conquer</em></h2>
+      <h2 class="section-title lang-pl">Sudety i Korona Sudetów <em>- interaktywna mapa</em></h2>
+      <h2 class="section-title lang-en" style="display:none">The Sudetes and the Crown of the Sudetes <em>- interactive map</em></h2>
     </div>
     <div id="topbar">
       <div class="tb-title">Korona <span style="color:#E6EDF3;font-weight:400">Sudetów</span></div>
@@ -1224,6 +1225,12 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
     </div>
     <div class="map-legend fade-in">
 
+      <button id="peaks-ks-btn" onclick="togglePeaksLayer('ks')" class="grupy-toggle-btn active lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg>Korona</button>
+      <button id="peaks-ks-btn-en" onclick="togglePeaksLayer('ks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg>Crown</button>
+      <button id="peaks-wks-btn" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn active lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Wielka Korona</button>
+      <button id="peaks-wks-btn-en" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Great Crown</button>
+      <button id="peaks-dks-btn" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn active lang-pl"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamentowa</button>
+      <button id="peaks-dks-btn-en" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamond</button>
       <button id="sudety-btn" onclick="toggleSudety()" class="grupy-toggle-btn lang-pl">🔲 Granica Sudetów</button>
       <button id="sudety-btn-en" onclick="toggleSudety()" class="grupy-toggle-btn lang-en" style="display:none">🔲 Sudetes boundary</button>
       <button id="grupy-btn" onclick="toggleGrupy()" class="grupy-toggle-btn lang-pl">🗺 Grupy górskie</button>
@@ -1248,7 +1255,7 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 <footer>
   <div class="footer-inner">
     <div class="footer-title">Wielka Korona Sudetów</div>
-    <div class="footer-sub">Korona · Wielka Korona · Diamentowa Korona Sudetów · 8 + 25 + 25 szczytów · PL / CZ / DE</div>
+    <div class="footer-sub">Korona · Wielka Korona · Diamentowa Korona Sudetów · PL / CZ / DE</div>
     <div class="footer-sources lang-pl">
       Wybitność i izolacja: własne pomiary autora · Mapa: © <a href="https://www.openstreetmap.org">OpenStreetMap</a> contributors · Leaflet
     </div>
@@ -1287,7 +1294,7 @@ function toggleMore(btn){
 function shareApp(){
   const url = 'https://viasudetica.eu/';
   const title = 'Wielka Korona Sudetów';
-  const text = 'cześć, zapraszam cię do odkrywania Sudetów. Poznaj najwybitniejsze szczyty Sudetów po stronie polskiej, czeskiej i niemieckiej i zdobądź trzy sudeckie korony.\nhttps://viasudetica.eu/';
+  const text = 'cześć, zapraszam cię do odkrywania Sudetów. Poznaj najwybitniejsze szczyty Sudetów po stronie polskiej, czeskiej i niemieckiej i zdobądź trzy sudeckie korony.';
   if(navigator.share){
     navigator.share({title, text, url}).catch(()=>{});
   } else {
@@ -1395,6 +1402,10 @@ let STATE = loadState();
 let currentTab = 'ks';
 let ksMarkers = [], wksMarkers = [], dksMarkers = [];
 let openPopupIdx = null, openPopupType = null;
+const ksLayer = L.layerGroup();
+const wksLayer = L.layerGroup();
+const dksLayer = L.layerGroup();
+const peaksVisible = {ks:true, wks:true, dks:true};
 
 /* ═══════════════════════════════════════════
    MAP
@@ -1473,16 +1484,14 @@ function buildPopup(p, type, idx){
 
 
 function placeMarkers(){
-  ksMarkers.forEach(m=>map.removeLayer(m));
-  wksMarkers.forEach(m=>map.removeLayer(m));
-  dksMarkers.forEach(m=>map.removeLayer(m));
+  ksLayer.clearLayers(); wksLayer.clearLayers(); dksLayer.clearLayers();
   ksMarkers=[]; wksMarkers=[]; dksMarkers=[];
 
   KS.forEach((p,i)=>{
     const conq = STATE.ks.includes(i);
     const m = L.marker([p.lat,p.lng],{icon:makeIcon(p,'ks',conq),zIndexOffset:200})
       .bindPopup(buildPopup(p,'ks',i),{maxWidth:250,minWidth:220})
-      .addTo(map);
+      .addTo(ksLayer);
     m.on('popupopen',()=>{openPopupIdx=i;openPopupType='ks';});
     ksMarkers.push(m);
   });
@@ -1491,7 +1500,7 @@ function placeMarkers(){
     const conq = STATE.wks.includes(i);
     const m = L.marker([p.lat,p.lng],{icon:makeIcon(p,'wks',conq),zIndexOffset:100})
       .bindPopup(buildPopup(p,'wks',i),{maxWidth:250,minWidth:220})
-      .addTo(map);
+      .addTo(wksLayer);
     m.on('popupopen',()=>{openPopupIdx=i;openPopupType='wks';});
     wksMarkers.push(m);
   });
@@ -1500,11 +1509,25 @@ function placeMarkers(){
     const conq = STATE.dks.includes(i);
     const m = L.marker([p.lat,p.lng],{icon:makeIcon(p,'dks',conq)})
       .bindPopup(buildPopup(p,'dks',i),{maxWidth:250,minWidth:220})
-      .addTo(map);
+      .addTo(dksLayer);
     m.on('popupopen',()=>{openPopupIdx=i;openPopupType='dks';});
     dksMarkers.push(m);
   });
+
+  if(peaksVisible.ks)  ksLayer.addTo(map);
+  if(peaksVisible.wks) wksLayer.addTo(map);
+  if(peaksVisible.dks) dksLayer.addTo(map);
 }
+
+window.togglePeaksLayer = function(type){
+  const layer = type==='ks'?ksLayer:type==='wks'?wksLayer:dksLayer;
+  peaksVisible[type] = !peaksVisible[type];
+  if(peaksVisible[type]) layer.addTo(map); else map.removeLayer(layer);
+  const btn = document.getElementById('peaks-'+type+'-btn');
+  const btnEn = document.getElementById('peaks-'+type+'-btn-en');
+  if(btn) btn.classList.toggle('active', peaksVisible[type]);
+  if(btnEn) btnEn.classList.toggle('active', peaksVisible[type]);
+};
 
 /* ═══════════════════════════════════════════
    TOGGLE PEAK
@@ -1640,6 +1663,7 @@ function renderList(type){
 }
 
 window.focusPeak = function(type, idx){
+  if(!peaksVisible[type]) window.togglePeaksLayer(type);
   const data = type==='ks'?KS:type==='wks'?WKS:DKS;
   const markers = type==='ks'?ksMarkers:type==='wks'?wksMarkers:dksMarkers;
   const p = data[idx];
