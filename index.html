@@ -773,26 +773,26 @@ footer {
 .rank-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;width:680px;max-width:95vw;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.5)}
 .rank-hdr{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .rank-hdr h2{font-family:'Georgia',serif;font-size:1.2rem;font-weight:700;color:var(--gold)}
-.rank-close{background:none;border:none;color:var(--fog);font-size:1.4rem;cursor:pointer;line-height:1;padding:0 4px}
+.rank-close{background:none;border:none;color:#C9D1D9;font-size:1.4rem;cursor:pointer;line-height:1;padding:0 4px}
 .rank-close:hover{color:var(--cream)}
 .rank-body{overflow-y:auto;flex:1;padding:1rem 1.5rem}
 .rank-tabs{display:flex;gap:8px;margin-bottom:1rem}
-.rank-tab{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--fog);cursor:pointer;transition:all .15s}
+.rank-tab{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:#C9D1D9;cursor:pointer;transition:all .15s}
 .rank-tab.on{background:var(--gold);border-color:var(--gold);color:var(--ink)}
 .rank-tab.dk.on{background:#7C3AED;border-color:#7C3AED;color:#fff}
 .rank-table{width:100%;border-collapse:collapse;font-size:13px}
-.rank-table th{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--fog);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left}
+.rank-table th{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:#9AA4B2;padding:6px 10px;border-bottom:1px solid var(--border);text-align:left}
 .rank-table td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.04);color:var(--cream);vertical-align:top}
 .rank-table tr:hover td{background:rgba(255,255,255,.03)}
 .rank-medal{font-size:1.1rem}
 .rank-name{font-weight:600;color:#E6EDF3}
-.rank-peaks{font-size:11px;color:var(--fog);margin-top:3px;line-height:1.5}
-.rank-date{font-family:'Courier New',monospace;font-size:10px;color:var(--fog)}
+.rank-peaks{font-size:11px;color:#9AA4B2;margin-top:3px;line-height:1.5}
+.rank-date{font-family:'Courier New',monospace;font-size:10px;color:#9AA4B2}
 .rank-crown{font-size:11px;padding:2px 8px;border-radius:10px;margin-left:6px}
 .rank-crown.wk{background:rgba(212,160,23,.15);color:var(--gold);border:1px solid rgba(212,160,23,.3)}
 .rank-crown.dk{background:rgba(124,58,237,.15);color:#A78BFA;border:1px solid rgba(124,58,237,.3)}
-.rank-empty{text-align:center;padding:2rem;color:var(--fog);font-style:italic}
-.rank-loading{text-align:center;padding:2rem;color:var(--fog)}
+.rank-empty{text-align:center;padding:2rem;color:#C9D1D9;font-style:italic}
+.rank-loading{text-align:center;padding:2rem;color:#C9D1D9}
 
 svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 .zone-name svg.ci{height:2em;width:auto;margin-right:.35em}
@@ -1892,7 +1892,7 @@ async function loadRanking(){
     let rows = [];
     snap.forEach(d=>{
       const u = d.data();
-      if(_rankTab==='wk'  && (u.ks||[]).length<8)  return;
+      if(_rankTab==='wk'  && (u.wks||[]).length<25) return;
       if(_rankTab==='dk'  && (u.dks||[]).length<25) return;
       rows.push(u);
     });
