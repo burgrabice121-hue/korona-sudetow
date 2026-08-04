@@ -2043,7 +2043,7 @@ const DKS = [
   { name:"Špičák",            cz:"Špičák",         alt:841, prom:121, izol:2.9,  pasmo:"Pogórze Orlickie",                 kraj:"CZ",    lat:50.3106, lng:16.3276, note:"Najwyższy szczyt Pogórza Orlickiego" },
   { name:"Włodzicka Góra",    cz:"—",              alt:755, prom:110, izol:5.4,  pasmo:"Obniżenie Nowej Rudy",             kraj:"PL",    lat:50.6260, lng:16.4332, note:"Dominanta Obniżenia Nowej Rudy" },
   { name:"Zadzierna",         cz:"—",              alt:724, prom:152, izol:2.7,  pasmo:"Kotlina Kamiennogórska",           kraj:"PL",    lat:50.7266, lng:15.9774, note:"Najwyższy szczyt Kotliny Kamiennogórskiej" },
-  { name:"Lázek",             cz:"Lázek",          alt:714, prom:97,  izol:6.6,  pasmo:"Zábřežská vrchovina",              kraj:"CZ",    lat:49.9252, lng:16.7056, note:"Najwyższy szczyt Zábřežskiej vrchoviny" },
+  { name:"Lázek",             cz:"Lázek",          alt:714, prom:97,  izol:6.6,  pasmo:"Zábřežská vrchovina",              kraj:"CZ",    lat:49.9256439, lng:16.7053572, note:"Najwyższy szczyt Zábřežskiej vrchoviny" },
   { name:"Baba",              cz:"Baba",           alt:673, prom:33,  izol:2.7,  pasmo:"Podgórze Karkonoskie",             kraj:"CZ",    lat:50.6120, lng:15.9060, note:"Najwyższy szczyt Podgórza Karkonoskiego" },
   { name:"Nowa Kopa",         cz:"Nová Kopa",      alt:533, prom:93,  izol:4.9,  pasmo:"Obniżenie Ścinawki",               kraj:"PL",    lat:50.5404, lng:16.4462, note:"Najwyższy szczyt Obniżenia Ścinawki" },
   { name:"Pasterskie Skały",  cz:"—",              alt:607, prom:45,  izol:2,    pasmo:"Rów Górnej Nysy",                  kraj:"PL",    lat:50.2758, lng:16.7457, note:"Najwyższy szczyt Rowu Górnej Nysy" },
@@ -2157,6 +2157,27 @@ function buildPopup(p, type, idx){
 }
 
 
+/* Leaflet's built-in autoPan czasem nie zdąży przesunąć mapy zanim popup
+   zostanie zmierzony (wyścig z layoutem) — domiar i korekta na pewno. */
+function ensurePopupVisible(marker){
+  setTimeout(()=>{
+    if(!marker.isPopupOpen()) return;
+    const popup = marker.getPopup();
+    const popupEl = popup && popup.getElement();
+    const mapEl = document.getElementById('map');
+    if(!popupEl || !mapEl) return;
+    const pr = popupEl.getBoundingClientRect();
+    const mr = mapEl.getBoundingClientRect();
+    const margin = 10;
+    const above = (mr.top + margin) - pr.top;
+    const below = pr.bottom - (mr.bottom - margin);
+    let dy = 0;
+    if(above > 0) dy = -above;
+    else if(below > 0) dy = below;
+    if(dy) map.panBy([0, dy], {animate:false});
+  }, 30);
+}
+
 function placeMarkers(){
   ksLayer.clearLayers(); wksLayer.clearLayers(); dksLayer.clearLayers();
   ksMarkers=[]; wksMarkers=[]; dksMarkers=[];
@@ -2166,7 +2187,7 @@ function placeMarkers(){
     const m = L.marker([p.lat,p.lng],{icon:makeIcon(p,'ks',conq),zIndexOffset:200})
       .bindPopup(buildPopup(p,'ks',i),{maxWidth:250,minWidth:220})
       .addTo(ksLayer);
-    m.on('popupopen',()=>{openPopupIdx=i;openPopupType='ks';});
+    m.on('popupopen',()=>{openPopupIdx=i;openPopupType='ks';ensurePopupVisible(m);});
     ksMarkers.push(m);
   });
 
@@ -2175,7 +2196,7 @@ function placeMarkers(){
     const m = L.marker([p.lat,p.lng],{icon:makeIcon(p,'wks',conq),zIndexOffset:100})
       .bindPopup(buildPopup(p,'wks',i),{maxWidth:250,minWidth:220})
       .addTo(wksLayer);
-    m.on('popupopen',()=>{openPopupIdx=i;openPopupType='wks';});
+    m.on('popupopen',()=>{openPopupIdx=i;openPopupType='wks';ensurePopupVisible(m);});
     wksMarkers.push(m);
   });
 
@@ -2184,7 +2205,7 @@ function placeMarkers(){
     const m = L.marker([p.lat,p.lng],{icon:makeIcon(p,'dks',conq)})
       .bindPopup(buildPopup(p,'dks',i),{maxWidth:250,minWidth:220})
       .addTo(dksLayer);
-    m.on('popupopen',()=>{openPopupIdx=i;openPopupType='dks';});
+    m.on('popupopen',()=>{openPopupIdx=i;openPopupType='dks';ensurePopupVisible(m);});
     dksMarkers.push(m);
   });
 
