@@ -3,7 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Wielka Korona Sudetów · The Great Crown of the Sudetes</title>
+<title>Korona Sudetów · Wielka Korona Sudetów · Diamentowa Korona Sudetów — mapa szczytów</title>
+<meta name="description" content="Korona Sudetów, Wielka Korona Sudetów i Diamentowa Korona Sudetów — interaktywna mapa 58 najwybitniejszych szczytów Sudetów w Polsce, Czechach i Niemczech. Odkrywaj, zdobywaj, sprawdzaj postępy.">
+<meta name="keywords" content="Sudety, Korona Sudetów, Wielka Korona Sudetów, Diamentowa Korona Sudetów, Korona Sudetów Polskich, Korona Gór Polski, KGP, SKPS, szczyty Sudetów, góry Sudety, Karkonosze, Śnieżka, korony górskie Polski">
+<meta name="robots" content="index, follow">
+<meta name="author" content="Wojciech Rogala">
+<link rel="canonical" href="https://viasudetica.eu/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Wielka Korona Sudetów">
+<meta property="og:title" content="Korona Sudetów · Wielka Korona Sudetów · Diamentowa Korona Sudetów">
+<meta property="og:description" content="Interaktywna mapa 58 najwybitniejszych szczytów Sudetów — Korona, Wielka Korona i Diamentowa Korona Sudetów w Polsce, Czechach i Niemczech.">
+<meta property="og:url" content="https://viasudetica.eu/">
+<meta property="og:image" content="https://viasudetica.eu/hero.jpg">
+<meta property="og:locale" content="pl_PL">
+<meta property="og:locale:alternate" content="en_US">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Korona Sudetów · Wielka Korona Sudetów · Diamentowa Korona Sudetów">
+<meta name="twitter:description" content="Interaktywna mapa 58 najwybitniejszych szczytów Sudetów — Korona, Wielka Korona i Diamentowa Korona Sudetów w Polsce, Czechach i Niemczech.">
+<meta name="twitter:image" content="https://viasudetica.eu/hero.jpg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Wielka Korona Sudetów",
+  "alternateName": ["Korona Sudetów", "Diamentowa Korona Sudetów", "The Great Crown of the Sudetes"],
+  "url": "https://viasudetica.eu/",
+  "description": "Interaktywna mapa i system zdobywania Korony Sudetów, Wielkiej Korony Sudetów i Diamentowej Korony Sudetów — 58 najwybitniejszych szczytów Sudetów w Polsce, Czechach i Niemczech.",
+  "inLanguage": ["pl", "en"],
+  "about": {
+    "@type": "Place",
+    "name": "Sudety",
+    "alternateName": "Sudetes"
+  }
+}
+</script>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
@@ -534,6 +571,9 @@ tr.hidden { display: none; }
 .kpl { background: rgba(160,82,45,0.08); color: #7A3010; border: 1px solid rgba(160,82,45,0.18); }
 .kcz { background: rgba(60,50,130,0.08); color: #2A235A; border: 1px solid rgba(60,50,130,0.18); }
 .kde { background: rgba(80,80,70,0.08); color: #3A3A30; border: 1px solid rgba(80,80,70,0.18); }
+.lvl-ks  { background: rgba(212,160,23,0.12); color: #8A6608; border: 1px solid rgba(212,160,23,0.3); }
+.lvl-wks { background: rgba(61,122,191,0.12); color: #1E4E7A; border: 1px solid rgba(61,122,191,0.3); }
+.lvl-dks { background: rgba(124,58,237,0.12); color: #5B21B6; border: 1px solid rgba(124,58,237,0.3); }
 
 .table-foot {
   margin-top: 1rem;
@@ -541,6 +581,9 @@ tr.hidden { display: none; }
   color: var(--bark); opacity: 0.7;
   text-align: right;
 }
+th.no-sort { cursor: default; }
+th.no-sort:hover { color: var(--fog); }
+tbody tr { cursor: pointer; }
 
 /* ══════════════════════════════════════════════
    FOOTER
@@ -905,8 +948,14 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 <nav>
   <div class="nav-logo">Wielka Korona <span>Sudetów</span></div>
   <div class="nav-links">
-    <a href="#about" data-pl="O projekcie" data-en="About">O projekcie</a>
-    <a href="#map-section" data-pl="Mapa" data-en="Map">Mapa</a>
+    <a href="#about" class="lang-pl">O projekcie</a>
+    <a href="#about" class="lang-en" style="display:none">About</a>
+    <a href="#howto" class="lang-pl">Jak to działa</a>
+    <a href="#howto" class="lang-en" style="display:none">How it works</a>
+    <a href="#map-section" class="lang-pl">Mapa</a>
+    <a href="#map-section" class="lang-en" style="display:none">Map</a>
+    <a href="#peaks-section" class="lang-pl">Wykaz szczytów</a>
+    <a href="#peaks-section" class="lang-en" style="display:none">Peak list</a>
   </div>
   <div style="display:flex;align-items:center;gap:0.7rem">
     <button id="share-btn" title="Udostępnij / Share" onclick="shareApp()" style="background:none;border:1px solid rgba(255,255,255,0.25);color:#E6EDF3;border-radius:6px;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;transition:background 0.2s">
@@ -928,8 +977,8 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
       <div class="hero-eyebrow lang-pl">Projekt · Sudety · Polska / Czechy / Niemcy</div>
       <div class="hero-eyebrow lang-en" style="display:none">Project · Sudetes · Poland / Czechia / Germany</div>
       <h1 class="hero-title">Wielka<br>Korona<br><em>Sudetów</em></h1>
-      <p class="hero-subtitle lang-pl">The Great Crown of the Sudetes</p>
-      <p class="hero-subtitle lang-en" style="display:none">Wielka Korona Sudetów</p>
+      <p class="hero-subtitle lang-pl">Korona Sudetów · Wielka Korona Sudetów · Diamentowa Korona Sudetów</p>
+      <p class="hero-subtitle lang-en" style="display:none">The Great Crown of the Sudetes</p>
       <p class="hero-desc lang-pl">Trzypoziomowy system poznawania, zdobywania i odkrywania Sudetów — 58 najwybitniejszych i topograficznie samodzielnych wierzchołków całego łańcucha, od Pogórza Zachodniołużyckiego po Niski Jesionik, po stronie polskiej, czeskiej i niemieckiej.</p>
       <p class="hero-desc lang-en" style="display:none">A three-tier system for exploring and conquering the Sudetes — 58 of the most prominent and topographically independent peaks of the entire range, from the Lusatian Highlands to the Low Jeseníky, across Poland, Czechia and Germany.</p>
       <div class="hero-stats">
@@ -1033,8 +1082,8 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 
       <h2 class="section-title lang-pl" style="margin-top:2.5rem">3 Korony Sudetów</h2>
       <h2 class="section-title lang-en" style="display:none;margin-top:2.5rem">3 Crowns of the Sudetes</h2>
-      <p class="lang-pl"><strong>Korona Sudetów</strong> to najbardziej wybitne topograficznie wierzchołki — „koronne" szczyty poszczególnych grup górskich. <strong>Wielka Korona</strong> rozszerza listę o szczyty wybitne lub silnie izolowane. <strong>Diamentowa Korona</strong> uzupełnia zestawienie o reprezentantów wszystkich jednostek geomorfologicznych: pasm górskich, pogórzy oraz kotlin i obniżeń, co pozwala zapoznać się wytrawnemu turyście z całym bogactwem i różnorodnością Sudetów oraz wyeksplorować mało poznane ich partie.</p>
-      <p class="lang-en" style="display:none">The <strong>Crown of the Sudetes</strong> comprises the most topographically prominent peaks — the defining "crown" summits. The <strong>Great Crown</strong> extends the list with highly prominent or isolated summits. The <strong>Diamond Crown</strong> adds representatives of every range and foothill zone — 58 peaks in total.</p>
+      <p class="lang-pl"><strong>Korona Sudetów</strong> to najbardziej wybitne topograficznie wierzchołki — „koronne" szczyty poszczególnych grup górskich. <strong>Wielka Korona</strong> rozszerza listę o szczyty wybitne lub silnie izolowane. <strong>Diamentowa Korona</strong> uzupełnia zestawienie o reprezentantów wszystkich jednostek geomorfologicznych: pasm górskich, pogórzy oraz kotlin i obniżeń, co pozwala zapoznać się wytrawnemu turyście z całym bogactwem i różnorodnością Sudetów oraz wyeksplorować mało poznane ich partie. Projekt <strong>Korony Sudetów Polskich</strong> nawiązuje do idei <strong>Korony Gór Polski</strong>, przenosząc podobną koncepcję zdobywania koronnych szczytów na grunt całego łańcucha Sudetów — po stronie polskiej, czeskiej i niemieckiej. To propozycja skierowana do wszystkich miłośników Sudetów — od początkujących turystów po doświadczonych górołazów, przewodników i pasjonatów zrzeszonych w organizacjach takich jak <strong>Studenckie Koło Przewodników Sudeckich (SKPS)</strong>.</p>
+      <p class="lang-en" style="display:none">The <strong>Crown of the Sudetes</strong> comprises the most topographically prominent peaks — the defining "crown" summits. The <strong>Great Crown</strong> extends the list with highly prominent or isolated summits. The <strong>Diamond Crown</strong> adds representatives of every range and foothill zone — 58 peaks in total. The project draws on the idea of the <strong>Crown of Poland's Mountains</strong> (Korona Gór Polski), extending a similar peak-bagging concept to the entire Sudetes chain across Poland, Czechia and Germany. It's aimed at all Sudetes enthusiasts — from beginner hikers to seasoned mountaineers, guides and members of organisations such as the <strong>Studenckie Koło Przewodników Sudeckich (SKPS, Student Circle of Sudeten Guides)</strong>.</p>
 
       <button class="more-btn" onclick="toggleMore(this)">
         <span class="lang-pl">Czytaj więcej ▾</span><span class="lang-en" style="display:none">Read more ▾</span>
@@ -1252,6 +1301,630 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
   </div>
 </section>
 
+<!-- PEAKS TABLE -->
+<section id="peaks-section">
+  <div class="peaks-inner">
+    <div class="section-label lang-pl fade-in">Wykaz szczytów</div>
+    <div class="section-label lang-en fade-in" style="display:none">List of summits</div>
+    <h2 class="section-title lang-pl fade-in">Pełna lista <em>58 szczytów Sudetów</em></h2>
+    <h2 class="section-title lang-en fade-in" style="display:none">Full list of <em>58 Sudetes summits</em></h2>
+    <p class="lang-pl" style="margin:0.75rem 0 2rem;max-width:760px">Wszystkie szczyty Korony, Wielkiej Korony i Diamentowej Korony Sudetów w jednej tabeli — z wysokością, wybitnością, izolacją i przynależnością do pasma. Kliknij wiersz, aby zobaczyć szczyt na mapie.</p>
+    <p class="lang-en" style="display:none;margin:0.75rem 0 2rem;max-width:760px">Every summit of the Crown, Great Crown and Diamond Crown of the Sudetes in one table — with elevation, prominence, isolation and mountain range. Click a row to locate the peak on the map.</p>
+
+    <div class="peaks-controls">
+      <span class="lang-pl">Poziom</span><span class="lang-en" style="display:none">Level</span>
+      <button class="filter-pill active" data-filter="all" onclick="filterPeaksTable('all')"><span class="lang-pl">Wszystkie · 58</span><span class="lang-en" style="display:none">All · 58</span></button>
+      <button class="filter-pill" data-filter="ks" onclick="filterPeaksTable('ks')"><span class="lang-pl">Korona · 8</span><span class="lang-en" style="display:none">Crown · 8</span></button>
+      <button class="filter-pill" data-filter="wks" onclick="filterPeaksTable('wks')"><span class="lang-pl">Wielka Korona · 25</span><span class="lang-en" style="display:none">Great Crown · 25</span></button>
+      <button class="filter-pill" data-filter="dks" onclick="filterPeaksTable('dks')"><span class="lang-pl">Diamentowa · 25</span><span class="lang-en" style="display:none">Diamond · 25</span></button>
+    </div>
+
+    <div class="peaks-table-wrap">
+      <table id="peaks-table">
+        <thead>
+          <tr>
+            <th class="no-sort lang-pl">#</th><th class="no-sort lang-en" style="display:none">#</th>
+            <th data-sort="name"><span class="lang-pl">Szczyt</span><span class="lang-en" style="display:none">Summit</span></th>
+            <th data-sort="level"><span class="lang-pl">Poziom</span><span class="lang-en" style="display:none">Level</span></th>
+            <th data-sort="pasmo"><span class="lang-pl">Pasmo</span><span class="lang-en" style="display:none">Range</span></th>
+            <th class="r" data-sort="alt"><span class="lang-pl">Wysokość</span><span class="lang-en" style="display:none">Elevation</span></th>
+            <th class="r" data-sort="prom"><span class="lang-pl">Wybitność</span><span class="lang-en" style="display:none">Prominence</span></th>
+            <th class="r" data-sort="izol"><span class="lang-pl">Izolacja</span><span class="lang-en" style="display:none">Isolation</span></th>
+            <th data-sort="kraj"><span class="lang-pl">Kraj</span><span class="lang-en" style="display:none">Country</span></th>
+          </tr>
+        </thead>
+        <tbody id="peaks-tbody">
+<tr data-level="ks" data-idx="0" data-name="Śnieżka" data-pasmo="Karkonosze" data-kraj="PL/CZ" data-alt="1603" data-prom="1197" data-izol="289.6" onclick="jumpToPeak('ks',0)">
+          <td class="peak-rank">1</td>
+          <td class="peak-name-cell"><strong>Śnieżka</strong><div class="peak-name-cz">Sněžka</div></td>
+          <td><span class="badge lvl-ks">Korona</span></td>
+          <td class="muted">Karkonosze</td>
+          <td class="r">1603 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>1197 m</span><div class="bar-wrap"><div class="bar-fill" style="width:100.0%;background:#D4A017"></div></div></div></td>
+          <td class="r muted">289.6 km</td>
+          <td><span class="badge kpl">PL</span><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="ks" data-idx="1" data-name="Pradziad" data-pasmo="Wysoki Jesionik" data-kraj="CZ" data-alt="1491" data-prom="983" data-izol="94" onclick="jumpToPeak('ks',1)">
+          <td class="peak-rank">2</td>
+          <td class="peak-name-cell"><strong>Pradziad</strong><div class="peak-name-cz">Praděd</div></td>
+          <td><span class="badge lvl-ks">Korona</span></td>
+          <td class="muted">Wysoki Jesionik</td>
+          <td class="r">1491 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>983 m</span><div class="bar-wrap"><div class="bar-fill" style="width:82.1%;background:#D4A017"></div></div></div></td>
+          <td class="r muted">94 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="ks" data-idx="2" data-name="Wielka Desztna" data-pasmo="Góry Orlickie" data-kraj="CZ" data-alt="1115" data-prom="582" data-izol="38" onclick="jumpToPeak('ks',2)">
+          <td class="peak-rank">3</td>
+          <td class="peak-name-cell"><strong>Wielka Desztna</strong><div class="peak-name-cz">Velká Deštná</div></td>
+          <td><span class="badge lvl-ks">Korona</span></td>
+          <td class="muted">Góry Orlickie</td>
+          <td class="r">1115 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>582 m</span><div class="bar-wrap"><div class="bar-fill" style="width:48.6%;background:#D4A017"></div></div></div></td>
+          <td class="r muted">38 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="ks" data-idx="3" data-name="Wielka Sowa" data-pasmo="Góry Sowie" data-kraj="PL" data-alt="1015" data-prom="484" data-izol="22" onclick="jumpToPeak('ks',3)">
+          <td class="peak-rank">4</td>
+          <td class="peak-name-cell"><strong>Wielka Sowa</strong></td>
+          <td><span class="badge lvl-ks">Korona</span></td>
+          <td class="muted">Góry Sowie</td>
+          <td class="r">1015 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>484 m</span><div class="bar-wrap"><div class="bar-fill" style="width:40.4%;background:#D4A017"></div></div></div></td>
+          <td class="r muted">22 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="ks" data-idx="4" data-name="Ślęża" data-pasmo="Masyw Ślęży" data-kraj="PL" data-alt="718" data-prom="468" data-izol="36" onclick="jumpToPeak('ks',4)">
+          <td class="peak-rank">5</td>
+          <td class="peak-name-cell"><strong>Ślęża</strong><div class="peak-name-cz">Sleza</div></td>
+          <td><span class="badge lvl-ks">Korona</span></td>
+          <td class="muted">Masyw Ślęży</td>
+          <td class="r">718 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>468 m</span><div class="bar-wrap"><div class="bar-fill" style="width:39.1%;background:#D4A017"></div></div></div></td>
+          <td class="r muted">36 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="ks" data-idx="5" data-name="Luž" data-pasmo="Góry Łużyckie" data-kraj="CZ/DE" data-alt="793" data-prom="369" data-izol="26" onclick="jumpToPeak('ks',5)">
+          <td class="peak-rank">6</td>
+          <td class="peak-name-cell"><strong>Luž</strong><div class="peak-name-cz">Luž / Lausche</div></td>
+          <td><span class="badge lvl-ks">Korona</span></td>
+          <td class="muted">Góry Łużyckie</td>
+          <td class="r">793 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>369 m</span><div class="bar-wrap"><div class="bar-fill" style="width:30.8%;background:#D4A017"></div></div></div></td>
+          <td class="r muted">26 km</td>
+          <td><span class="badge kcz">CZ</span><span class="badge kde">DE</span></td>
+        </tr>
+<tr data-level="ks" data-idx="6" data-name="Okole" data-pasmo="Góry Kaczawskie" data-kraj="PL" data-alt="725" data-prom="255" data-izol="16" onclick="jumpToPeak('ks',6)">
+          <td class="peak-rank">7</td>
+          <td class="peak-name-cell"><strong>Okole</strong></td>
+          <td><span class="badge lvl-ks">Korona</span></td>
+          <td class="muted">Góry Kaczawskie</td>
+          <td class="r">725 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>255 m</span><div class="bar-wrap"><div class="bar-fill" style="width:21.3%;background:#D4A017"></div></div></div></td>
+          <td class="r muted">16 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="ks" data-idx="7" data-name="Biskupia Kopa" data-pasmo="Góry Opawskie" data-kraj="PL/CZ" data-alt="890" data-prom="176" data-izol="8" onclick="jumpToPeak('ks',7)">
+          <td class="peak-rank">8</td>
+          <td class="peak-name-cell"><strong>Biskupia Kopa</strong><div class="peak-name-cz">Biskupská kupa</div></td>
+          <td><span class="badge lvl-ks">Korona</span></td>
+          <td class="muted">Góry Opawskie</td>
+          <td class="r">890 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>176 m</span><div class="bar-wrap"><div class="bar-fill" style="width:14.7%;background:#D4A017"></div></div></div></td>
+          <td class="r muted">8 km</td>
+          <td><span class="badge kpl">PL</span><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="0" data-name="Śnieżnik" data-pasmo="Masyw Śnieżnika" data-kraj="PL/CZ" data-alt="1425" data-prom="662" data-izol="30.6" onclick="jumpToPeak('wks',0)">
+          <td class="peak-rank">9</td>
+          <td class="peak-name-cell"><strong>Śnieżnik</strong><div class="peak-name-cz">Králický Sněžník</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Masyw Śnieżnika</td>
+          <td class="r">1425 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>662 m</span><div class="bar-wrap"><div class="bar-fill" style="width:55.3%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">30.6 km</td>
+          <td><span class="badge kpl">PL</span><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="1" data-name="Ještěd" data-pasmo="Grzbiet Jesztiedzki" data-kraj="CZ" data-alt="1012" data-prom="512" data-izol="18.1" onclick="jumpToPeak('wks',1)">
+          <td class="peak-rank">10</td>
+          <td class="peak-name-cell"><strong>Ještěd</strong><div class="peak-name-cz">Ještěd</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Grzbiet Jesztiedzki</td>
+          <td class="r">1012 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>512 m</span><div class="bar-wrap"><div class="bar-fill" style="width:42.8%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">18.1 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="2" data-name="Suchy Szczyt" data-pasmo="Góry Orlickie" data-kraj="CZ" data-alt="995" data-prom="435" data-izol="8.5" onclick="jumpToPeak('wks',2)">
+          <td class="peak-rank">11</td>
+          <td class="peak-name-cell"><strong>Suchy Szczyt</strong><div class="peak-name-cz">Suchý vrch</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Góry Orlickie</td>
+          <td class="r">995 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>435 m</span><div class="bar-wrap"><div class="bar-fill" style="width:36.3%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">8.5 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="3" data-name="Studniční vrch" data-pasmo="Sokoli Grzbiet" data-kraj="CZ" data-alt="992" data-prom="416" data-izol="7.9" onclick="jumpToPeak('wks',3)">
+          <td class="peak-rank">12</td>
+          <td class="peak-name-cell"><strong>Studniční vrch</strong><div class="peak-name-cz">Studniční vrch</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Sokoli Grzbiet</td>
+          <td class="r">992 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>416 m</span><div class="bar-wrap"><div class="bar-fill" style="width:34.8%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">7.9 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="4" data-name="Keprník" data-pasmo="Wysoki Jesionik" data-kraj="CZ" data-alt="1423" data-prom="410" data-izol="12.7" onclick="jumpToPeak('wks',4)">
+          <td class="peak-rank">13</td>
+          <td class="peak-name-cell"><strong>Keprník</strong><div class="peak-name-cz">Keprník</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Wysoki Jesionik</td>
+          <td class="r">1423 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>410 m</span><div class="bar-wrap"><div class="bar-fill" style="width:34.3%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">12.7 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="5" data-name="Jeřáb" data-pasmo="Hanušovická vrchovina" data-kraj="CZ" data-alt="1003" data-prom="393" data-izol="8" onclick="jumpToPeak('wks',5)">
+          <td class="peak-rank">14</td>
+          <td class="peak-name-cell"><strong>Jeřáb</strong><div class="peak-name-cz">Jeřáb</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Hanušovická vrchovina</td>
+          <td class="r">1003 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>393 m</span><div class="bar-wrap"><div class="bar-fill" style="width:32.8%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">8 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="6" data-name="Waligóra" data-pasmo="Góry Kamienne" data-kraj="PL" data-alt="936" data-prom="351" data-izol="13.1" onclick="jumpToPeak('wks',6)">
+          <td class="peak-rank">15</td>
+          <td class="peak-name-cell"><strong>Waligóra</strong></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Góry Kamienne</td>
+          <td class="r">936 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>351 m</span><div class="bar-wrap"><div class="bar-fill" style="width:29.3%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">13.1 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="wks" data-idx="7" data-name="Wielki Szyszak" data-pasmo="Karkonosze" data-kraj="PL/CZ" data-alt="1509" data-prom="312" data-izol="9.7" onclick="jumpToPeak('wks',7)">
+          <td class="peak-rank">16</td>
+          <td class="peak-name-cell"><strong>Wielki Szyszak</strong><div class="peak-name-cz">Vysoké kolo</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Karkonosze</td>
+          <td class="r">1509 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>312 m</span><div class="bar-wrap"><div class="bar-fill" style="width:26.1%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">9.7 km</td>
+          <td><span class="badge kpl">PL</span><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="8" data-name="Kozákov" data-pasmo="Kozákovský hřbet" data-kraj="CZ" data-alt="745" data-prom="295" data-izol="13.2" onclick="jumpToPeak('wks',8)">
+          <td class="peak-rank">17</td>
+          <td class="peak-name-cell"><strong>Kozákov</strong><div class="peak-name-cz">Kozákov</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Kozákovský hřbet</td>
+          <td class="r">745 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>295 m</span><div class="bar-wrap"><div class="bar-fill" style="width:24.6%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">13.2 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="9" data-name="Chełmiec" data-pasmo="Góry Wałbrzyskie" data-kraj="PL" data-alt="851" data-prom="301" data-izol="9.1" onclick="jumpToPeak('wks',9)">
+          <td class="peak-rank">18</td>
+          <td class="peak-name-cell"><strong>Chełmiec</strong></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Góry Wałbrzyskie</td>
+          <td class="r">851 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>301 m</span><div class="bar-wrap"><div class="bar-fill" style="width:25.1%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">9.1 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="wks" data-idx="10" data-name="Szczeliniec Wielki" data-pasmo="Góry Stołowe" data-kraj="PL" data-alt="922" data-prom="272" data-izol="14.7" onclick="jumpToPeak('wks',10)">
+          <td class="peak-rank">19</td>
+          <td class="peak-name-cell"><strong>Szczeliniec Wielki</strong><div class="peak-name-cz">Velká Hejšovina</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Góry Stołowe</td>
+          <td class="r">922 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>272 m</span><div class="bar-wrap"><div class="bar-fill" style="width:22.7%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">14.7 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="wks" data-idx="11" data-name="Słoneczna" data-pasmo="Niski Jesionik" data-kraj="CZ" data-alt="802" data-prom="168" data-izol="19.1" onclick="jumpToPeak('wks',11)">
+          <td class="peak-rank">20</td>
+          <td class="peak-name-cell"><strong>Słoneczna</strong><div class="peak-name-cz">Slunečná</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Niski Jesionik</td>
+          <td class="r">802 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>168 m</span><div class="bar-wrap"><div class="bar-fill" style="width:14.0%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">19.1 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="12" data-name="Hrazený" data-pasmo="Pogórze Łużyckie" data-kraj="CZ" data-alt="608" data-prom="168" data-izol="16" onclick="jumpToPeak('wks',12)">
+          <td class="peak-rank">21</td>
+          <td class="peak-name-cell"><strong>Hrazený</strong><div class="peak-name-cz">Hrazený</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Pogórze Łużyckie</td>
+          <td class="r">608 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>168 m</span><div class="bar-wrap"><div class="bar-fill" style="width:14.0%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">16 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="13" data-name="Smrek" data-pasmo="Góry Złote" data-kraj="CZ" data-alt="1125" data-prom="310" data-izol="7" onclick="jumpToPeak('wks',13)">
+          <td class="peak-rank">22</td>
+          <td class="peak-name-cell"><strong>Smrek</strong><div class="peak-name-cz">Smrk</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Góry Złote</td>
+          <td class="r">1125 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>310 m</span><div class="bar-wrap"><div class="bar-fill" style="width:25.9%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">7 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="14" data-name="Strażna" data-pasmo="Pogórze Witkowskie" data-kraj="CZ" data-alt="642" data-prom="92" data-izol="12" onclick="jumpToPeak('wks',14)">
+          <td class="peak-rank">23</td>
+          <td class="peak-name-cell"><strong>Strażna</strong><div class="peak-name-cz">Strážná</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Pogórze Witkowskie</td>
+          <td class="r">642 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>92 m</span><div class="bar-wrap"><div class="bar-fill" style="width:7.7%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">12 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="15" data-name="Landekrone" data-pasmo="Kotlina Żytawska" data-kraj="DE" data-alt="419" data-prom="157" data-izol="12" onclick="jumpToPeak('wks',15)">
+          <td class="peak-rank">24</td>
+          <td class="peak-name-cell"><strong>Landekrone</strong><div class="peak-name-cz">Landeskrone</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Kotlina Żytawska</td>
+          <td class="r">419 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>157 m</span><div class="bar-wrap"><div class="bar-fill" style="width:13.1%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">12 km</td>
+          <td><span class="badge kde">DE</span></td>
+        </tr>
+<tr data-level="wks" data-idx="16" data-name="Rotstein" data-pasmo="Płaskowyż Budziszyński" data-kraj="DE" data-alt="454" data-prom="150" data-izol="13" onclick="jumpToPeak('wks',16)">
+          <td class="peak-rank">25</td>
+          <td class="peak-name-cell"><strong>Rotstein</strong><div class="peak-name-cz">Rotstein</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Płaskowyż Budziszyński</td>
+          <td class="r">454 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>150 m</span><div class="bar-wrap"><div class="bar-fill" style="width:12.5%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">13 km</td>
+          <td><span class="badge kde">DE</span></td>
+        </tr>
+<tr data-level="wks" data-idx="17" data-name="Hochstein" data-pasmo="Pogórze Zachodniołużyckie" data-kraj="DE" data-alt="449" data-prom="159" data-izol="15.9" onclick="jumpToPeak('wks',17)">
+          <td class="peak-rank">26</td>
+          <td class="peak-name-cell"><strong>Hochstein</strong><div class="peak-name-cz">Hochstein</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Pogórze Zachodniołużyckie</td>
+          <td class="r">449 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>159 m</span><div class="bar-wrap"><div class="bar-fill" style="width:13.3%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">15.9 km</td>
+          <td><span class="badge kde">DE</span></td>
+        </tr>
+<tr data-level="wks" data-idx="18" data-name="Jedlice" data-pasmo="Wzgórza Strzegomskie" data-kraj="PL" data-alt="354" data-prom="105" data-izol="11.1" onclick="jumpToPeak('wks',18)">
+          <td class="peak-rank">27</td>
+          <td class="peak-name-cell"><strong>Jedlice</strong></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Wzgórza Strzegomskie</td>
+          <td class="r">354 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>105 m</span><div class="bar-wrap"><div class="bar-fill" style="width:8.8%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">11.1 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="wks" data-idx="19" data-name="Valtenberg" data-pasmo="Pogórze Łużyckie" data-kraj="DE" data-alt="586" data-prom="196" data-izol="15" onclick="jumpToPeak('wks',19)">
+          <td class="peak-rank">28</td>
+          <td class="peak-name-cell"><strong>Valtenberg</strong><div class="peak-name-cz">Valtenberg</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Pogórze Łużyckie</td>
+          <td class="r">586 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>196 m</span><div class="bar-wrap"><div class="bar-fill" style="width:16.4%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">15 km</td>
+          <td><span class="badge kde">DE</span></td>
+        </tr>
+<tr data-level="wks" data-idx="20" data-name="Královecký Špičák" data-pasmo="Góry Kamienne" data-kraj="CZ" data-alt="881" data-prom="350" data-izol="8.8" onclick="jumpToPeak('wks',20)">
+          <td class="peak-rank">29</td>
+          <td class="peak-name-cell"><strong>Královecký Špičák</strong><div class="peak-name-cz">Královecký Špičák</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Góry Kamienne</td>
+          <td class="r">881 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>350 m</span><div class="bar-wrap"><div class="bar-fill" style="width:29.2%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">8.8 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="21" data-name="Czorneboh" data-pasmo="Pogórze Łużyckie" data-kraj="DE" data-alt="557" data-prom="192" data-izol="15.2" onclick="jumpToPeak('wks',21)">
+          <td class="peak-rank">30</td>
+          <td class="peak-name-cell"><strong>Czorneboh</strong><div class="peak-name-cz">Czorneboh</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Pogórze Łużyckie</td>
+          <td class="r">557 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>192 m</span><div class="bar-wrap"><div class="bar-fill" style="width:16.0%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">15.2 km</td>
+          <td><span class="badge kde">DE</span></td>
+        </tr>
+<tr data-level="wks" data-idx="22" data-name="Kottmar" data-pasmo="Pogórze Łużyckie" data-kraj="DE" data-alt="582" data-prom="187" data-izol="16.4" onclick="jumpToPeak('wks',22)">
+          <td class="peak-rank">31</td>
+          <td class="peak-name-cell"><strong>Kottmar</strong><div class="peak-name-cz">Kottmar</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Pogórze Łużyckie</td>
+          <td class="r">582 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>187 m</span><div class="bar-wrap"><div class="bar-fill" style="width:15.6%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">16.4 km</td>
+          <td><span class="badge kde">DE</span></td>
+        </tr>
+<tr data-level="wks" data-idx="23" data-name="Borówkowa" data-pasmo="Góry Złote" data-kraj="PL/CZ" data-alt="900" data-prom="236" data-izol="11.6" onclick="jumpToPeak('wks',23)">
+          <td class="peak-rank">32</td>
+          <td class="peak-name-cell"><strong>Borówkowa</strong><div class="peak-name-cz">Borůvková hora</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Góry Złote</td>
+          <td class="r">900 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>236 m</span><div class="bar-wrap"><div class="bar-fill" style="width:19.7%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">11.6 km</td>
+          <td><span class="badge kpl">PL</span><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="wks" data-idx="24" data-name="Cap" data-pasmo="Góry Stołowe" data-kraj="CZ" data-alt="786" data-prom="196" data-izol="11.8" onclick="jumpToPeak('wks',24)">
+          <td class="peak-rank">33</td>
+          <td class="peak-name-cell"><strong>Cap</strong><div class="peak-name-cz">Cap</div></td>
+          <td><span class="badge lvl-wks">Wielka Korona</span></td>
+          <td class="muted">Góry Stołowe</td>
+          <td class="r">786 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>196 m</span><div class="bar-wrap"><div class="bar-fill" style="width:16.4%;background:#3D7ABF"></div></div></div></td>
+          <td class="r muted">11.8 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="0" data-name="Jawornik Wielki" data-pasmo="Góry Złote" data-kraj="PL" data-alt="872" data-prom="279" data-izol="3.8" onclick="jumpToPeak('dks',0)">
+          <td class="peak-rank">34</td>
+          <td class="peak-name-cell"><strong>Jawornik Wielki</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Góry Złote</td>
+          <td class="r">872 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>279 m</span><div class="bar-wrap"><div class="bar-fill" style="width:23.3%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">3.8 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="1" data-name="Szeroka Góra" data-pasmo="Góry Bardzkie" data-kraj="PL" data-alt="766" data-prom="283" data-izol="8.4" onclick="jumpToPeak('dks',1)">
+          <td class="peak-rank">35</td>
+          <td class="peak-name-cell"><strong>Szeroka Góra</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Góry Bardzkie</td>
+          <td class="r">766 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>283 m</span><div class="bar-wrap"><div class="bar-fill" style="width:23.6%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">8.4 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="2" data-name="Góra Poprzeczna" data-pasmo="Góry Złotogórskie" data-kraj="CZ" data-alt="975" data-prom="258" data-izol="8.2" onclick="jumpToPeak('dks',2)">
+          <td class="peak-rank">36</td>
+          <td class="peak-name-cell"><strong>Góra Poprzeczna</strong><div class="peak-name-cz">Příčný vrch</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Góry Złotogórskie</td>
+          <td class="r">975 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>258 m</span><div class="bar-wrap"><div class="bar-fill" style="width:21.6%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">8.2 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="3" data-name="Jagodna Północna" data-pasmo="Góry Bystrzyckie" data-kraj="PL" data-alt="985" data-prom="247" data-izol="6" onclick="jumpToPeak('dks',3)">
+          <td class="peak-rank">37</td>
+          <td class="peak-name-cell"><strong>Jagodna Północna</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Góry Bystrzyckie</td>
+          <td class="r">985 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>247 m</span><div class="bar-wrap"><div class="bar-fill" style="width:20.6%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">6 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="4" data-name="Wysoka Kopa" data-pasmo="Góry Izerskie" data-kraj="PL/CZ" data-alt="1126" data-prom="240" data-izol="6.7" onclick="jumpToPeak('dks',4)">
+          <td class="peak-rank">38</td>
+          <td class="peak-name-cell"><strong>Wysoka Kopa</strong><div class="peak-name-cz">Smrk</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Góry Izerskie</td>
+          <td class="r">1126 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>240 m</span><div class="bar-wrap"><div class="bar-fill" style="width:20.1%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">6.7 km</td>
+          <td><span class="badge kpl">PL</span><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="5" data-name="Skalnik" data-pasmo="Rudawy Janowickie" data-kraj="PL" data-alt="945" data-prom="220" data-izol="7" onclick="jumpToPeak('dks',5)">
+          <td class="peak-rank">39</td>
+          <td class="peak-name-cell"><strong>Skalnik</strong><div class="peak-name-cz">Skalnik</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Rudawy Janowickie</td>
+          <td class="r">945 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>220 m</span><div class="bar-wrap"><div class="bar-fill" style="width:18.4%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">7 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="6" data-name="Borowa" data-pasmo="Góry Wałbrzyskie" data-kraj="PL" data-alt="853" data-prom="222" data-izol="5" onclick="jumpToPeak('dks',6)">
+          <td class="peak-rank">40</td>
+          <td class="peak-name-cell"><strong>Borowa</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Góry Wałbrzyskie</td>
+          <td class="r">853 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>222 m</span><div class="bar-wrap"><div class="bar-fill" style="width:18.5%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">5 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="7" data-name="Špičák" data-pasmo="Pogórze Orlickie" data-kraj="CZ" data-alt="841" data-prom="121" data-izol="2.9" onclick="jumpToPeak('dks',7)">
+          <td class="peak-rank">41</td>
+          <td class="peak-name-cell"><strong>Špičák</strong><div class="peak-name-cz">Špičák</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Orlickie</td>
+          <td class="r">841 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>121 m</span><div class="bar-wrap"><div class="bar-fill" style="width:10.1%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">2.9 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="8" data-name="Włodzicka Góra" data-pasmo="Obniżenie Nowej Rudy" data-kraj="PL" data-alt="755" data-prom="110" data-izol="5.4" onclick="jumpToPeak('dks',8)">
+          <td class="peak-rank">42</td>
+          <td class="peak-name-cell"><strong>Włodzicka Góra</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Obniżenie Nowej Rudy</td>
+          <td class="r">755 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>110 m</span><div class="bar-wrap"><div class="bar-fill" style="width:9.2%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">5.4 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="9" data-name="Zadzierna" data-pasmo="Kotlina Kamiennogórska" data-kraj="PL" data-alt="724" data-prom="152" data-izol="2.7" onclick="jumpToPeak('dks',9)">
+          <td class="peak-rank">43</td>
+          <td class="peak-name-cell"><strong>Zadzierna</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Kotlina Kamiennogórska</td>
+          <td class="r">724 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>152 m</span><div class="bar-wrap"><div class="bar-fill" style="width:12.7%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">2.7 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="10" data-name="Lázek" data-pasmo="Zábřežská vrchovina" data-kraj="CZ" data-alt="714" data-prom="97" data-izol="6.6" onclick="jumpToPeak('dks',10)">
+          <td class="peak-rank">44</td>
+          <td class="peak-name-cell"><strong>Lázek</strong><div class="peak-name-cz">Lázek</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Zábřežská vrchovina</td>
+          <td class="r">714 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>97 m</span><div class="bar-wrap"><div class="bar-fill" style="width:8.1%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">6.6 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="11" data-name="Baba" data-pasmo="Podgórze Karkonoskie" data-kraj="CZ" data-alt="673" data-prom="33" data-izol="2.7" onclick="jumpToPeak('dks',11)">
+          <td class="peak-rank">45</td>
+          <td class="peak-name-cell"><strong>Baba</strong><div class="peak-name-cz">Baba</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Podgórze Karkonoskie</td>
+          <td class="r">673 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>33 m</span><div class="bar-wrap"><div class="bar-fill" style="width:2.8%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">2.7 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="12" data-name="Nowa Kopa" data-pasmo="Obniżenie Ścinawki" data-kraj="PL" data-alt="533" data-prom="93" data-izol="4.9" onclick="jumpToPeak('dks',12)">
+          <td class="peak-rank">46</td>
+          <td class="peak-name-cell"><strong>Nowa Kopa</strong><div class="peak-name-cz">Nová Kopa</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Obniżenie Ścinawki</td>
+          <td class="r">533 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>93 m</span><div class="bar-wrap"><div class="bar-fill" style="width:7.8%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">4.9 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="13" data-name="Pasterskie Skały" data-pasmo="Rów Górnej Nysy" data-kraj="PL" data-alt="607" data-prom="45" data-izol="2" onclick="jumpToPeak('dks',13)">
+          <td class="peak-rank">47</td>
+          <td class="peak-name-cell"><strong>Pasterskie Skały</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Rów Górnej Nysy</td>
+          <td class="r">607 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>45 m</span><div class="bar-wrap"><div class="bar-fill" style="width:3.8%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">2 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="14" data-name="Kobyla" data-pasmo="Pogórze Opawskie" data-kraj="CZ" data-alt="574" data-prom="174" data-izol="4.6" onclick="jumpToPeak('dks',14)">
+          <td class="peak-rank">48</td>
+          <td class="peak-name-cell"><strong>Kobyla</strong><div class="peak-name-cz">Kobyla</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Opawskie</td>
+          <td class="r">574 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>174 m</span><div class="bar-wrap"><div class="bar-fill" style="width:14.5%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">4.6 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="15" data-name="Andělský vrch" data-pasmo="Pogórze Izerskie" data-kraj="CZ" data-alt="572" data-prom="50" data-izol="2.2" onclick="jumpToPeak('dks',15)">
+          <td class="peak-rank">49</td>
+          <td class="peak-name-cell"><strong>Andělský vrch</strong><div class="peak-name-cz">Andělský vrch</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Izerskie</td>
+          <td class="r">572 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>50 m</span><div class="bar-wrap"><div class="bar-fill" style="width:4.2%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">2.2 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="16" data-name="Boží hora" data-pasmo="Pogórze Żulowskie" data-kraj="CZ" data-alt="527" data-prom="127" data-izol="3.8" onclick="jumpToPeak('dks',16)">
+          <td class="peak-rank">50</td>
+          <td class="peak-name-cell"><strong>Boží hora</strong><div class="peak-name-cz">Boží hora</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Żulowskie</td>
+          <td class="r">527 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>127 m</span><div class="bar-wrap"><div class="bar-fill" style="width:10.6%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">3.8 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="17" data-name="Sas" data-pasmo="Pogórze Wałbrzyskie" data-kraj="PL" data-alt="515" data-prom="75" data-izol="1.6" onclick="jumpToPeak('dks',17)">
+          <td class="peak-rank">51</td>
+          <td class="peak-name-cell"><strong>Sas</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Wałbrzyskie</td>
+          <td class="r">515 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>75 m</span><div class="bar-wrap"><div class="bar-fill" style="width:6.3%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">1.6 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="18" data-name="Spitzberg" data-pasmo="Pogórze Wschodniołużyckie" data-kraj="CZ" data-alt="510" data-prom="120" data-izol="4.8" onclick="jumpToPeak('dks',18)">
+          <td class="peak-rank">52</td>
+          <td class="peak-name-cell"><strong>Spitzberg</strong><div class="peak-name-cz">Špičák</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Wschodniołużyckie</td>
+          <td class="r">510 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>120 m</span><div class="bar-wrap"><div class="bar-fill" style="width:10.0%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">4.8 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="19" data-name="Grodna" data-pasmo="Kotlina Jeleniogórska" data-kraj="PL" data-alt="504" data-prom="84" data-izol="2.8" onclick="jumpToPeak('dks',19)">
+          <td class="peak-rank">53</td>
+          <td class="peak-name-cell"><strong>Grodna</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Kotlina Jeleniogórska</td>
+          <td class="r">504 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>84 m</span><div class="bar-wrap"><div class="bar-fill" style="width:7.0%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">2.8 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="20" data-name="Ostrzyca" data-pasmo="Pogórze Kaczawskie" data-kraj="PL" data-alt="501" data-prom="160" data-izol="7.5" onclick="jumpToPeak('dks',20)">
+          <td class="peak-rank">54</td>
+          <td class="peak-name-cell"><strong>Ostrzyca</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Kaczawskie</td>
+          <td class="r">501 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>160 m</span><div class="bar-wrap"><div class="bar-fill" style="width:13.4%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">7.5 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="21" data-name="Na Vyhlídce" data-pasmo="Pogórze Burgrabickie" data-kraj="CZ" data-alt="501" data-prom="69" data-izol="2.8" onclick="jumpToPeak('dks',21)">
+          <td class="peak-rank">55</td>
+          <td class="peak-name-cell"><strong>Na Vyhlídce</strong><div class="peak-name-cz">Na Vyhlídce</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Burgrabickie</td>
+          <td class="r">501 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>69 m</span><div class="bar-wrap"><div class="bar-fill" style="width:5.8%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">2.8 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="22" data-name="Kozie Chrzepty" data-pasmo="Wzgórza Niemczańsko-Strzelińskie" data-kraj="PL" data-alt="493" data-prom="133" data-izol="2.7" onclick="jumpToPeak('dks',22)">
+          <td class="peak-rank">56</td>
+          <td class="peak-name-cell"><strong>Kozie Chrzepty</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Wzgórza Niemczańsko-Strzelińskie</td>
+          <td class="r">493 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>133 m</span><div class="bar-wrap"><div class="bar-fill" style="width:11.1%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">2.7 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<tr data-level="dks" data-idx="23" data-name="Chlum" data-pasmo="Pogórze Trszickie" data-kraj="CZ" data-alt="344" data-prom="59" data-izol="8.3" onclick="jumpToPeak('dks',23)">
+          <td class="peak-rank">57</td>
+          <td class="peak-name-cell"><strong>Chlum</strong><div class="peak-name-cz">Chlum</div></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Pogórze Trszickie</td>
+          <td class="r">344 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>59 m</span><div class="bar-wrap"><div class="bar-fill" style="width:4.9%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">8.3 km</td>
+          <td><span class="badge kcz">CZ</span></td>
+        </tr>
+<tr data-level="dks" data-idx="24" data-name="Polana" data-pasmo="Kotlina Kłodzka" data-kraj="PL" data-alt="405" data-prom="20" data-izol="4.4" onclick="jumpToPeak('dks',24)">
+          <td class="peak-rank">58</td>
+          <td class="peak-name-cell"><strong>Polana</strong></td>
+          <td><span class="badge lvl-dks">Diamentowa</span></td>
+          <td class="muted">Kotlina Kłodzka</td>
+          <td class="r">405 m</td>
+          <td class="r"><div style="display:flex;align-items:center;gap:8px;justify-content:flex-end;white-space:nowrap"><span>20 m</span><div class="bar-wrap"><div class="bar-fill" style="width:1.7%;background:#7C3AED"></div></div></div></td>
+          <td class="r muted">4.4 km</td>
+          <td><span class="badge kpl">PL</span></td>
+        </tr>
+<!-- TOTAL ROWS: 58 -->
+
+        </tbody>
+      </table>
+    </div>
+    <div class="table-foot">
+      <span class="lang-pl">Wyświetlono <span id="peaks-count">58</span> z 58 szczytów</span>
+      <span class="lang-en" style="display:none">Showing <span id="peaks-count-en">58</span> of 58 summits</span>
+    </div>
+  </div>
+</section>
 
 <footer>
   <div class="footer-inner">
@@ -1321,7 +1994,7 @@ let GRUPY_GEOJSON;
    DATA
 ═══════════════════════════════════════════ */
 const KS = [
-  { name:"Śnieżka",         cz:"Sněžka",           alt:1603, prom:1203, izol:118,  pasmo:"Karkonosze",        strefa:"Zachodnie", kraj:"PL/CZ", lat:50.7360,  lng:15.7399,  note:"Najwybitniejszy szczyt Sudetów, Polski i Czech" },
+  { name:"Śnieżka",         cz:"Sněžka",           alt:1603, prom:1197, izol:289.6,pasmo:"Karkonosze",        strefa:"Zachodnie", kraj:"PL/CZ", lat:50.7360,  lng:15.7399,  note:"Najwybitniejszy szczyt Sudetów, Polski i Czech" },
   { name:"Pradziad",        cz:"Praděd",           alt:1491, prom:983,  izol:94,   pasmo:"Wysoki Jesionik",   strefa:"Wschodnie", kraj:"CZ",    lat:50.0836,  lng:17.2328,  note:"Najwyższy szczyt Moraw" },
   { name:"Wielka Desztna",  cz:"Velká Deštná",     alt:1115, prom:582,  izol:38,   pasmo:"Góry Orlickie",     strefa:"Środkowe",  kraj:"CZ",    lat:50.30500, lng:16.39908, note:"Najwyższy szczyt Gór Orlickich" },
   { name:"Wielka Sowa",     cz:"—",                alt:1015, prom:484,  izol:22,   pasmo:"Góry Sowie",        strefa:"Środkowe",  kraj:"PL",    lat:50.67917, lng:16.48694, note:"Najwyższy szczyt Gór Sowich" },
@@ -1673,6 +2346,62 @@ window.focusPeak = function(type, idx){
 };
 
 /* ═══════════════════════════════════════════
+   PEAKS TABLE (filter · sort · jump to map)
+═══════════════════════════════════════════ */
+window.jumpToPeak = function(type, idx){
+  const mapSection = document.getElementById('map-section');
+  if(mapSection) mapSection.scrollIntoView({behavior:'smooth', block:'start'});
+  setTimeout(()=>window.focusPeak(type, idx), 500);
+};
+
+let peaksFilter = 'all';
+let peaksSortKey = null, peaksSortDir = 1;
+
+function renderPeaksRows(){
+  const tbody = document.getElementById('peaks-tbody');
+  if(!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  rows.forEach(r=>{
+    const show = peaksFilter==='all' || r.dataset.level===peaksFilter;
+    r.classList.toggle('hidden', !show);
+  });
+  const visible = rows.filter(r=>!r.classList.contains('hidden'));
+  if(peaksSortKey){
+    visible.sort((a,b)=>{
+      const va = a.dataset[peaksSortKey], vb = b.dataset[peaksSortKey];
+      const na = parseFloat(va), nb = parseFloat(vb);
+      const cmp = (!isNaN(na) && !isNaN(nb)) ? (na-nb) : String(va).localeCompare(String(vb),'pl');
+      return cmp * peaksSortDir;
+    });
+    visible.forEach(r=>tbody.appendChild(r));
+  }
+  visible.forEach((r,i)=>{
+    const rankCell = r.querySelector('.peak-rank');
+    if(rankCell) rankCell.textContent = i+1;
+  });
+  const countEl = document.getElementById('peaks-count');
+  const countElEn = document.getElementById('peaks-count-en');
+  if(countEl) countEl.textContent = visible.length;
+  if(countElEn) countElEn.textContent = visible.length;
+}
+
+window.filterPeaksTable = function(level){
+  peaksFilter = level;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.toggle('active', p.dataset.filter===level));
+  renderPeaksRows();
+};
+
+function initPeaksTable(){
+  document.querySelectorAll('#peaks-table thead th[data-sort]').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const key = th.dataset.sort;
+      if(peaksSortKey===key) peaksSortDir *= -1; else { peaksSortKey = key; peaksSortDir = 1; }
+      renderPeaksRows();
+    });
+  });
+}
+
+/* ═══════════════════════════════════════════
    RESET
 ═══════════════════════════════════════════ */
 window.resetAll = function(){
@@ -1696,6 +2425,7 @@ updateUI();
 renderList('ks');
 renderList('wks');
 renderList('dks');
+initPeaksTable();
 
 if(STATE.unlocked_dks) document.getElementById('tab-dks').classList.remove('locked');
 // Naprawia renderowanie kafelków gdy mapa była ukryta podczas inicjalizacji
