@@ -762,6 +762,8 @@ footer {
 .pop-btn.locked-btn{background:#30363D;color:#4A5568;cursor:not-allowed;opacity:.6}
 .leaflet-control-zoom a{background:#1C2330!important;color:#8B949E!important;border-color:#30363D!important}
 .leaflet-control-zoom a:hover{color:#D4A017!important}
+.mapy-logo-control{background:rgba(28,35,48,.85);border:1px solid #30363D;border-radius:4px;padding:4px 8px;line-height:0}
+.mapy-logo-control img{display:block;height:30px;width:auto}
 /* Unlock overlay */
 #unlock-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
 #unlock-overlay.show{display:flex}
@@ -1281,6 +1283,10 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
       <button id="peaks-wks-btn-en" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Great Crown</button>
       <button id="peaks-dks-btn" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn active lang-pl"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamentowa</button>
       <button id="peaks-dks-btn-en" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamond</button>
+      <button id="basemap-standard-btn" onclick="setBasemap('standard')" class="grupy-toggle-btn basemap-btn active lang-pl" data-basemap="standard">🗺️ Standardowa</button>
+      <button id="basemap-standard-btn-en" onclick="setBasemap('standard')" class="grupy-toggle-btn basemap-btn active lang-en" style="display:none" data-basemap="standard">🗺️ Standard</button>
+      <button id="basemap-outdoor-btn" onclick="setBasemap('outdoor')" class="grupy-toggle-btn basemap-btn lang-pl" data-basemap="outdoor">🥾 Turystyczna</button>
+      <button id="basemap-outdoor-btn-en" onclick="setBasemap('outdoor')" class="grupy-toggle-btn basemap-btn lang-en" style="display:none" data-basemap="outdoor">🥾 Outdoor</button>
       <button id="sudety-btn" onclick="toggleSudety()" class="grupy-toggle-btn lang-pl">🔲 Granica Sudetów</button>
       <button id="sudety-btn-en" onclick="toggleSudety()" class="grupy-toggle-btn lang-en" style="display:none">🔲 Sudetes boundary</button>
       <button id="grupy-btn" onclick="toggleGrupy()" class="grupy-toggle-btn lang-pl">🗺 Grupy górskie</button>
@@ -1938,7 +1944,7 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
     </div>
     <div class="footer-copy" style="margin-top:1.5rem;line-height:2">
       Autor · Author: <strong style="color:var(--cream)">Wojciech Rogala</strong> · <a href="mailto:rogalaw@wp.pl" style="color:var(--clay)">rogalaw@wp.pl</a><br>
-      © 2025–2026 Wojciech Rogala · Wielka Korona Sudetów · <span style="color:var(--clay)">v1.0</span><br>
+      © 2025–2026 Wojciech Rogala · Wielka Korona Sudetów · <span style="color:var(--clay)">v1.1</span><br>
       <span style="font-size:9px">Wszelkie prawa zastrzeżone. Kopiowanie, reprodukcja lub wykorzystywanie treści bez pisemnej zgody autora jest zabronione. · All rights reserved. Copying, reproduction or use of content without the author's written consent is prohibited.</span>
     </div>
   </div>
@@ -2085,11 +2091,51 @@ const peaksVisible = {ks:true, wks:true, dks:true};
    MAP
 ═══════════════════════════════════════════ */
 const map = L.map('map',{center:[50.35,16.1],zoom:7});
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+
+const MAPY_API_KEY = 'MqLkbBzesZfdJ8ALzwnbBzqbqCy5lNZNX1FjuT2pUS0';
+const baseStandardLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
   attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
   subdomains:'abcd',
   maxZoom:19
-}).addTo(map);
+});
+const baseOutdoorLayer = L.tileLayer(`https://api.mapy.com/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=${MAPY_API_KEY}`,{
+  minZoom:0, maxZoom:19,
+  attribution:'<a href="https://api.mapy.com/copyright" target="_blank">&copy; Seznam.cz a.s. a další</a>'
+});
+const MapyLogoControl = L.Control.extend({
+  options:{position:'bottomleft'},
+  onAdd:function(){
+    const container = L.DomUtil.create('div','mapy-logo-control');
+    const link = L.DomUtil.create('a','',container);
+    link.setAttribute('href','https://mapy.com/');
+    link.setAttribute('target','_blank');
+    link.setAttribute('rel','noopener');
+    link.innerHTML = '<img src="https://api.mapy.com/img/api/logo.svg" width="90" alt="Mapy.com">';
+    L.DomEvent.disableClickPropagation(link);
+    return container;
+  }
+});
+const mapyLogoControl = new MapyLogoControl();
+
+function applyBasemap(which){
+  if(which==='outdoor'){
+    if(map.hasLayer(baseStandardLayer)) map.removeLayer(baseStandardLayer);
+    if(!map.hasLayer(baseOutdoorLayer)) baseOutdoorLayer.addTo(map);
+    mapyLogoControl.addTo(map);
+  } else {
+    if(map.hasLayer(baseOutdoorLayer)) map.removeLayer(baseOutdoorLayer);
+    if(!map.hasLayer(baseStandardLayer)) baseStandardLayer.addTo(map);
+    map.removeControl(mapyLogoControl);
+  }
+  document.querySelectorAll('.basemap-btn').forEach(b=>b.classList.toggle('active', b.dataset.basemap===which));
+}
+window.setBasemap = function(which){
+  try{ localStorage.setItem('korona_basemap', which); }catch(e){}
+  applyBasemap(which);
+};
+let savedBasemap = 'standard';
+try{ savedBasemap = localStorage.getItem('korona_basemap') || 'standard'; }catch(e){}
+applyBasemap(savedBasemap);
 
 const COLOR_KS  = '#D4A017';
 const COLORS_WKS = {Zachodnie:'#3D7ABF',Środkowe:'#3D8C5A',Wschodnie:'#C97A2A'};
