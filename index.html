@@ -1920,8 +1920,6 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
           <td class="r muted">4.4 km</td>
           <td><span class="badge kpl">PL</span></td>
         </tr>
-<!-- TOTAL ROWS: 58 -->
-
         </tbody>
       </table>
     </div>
@@ -1944,7 +1942,7 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
     </div>
     <div class="footer-copy" style="margin-top:1.5rem;line-height:2">
       Autor · Author: <strong style="color:var(--cream)">Wojciech Rogala</strong> · <a href="mailto:rogalaw@wp.pl" style="color:var(--clay)">rogalaw@wp.pl</a><br>
-      © 2025–2026 Wojciech Rogala · Wielka Korona Sudetów · <span style="color:var(--clay)">v1.1</span><br>
+      © 2025–2026 Wojciech Rogala · Wielka Korona Sudetów · <span style="color:var(--clay)">v1.2</span><br>
       <span style="font-size:9px">Wszelkie prawa zastrzeżone. Kopiowanie, reprodukcja lub wykorzystywanie treści bez pisemnej zgody autora jest zabronione. · All rights reserved. Copying, reproduction or use of content without the author's written consent is prohibited.</span>
     </div>
   </div>
@@ -2069,10 +2067,36 @@ const DKS = [
 /* ═══════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════ */
+/* Śnieżnik i Ještěd przeniesione z WKS[0]/[1] do KS[8]/[9] (v1.1). Zapisany
+   wcześniej postęp wskazuje wciąż na stare indeksy WKS, które teraz są
+   zupełnie innymi szczytami — bez tej migracji stary "zdobyty" Śnieżnik
+   pokazywałby jako zdobyty np. Suchy Szczyt. Migracja jednorazowa,
+   zabezpieczona flagą schemaV2 (żeby nie przesunąć indeksów po raz drugi). */
+function migratePeakTiers(s){
+  if(s.schemaV2) return s;
+  const oldWks = s.wks || [];
+  const newWks = [];
+  const addToKs = [];
+  oldWks.forEach(i=>{
+    if(i===0) addToKs.push(8);       // Śnieżnik: był WKS[0], teraz KS[8]
+    else if(i===1) addToKs.push(9);  // Ještěd: był WKS[1], teraz KS[9]
+    else newWks.push(i-2);           // reszta przesuwa się o 2 w dół
+  });
+  s.wks = newWks;
+  s.ks = Array.from(new Set([...(s.ks||[]), ...addToKs]));
+  s.schemaV2 = true;
+  return s;
+}
 function loadState(){
+  let s;
   try{
-    return JSON.parse(localStorage.getItem('korona_state3')||'{"ks":[],"wks":[],"dks":[],"unlocked_wks":false,"unlocked_dks":false}');
-  }catch(e){return{ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false};}
+    s = JSON.parse(localStorage.getItem('korona_state3')||'{"ks":[],"wks":[],"dks":[],"unlocked_wks":false,"unlocked_dks":false}');
+  }catch(e){
+    s = {ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false};
+  }
+  s = migratePeakTiers(s);
+  saveState(s);
+  return s;
 }
 function saveState(s){
   try{localStorage.setItem('korona_state3',JSON.stringify(s));}catch(e){}
@@ -2631,6 +2655,7 @@ async function saveUserState(){
       dks: STATE.dks,
       unlocked_wks: STATE.unlocked_wks,
       unlocked_dks: STATE.unlocked_dks,
+      schemaV2: STATE.schemaV2 || false,
       updatedAt: fb.serverTimestamp(),
       displayName: user.displayName || user.email
     }, {merge: true});
@@ -2649,10 +2674,14 @@ async function loadUserState(user){
       STATE.dks = d.dks || [];
       STATE.unlocked_wks = d.unlocked_wks || false;
       STATE.unlocked_dks = d.unlocked_dks || false;
+      STATE.schemaV2 = d.schemaV2 || false;
+      const wasAlreadyV2 = STATE.schemaV2;
+      STATE = migratePeakTiers(STATE);
       saveState(STATE);
+      if(!wasAlreadyV2) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
       placeMarkers();
       updateUI();
-      
+
       if(STATE.unlocked_dks) document.getElementById('tab-dks').classList.remove('locked');
     }
   } catch(e){ console.warn('Odczyt z Firebase nieudany', e); }
