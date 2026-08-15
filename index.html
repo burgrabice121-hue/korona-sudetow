@@ -1279,10 +1279,10 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 
       <button id="peaks-ks-btn" onclick="togglePeaksLayer('ks')" class="grupy-toggle-btn active lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg>Korona</button>
       <button id="peaks-ks-btn-en" onclick="togglePeaksLayer('ks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg>Crown</button>
-      <button id="peaks-wks-btn" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn active lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Wielka Korona</button>
-      <button id="peaks-wks-btn-en" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Great Crown</button>
-      <button id="peaks-dks-btn" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn active lang-pl"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamentowa</button>
-      <button id="peaks-dks-btn-en" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamond</button>
+      <button id="peaks-wks-btn" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Wielka Korona</button>
+      <button id="peaks-wks-btn-en" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Great Crown</button>
+      <button id="peaks-dks-btn" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn lang-pl"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamentowa</button>
+      <button id="peaks-dks-btn-en" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamond</button>
       <button id="basemap-standard-btn" onclick="setBasemap('standard')" class="grupy-toggle-btn basemap-btn active lang-pl" data-basemap="standard">🗺️ Standardowa</button>
       <button id="basemap-standard-btn-en" onclick="setBasemap('standard')" class="grupy-toggle-btn basemap-btn active lang-en" style="display:none" data-basemap="standard">🗺️ Standard</button>
       <button id="basemap-outdoor-btn" onclick="setBasemap('outdoor')" class="grupy-toggle-btn basemap-btn lang-pl" data-basemap="outdoor">🥾 Turystyczna</button>
@@ -2291,7 +2291,7 @@ let openPopupIdx = null, openPopupType = null;
 const ksLayer = L.layerGroup();
 const wksLayer = L.layerGroup();
 const dksLayer = L.layerGroup();
-const peaksVisible = {ks:true, wks:true, dks:true};
+const peaksVisible = {ks:true, wks:false, dks:false};
 
 /* ═══════════════════════════════════════════
    MAP
@@ -2733,6 +2733,7 @@ let sudetyVisible=false;
 window.toggleSudety=function(){if(!sudetyOutline){let u=GRUPY_GEOJSON.features[0];for(let i=1;i<GRUPY_GEOJSON.features.length;i++){try{u=turf.union(u,GRUPY_GEOJSON.features[i]);}catch(e){}}sudetyOutline=stripHoles(u);sudetyLayer.addData(sudetyOutline);}sudetyVisible=!sudetyVisible;if(sudetyVisible){sudetyLayer.addTo(map);document.getElementById('sudety-btn').classList.add('active');document.getElementById('sudety-btn-en').classList.add('active');}else{map.removeLayer(sudetyLayer);document.getElementById('sudety-btn').classList.remove('active');document.getElementById('sudety-btn-en').classList.remove('active');}};
 let pasmaVisible=false;
 toggleSudety();
+toggleGrupy();
 window.togglePasma=function(){pasmaVisible=!pasmaVisible;if(pasmaVisible){pasmaLayer.addTo(map);document.getElementById('pasma-btn').classList.add('active');document.getElementById('pasma-btn-en').classList.add('active');}else{map.removeLayer(pasmaLayer);document.getElementById('pasma-btn').classList.remove('active');document.getElementById('pasma-btn-en').classList.remove('active');};};
 const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');});},{threshold:0.1});
 document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
