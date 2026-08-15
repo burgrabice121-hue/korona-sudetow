@@ -2733,7 +2733,6 @@ let sudetyVisible=false;
 window.toggleSudety=function(){if(!sudetyOutline){let u=GRUPY_GEOJSON.features[0];for(let i=1;i<GRUPY_GEOJSON.features.length;i++){try{u=turf.union(u,GRUPY_GEOJSON.features[i]);}catch(e){}}sudetyOutline=stripHoles(u);sudetyLayer.addData(sudetyOutline);}sudetyVisible=!sudetyVisible;if(sudetyVisible){sudetyLayer.addTo(map);document.getElementById('sudety-btn').classList.add('active');document.getElementById('sudety-btn-en').classList.add('active');}else{map.removeLayer(sudetyLayer);document.getElementById('sudety-btn').classList.remove('active');document.getElementById('sudety-btn-en').classList.remove('active');}};
 let pasmaVisible=false;
 toggleSudety();
-toggleGrupy();
 window.togglePasma=function(){pasmaVisible=!pasmaVisible;if(pasmaVisible){pasmaLayer.addTo(map);document.getElementById('pasma-btn').classList.add('active');document.getElementById('pasma-btn-en').classList.add('active');}else{map.removeLayer(pasmaLayer);document.getElementById('pasma-btn').classList.remove('active');document.getElementById('pasma-btn-en').classList.remove('active');};};
 const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible');});},{threshold:0.1});
 document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
