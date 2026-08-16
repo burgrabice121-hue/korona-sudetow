@@ -2886,6 +2886,7 @@ async function saveUserState(){
       schemaV2: STATE.schemaV2 || false,
       schemaV3: STATE.schemaV3 || false,
       schemaV4: STATE.schemaV4 || false,
+      schemaV5: STATE.schemaV5 || false,
       updatedAt: fb.serverTimestamp(),
       displayName: user.displayName || user.email
     }, {merge: true});
@@ -2907,10 +2908,12 @@ async function loadUserState(user){
       STATE.schemaV2 = d.schemaV2 || false;
       STATE.schemaV3 = d.schemaV3 || false;
       STATE.schemaV4 = d.schemaV4 || false;
-      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4;
+      STATE.schemaV5 = d.schemaV5 || false;
+      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5;
       STATE = migratePeakTiers(STATE);
       STATE = migrateOkoleToWks(STATE);
       STATE = migrateV4(STATE);
+      STATE = migrateV5(STATE);
       saveState(STATE);
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
       placeMarkers();
