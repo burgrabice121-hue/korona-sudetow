@@ -803,6 +803,29 @@ footer {
 .auth-err{font-size:12px;color:#F87171;text-align:center;margin-top:.75rem;min-height:18px}
 .auth-note{font-size:11px;color:var(--fog);text-align:center;margin-top:1rem;line-height:1.5}
 
+/* ── FEEDBACK ── */
+#feedback-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:8000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+#feedback-overlay.hidden{display:none}
+.fb-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:2rem 1.85rem;width:380px;max-width:95vw;box-shadow:0 8px 40px rgba(0,0,0,.5)}
+.fb-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.2rem}
+.fb-title{font-family:'Georgia',serif;font-size:1.1rem;font-weight:700;color:var(--gold)}
+.fb-close{background:none;border:none;color:var(--fog);font-size:1.2rem;cursor:pointer;line-height:1;padding:0 2px}
+.fb-sub{font-size:12px;color:var(--fog);margin:.5rem 0 1.5rem;line-height:1.5}
+.fb-field{margin-bottom:1rem}
+.fb-field label{display:block;font-family:'Courier New',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--fog);margin-bottom:5px}
+.fb-field textarea,.fb-field input{width:100%;padding:9px 12px;background:#0D1117;border:1px solid var(--border);border-radius:4px;color:var(--cream);font-size:14px;font-family:'Georgia',serif;transition:border-color .2s;outline:none}
+.fb-field textarea{min-height:96px;resize:vertical;line-height:1.5;font-family:inherit}
+.fb-field textarea:focus,.fb-field input:focus{border-color:var(--gold)}
+.fb-btn{width:100%;padding:10px;background:var(--gold);border:none;border-radius:4px;font-family:'Georgia',serif;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;transition:background .2s;margin-top:.5rem}
+.fb-btn:hover{background:#F0C040}
+.fb-btn:disabled{opacity:.5;cursor:not-allowed}
+.fb-err{font-size:12px;color:#F87171;text-align:center;margin-top:.75rem;min-height:18px}
+.fb-note{font-size:11px;color:var(--fog);text-align:center;margin-top:1rem;line-height:1.5}
+.fb-ok{text-align:center;padding:1rem 0}
+.fb-ok-icon{font-size:2rem;margin-bottom:.5rem}
+.fb-ok-text{font-family:'Georgia',serif;color:var(--cream);font-size:1rem;margin-bottom:.3rem}
+.fb-ok-sub{font-size:12px;color:var(--fog)}
+
 /* ── USER BAR ── */
 #user-bar{display:flex;align-items:center;gap:10px;margin-left:auto}
 .ub-name{font-family:'Courier New',monospace;font-size:11px;color:var(--fog);white-space:nowrap}
@@ -960,6 +983,10 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
     <a href="#peaks-section" class="lang-en" style="display:none">Peak list</a>
   </div>
   <div style="display:flex;align-items:center;gap:0.7rem">
+    <button id="feedback-btn" title="Zgłoś uwagi / Send feedback" onclick="showFeedbackOverlay()" style="background:none;border:1px solid rgba(255,255,255,0.25);color:#E6EDF3;border-radius:6px;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;transition:background 0.2s">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="lang-pl">Zgłoś uwagi</span><span class="lang-en" style="display:none">Feedback</span>
+    </button>
     <button id="share-btn" title="Udostępnij / Share" onclick="shareApp()" style="background:none;border:1px solid rgba(255,255,255,0.25);color:#E6EDF3;border-radius:6px;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;transition:background 0.2s">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       <span class="lang-pl">Udostępnij</span><span class="lang-en" style="display:none">Share</span>
@@ -2860,6 +2887,53 @@ window.doSignOut = async function(){
   await signOut(auth);
 };
 
+function showFeedbackOverlay(){
+  document.getElementById('fb-form-view').style.display = '';
+  document.getElementById('fb-ok-view').style.display = 'none';
+  document.getElementById('fb-message').value = '';
+  document.getElementById('fb-email').value = '';
+  document.getElementById('fb-err').textContent = '';
+  document.getElementById('fb-submit-btn').disabled = false;
+  document.getElementById('feedback-overlay').classList.remove('hidden');
+}
+window.showFeedbackOverlay = showFeedbackOverlay;
+
+function hideFeedbackOverlay(){
+  document.getElementById('feedback-overlay').classList.add('hidden');
+}
+window.hideFeedbackOverlay = hideFeedbackOverlay;
+
+window.submitFeedback = async function(){
+  const message = document.getElementById('fb-message').value.trim();
+  const email   = document.getElementById('fb-email').value.trim();
+  const err     = document.getElementById('fb-err');
+  const btn     = document.getElementById('fb-submit-btn');
+  err.textContent = '';
+  if(!message){
+    err.textContent = 'Wpisz treść wiadomości.';
+    return;
+  }
+  btn.disabled = true;
+  try {
+    const fb = window._fb;
+    const user = fb.auth.currentUser;
+    const ref = fb.doc(fb.collection(fb.db, 'feedback'));
+    await fb.setDoc(ref, {
+      message,
+      email: email || null,
+      userId: user ? user.uid : null,
+      displayName: user ? (user.displayName || user.email) : null,
+      createdAt: fb.serverTimestamp()
+    });
+    document.getElementById('fb-form-view').style.display = 'none';
+    document.getElementById('fb-ok-view').style.display = '';
+  } catch(e){
+    console.warn('Zapis zgłoszenia nieudany', e);
+    err.textContent = 'Nie udało się wysłać. Spróbuj ponownie.';
+    btn.disabled = false;
+  }
+};
+
 function renderUserBar(user){
   const bar = document.getElementById('user-bar');
   if(user){
@@ -3025,6 +3099,32 @@ async function loadRanking(){
     </div>
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-note">Twoje dane są bezpieczne — logowanie przez Google Firebase</div>
+  </div>
+</div>
+
+<!-- FEEDBACK OVERLAY -->
+<div id="feedback-overlay" class="hidden">
+  <div class="fb-box">
+    <div id="fb-form-view">
+      <div class="fb-hdr">
+        <div class="fb-title">✎ Zgłoś uwagi</div>
+        <button class="fb-close" onclick="hideFeedbackOverlay()" title="Zamknij">✕</button>
+      </div>
+      <div class="fb-sub">Masz pomysł na usprawnienie? Coś nie działa? Napisz — czytam każdą wiadomość.</div>
+      <div class="fb-field"><label>Wiadomość</label><textarea id="fb-message" placeholder="Np. brakuje mi filtra po województwie..."></textarea></div>
+      <div class="fb-field"><label>Twój e-mail (opcjonalnie, jeśli chcesz odpowiedź)</label><input type="email" id="fb-email" placeholder="twoj@email.com" autocomplete="email"></div>
+      <button class="fb-btn" id="fb-submit-btn" onclick="submitFeedback()">Wyślij uwagę</button>
+      <div class="fb-err" id="fb-err"></div>
+      <div class="fb-note">Wiadomość trafi bezpośrednio do autora strony.</div>
+    </div>
+    <div id="fb-ok-view" style="display:none">
+      <div class="fb-ok">
+        <div class="fb-ok-icon">✓</div>
+        <div class="fb-ok-text">Dziękuję za wiadomość!</div>
+        <div class="fb-ok-sub">Zostanie przeczytana najszybciej, jak to możliwe.</div>
+      </div>
+      <button class="fb-btn" onclick="hideFeedbackOverlay()">Zamknij</button>
+    </div>
   </div>
 </div>
 
