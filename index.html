@@ -2393,9 +2393,10 @@ const peaksVisible = {ks:true, wks:false, dks:false};
 const map = L.map('map',{center:[50.35,16.1],zoom:7});
 
 const MAPY_API_KEY = 'MqLkbBzesZfdJ8ALzwnbBzqbqCy5lNZNX1FjuT2pUS0';
-const baseStandardLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-  subdomains:'abc',
+const CARTO_API_KEY = 'cb1_3jva_1_cfb8b0b71c38c6a042eae66f';
+const baseStandardLayer = L.tileLayer(`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${CARTO_API_KEY}`,{
+  attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains:'abcd',
   maxZoom:19
 });
 const baseOutdoorLayer = L.tileLayer(`https://api.mapy.com/v1/maptiles/outdoor/256/{z}/{x}/{y}?apikey=${MAPY_API_KEY}`,{
