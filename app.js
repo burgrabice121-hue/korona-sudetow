@@ -427,7 +427,7 @@ function updateUI(){
   document.getElementById('wks-done').textContent = wksDone;
   document.getElementById('dks-done').textContent = dksDone;
   document.getElementById('ks-bar').style.width   = (ksDone/8*100)+'%';
-  document.getElementById('wks-bar').style.width  = (wksDone/31*100)+'%';
+  document.getElementById('wks-bar').style.width  = (wksDone/32*100)+'%';
   document.getElementById('dks-bar').style.width  = (dksDone/24*100)+'%';
 
   // Achievements
@@ -469,7 +469,7 @@ function unlockLevel(type){
     document.getElementById('tab-wks').classList.remove('locked');
     wksMarkers.forEach(m=>m.setOpacity(1));
     document.getElementById('unlock-title').textContent = 'Korona Sudetów zdobyta!';
-    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś wszystkie <strong>8 szczytów</strong> Korony Sudetów.<br><br>Odblokowano <strong>Wielką Koronę Sudetów</strong> — 31 szczytów!';
+    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś wszystkie <strong>8 szczytów</strong> Korony Sudetów.<br><br>Odblokowano <strong>Wielką Koronę Sudetów</strong> — 32 szczyty!';
     document.getElementById('unlock-close-btn').textContent = 'Zaczynam Wielką Koronę →';
     document.getElementById('unlock-close-btn').onclick = function(){ closeUnlock('wks'); };
   } else {
@@ -881,7 +881,7 @@ async function loadRanking(){
     let rows = [];
     snap.forEach(d=>{
       const u = d.data();
-      if(_rankTab==='wk'  && (u.wks||[]).length<31) return;
+      if(_rankTab==='wk'  && (u.wks||[]).length<32) return;
       if(_rankTab==='dk'  && (u.dks||[]).length<24) return;
       rows.push(u);
     });
@@ -899,7 +899,7 @@ async function loadRanking(){
       <td class="rank-medal">${medals[i]||i+1}</td>
       <td><div class="rank-name">${u.displayName||'Anonimowy'}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
-      <td>${(u.wks||[]).length}/31 ${(u.wks||[]).length===31?'<span class="rank-crown wk">👑</span>':''}</td>
+      <td>${(u.wks||[]).length}/32 ${(u.wks||[]).length===32?'<span class="rank-crown wk">👑</span>':''}</td>
       <td>${(u.dks||[]).length}/24 ${(u.dks||[]).length===24?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
