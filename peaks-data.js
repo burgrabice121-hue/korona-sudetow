@@ -41,7 +41,7 @@ const WKS = [
   { name:"Zvičina",            cz:"Zvičina",          alt:672,  prom:187,  izol:19.3, pasmo:"Podgórze Karkonoskie",        strefa:"Zachodnie", kraj:"CZ",    lat:50.4548267, lng:15.6954847, note:"Szczyt Podgórza Karkonoskiego" },
   { name:"Lisia Góra",         cz:"Liščí hora",       alt:613,  prom:178,  izol:10.5, pasmo:"Podgórze Karkonoskie",        strefa:"Zachodnie", kraj:"CZ",    lat:50.4765256, lng:15.9186503, note:"Szczyt Podgórza Karkonoskiego" },
   { name:"Słoneczna",       cz:"Slunečná",         alt:802,  prom:168,  izol:19.3, pasmo:"Niski Jesionik",    strefa:"Wschodnie", kraj:"CZ",    lat:49.8394,  lng:17.4293,  note:"Najwyższy szczyt Nízkého Jeseníku" },
-  { name:"Wysoka Dąbrowa",  cz:"Hohe Dubrau",      alt:307,  prom:113,  izol:12.8, pasmo:"Płaskowyż Budziszyński", strefa:"Zachodnie", kraj:"DE", lat:51.2635592, lng:14.6866339, note:"Najwyższy szczyt Płaskowyżu Budziszyńskiego" },
+  { name:"Wysoka Dąbrowa",  cz:"Hohe Dubrau",      alt:307,  prom:113,  izol:12.8, pasmo:"Płaskowyż Budziszyński", strefa:"Zachodnie", kraj:"DE", lat:51.2635592, lng:14.6866339, note:"Najwybitniejszy szczyt Płaskowyżu Budziszyńskiego" },
 ];
 
 const DKS = [
