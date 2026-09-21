@@ -1,11 +1,11 @@
 const KS = [
   { name:"Śnieżka",         cz:"Sněžka",           alt:1603, prom:1197, izol:289.6,pasmo:"Karkonosze",        strefa:"Zachodnie", kraj:"PL/CZ", lat:50.7360,  lng:15.7399,  note:"Najwybitniejszy szczyt Sudetów, Polski i Czech" },
-  { name:"Pradziad",        cz:"Praděd",           alt:1491, prom:983,  izol:94,   pasmo:"Wysoki Jesionik",   strefa:"Wschodnie", kraj:"CZ",    lat:50.0836,  lng:17.2328,  note:"Najwyższy szczyt Moraw" },
+  { name:"Pradziad",        cz:"Praděd",           alt:1491, prom:983,  izol:94,   pasmo:"Wysoki Jesionik",   strefa:"Wschodnie", kraj:"CZ",    lat:50.0830764,  lng:17.2309767,  note:"Najwyższy szczyt Moraw" },
   { name:"Wielka Desztna",  cz:"Velká Deštná",     alt:1115, prom:582,  izol:38,   pasmo:"Góry Orlickie",     strefa:"Środkowe",  kraj:"CZ",    lat:50.30500, lng:16.39908, note:"Najwyższy szczyt Gór Orlickich" },
   { name:"Wielka Sowa",     cz:"—",                alt:1015, prom:484,  izol:37.4, pasmo:"Góry Sowie",        strefa:"Środkowe",  kraj:"PL",    lat:50.6802031, lng:16.4855275, note:"Najwyższy szczyt Gór Sowich" },
   { name:"Ślęża",           cz:"Sleza",            alt:718,  prom:468,  izol:36,   pasmo:"Masyw Ślęży",       strefa:"Środkowe",  kraj:"PL",    lat:50.86502, lng:16.70882, note:"Najwyższy szczyt Przedgórza Sudeckiego" },
   { name:"Luž",             cz:"Luž / Lausche",    alt:793,  prom:369,  izol:26,   pasmo:"Góry Łużyckie",     strefa:"Zachodnie", kraj:"CZ/DE", lat:50.8489,  lng:14.6469,  note:"Stożek wulkaniczny, najwyższy Gór Łużyckich" },
-  { name:"Śnieżnik",        cz:"Králický Sněžník", alt:1425, prom:662,  izol:30.6, pasmo:"Masyw Śnieżnika",   strefa:"Wschodnie", kraj:"PL/CZ", lat:50.2069,  lng:16.8489,  note:"Dominanta Kotliny Kłodzkiej" },
+  { name:"Śnieżnik",        cz:"Králický Sněžník", alt:1425, prom:662,  izol:30.6, pasmo:"Masyw Śnieżnika",   strefa:"Wschodnie", kraj:"PL/CZ", lat:50.2074567,  lng:16.8473928,  note:"Dominanta Kotliny Kłodzkiej" },
   { name:"Ještěd",          cz:"Ještěd",           alt:1012, prom:512,  izol:18.1, pasmo:"Grzbiet Jesztedzko-Kozakowski",strefa:"Zachodnie", kraj:"CZ",    lat:50.73222, lng:14.98528, note:"Wieża TV widoczna z daleka" },
 ];
 
