@@ -176,6 +176,35 @@ function migrateV7(s){
   s.schemaV7 = true;
   return s;
 }
+/* Restrukturyzacja WKS/DKS pod nowe kryterium Wielkiej Korony — wybitność
+   ≥350 m lub izolacja >14 km (v1.7). Naraz: 12 szczytów WKS→DKS, oraz usunięcie
+   łącznie 9 szczytów DKS (3 o wybitności <50 m, 6 z pasm już reprezentowanych
+   w KS/WKS). Zbyt wiele niezależnych ruchów, żeby wyrazić to przesunięciami
+   indeksów jak w migrateV2–V7 — mapowanie budowane wprost po nazwie szczytu,
+   ze stanu tablic WKS(31)/DKS(24) sprzed tej zmiany (czyli stanu PO migrateV7)
+   na stan obecny WKS(17)/DKS(27). null = szczyt usunięty, zdobycie przepada
+   (analogicznie do Jawornika Wielkiego w migrateV6). KS nie ruszony. */
+function migrateV8(s){
+  if(s.schemaV8) return s;
+  const WKS_TO_NEW = [{t:'wks',i:0},{t:'wks',i:1},{t:'wks',i:2},{t:'wks',i:3},{t:'wks',i:4},null,null,{t:'dks',i:20},{t:'wks',i:5},{t:'wks',i:6},{t:'dks',i:21},{t:'dks',i:22},{t:'dks',i:23},{t:'dks',i:24},{t:'wks',i:7},{t:'dks',i:25},{t:'wks',i:8},{t:'wks',i:9},{t:'wks',i:10},{t:'wks',i:11},null,null,{t:'wks',i:12},{t:'wks',i:13},null,null,{t:'wks',i:14},null,{t:'wks',i:15},null,{t:'wks',i:16}];
+  const DKS_TO_NEW = [{t:'dks',i:0},{t:'dks',i:1},{t:'dks',i:2},{t:'dks',i:3},{t:'dks',i:4},{t:'dks',i:5},{t:'dks',i:6},{t:'dks',i:7},{t:'dks',i:8},{t:'dks',i:9},null,{t:'dks',i:10},null,{t:'dks',i:11},{t:'dks',i:12},{t:'dks',i:13},{t:'dks',i:14},{t:'dks',i:15},{t:'dks',i:16},{t:'dks',i:17},null,{t:'dks',i:18},null,{t:'dks',i:19}];
+  const newWks = new Set();
+  const newDks = new Set();
+  (s.wks||[]).forEach(i=>{
+    const dest = WKS_TO_NEW[i];
+    if(!dest) return;
+    (dest.t==='wks'?newWks:newDks).add(dest.i);
+  });
+  (s.dks||[]).forEach(i=>{
+    const dest = DKS_TO_NEW[i];
+    if(!dest) return;
+    (dest.t==='wks'?newWks:newDks).add(dest.i);
+  });
+  s.wks = Array.from(newWks);
+  s.dks = Array.from(newDks);
+  s.schemaV8 = true;
+  return s;
+}
 function loadState(){
   let s;
   try{
@@ -189,6 +218,7 @@ function loadState(){
   s = migrateV5(s);
   s = migrateV6(s);
   s = migrateV7(s);
+  s = migrateV8(s);
   saveState(s);
   return s;
 }
@@ -808,6 +838,7 @@ async function saveUserState(){
       schemaV5: STATE.schemaV5 || false,
       schemaV6: STATE.schemaV6 || false,
       schemaV7: STATE.schemaV7 || false,
+      schemaV8: STATE.schemaV8 || false,
       updatedAt: fb.serverTimestamp(),
       displayName: user.displayName || user.email
     }, {merge: true});
@@ -832,13 +863,15 @@ async function loadUserState(user){
       STATE.schemaV5 = d.schemaV5 || false;
       STATE.schemaV6 = d.schemaV6 || false;
       STATE.schemaV7 = d.schemaV7 || false;
-      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7;
+      STATE.schemaV8 = d.schemaV8 || false;
+      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8;
       STATE = migratePeakTiers(STATE);
       STATE = migrateOkoleToWks(STATE);
       STATE = migrateV4(STATE);
       STATE = migrateV5(STATE);
       STATE = migrateV6(STATE);
       STATE = migrateV7(STATE);
+      STATE = migrateV8(STATE);
       saveState(STATE);
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
       placeMarkers();
