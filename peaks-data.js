@@ -55,9 +55,7 @@ const DKS = [
   { name:"Włodzicka Góra",    cz:"—",              alt:755, prom:110, izol:5.4,  pasmo:"Obniżenie Nowej Rudy",             kraj:"PL",    lat:50.6260, lng:16.4332, note:"Dominanta Obniżenia Nowej Rudy" },
   { name:"Zadzierna",         cz:"—",              alt:724, prom:152, izol:2.7,  pasmo:"Kotlina Kamiennogórska",           kraj:"PL",    lat:50.7221206, lng:15.9597117, note:"Najwyższy szczyt Kotliny Kamiennogórskiej" },
   { name:"Lázek",             cz:"Lázek",          alt:714, prom:97,  izol:6.6,  pasmo:"Zábřežská vrchovina",              kraj:"CZ",    lat:49.9256439, lng:16.7053572, note:"Najwyższy szczyt Zábřežskiej vrchoviny" },
-  { name:"Baba",              cz:"Baba",           alt:673, prom:33,  izol:2.7,  pasmo:"Podgórze Karkonoskie",             kraj:"CZ",    lat:50.6120, lng:15.9060, note:"Najwyższy szczyt Podgórza Karkonoskiego" },
   { name:"Nowa Kopa",         cz:"Nová Kopa",      alt:533, prom:93,  izol:4.9,  pasmo:"Obniżenie Ścinawki (Kotlina Broumovska)", kraj:"PL",    lat:50.5404, lng:16.4462, note:"Najwyższy szczyt Obniżenia Ścinawki" },
-  { name:"Pasterskie Skały",  cz:"—",              alt:607, prom:45,  izol:2,    pasmo:"Rów Górnej Nysy",                  kraj:"PL",    lat:50.2758, lng:16.7457, note:"Najwyższy szczyt Rowu Górnej Nysy" },
   { name:"Kobyla",            cz:"Kobyla",         alt:574, prom:174, izol:4.6,  pasmo:"Pogórze Opawskie",                 kraj:"CZ",    lat:50.1981, lng:17.6053, note:"Najwyższy i najwybitniejszy szczyt Pogórza Opawskiego" },
   { name:"Andělský vrch",     cz:"Andělský vrch",  alt:572, prom:50,  izol:2.2,  pasmo:"Pogórze Izerskie",                 kraj:"CZ",    lat:50.9405, lng:15.2662, note:"Najwyższy szczyt Pogórza Izerskiego" },
   { name:"Boží hora",         cz:"Boží hora",      alt:527, prom:127, izol:3.8,  pasmo:"Pogórze Żulowskie",                kraj:"CZ",    lat:50.3103, lng:17.1121, note:"Najwyższy i najwybitniejszy szczyt Pogórza Żulowskiego" },
@@ -67,6 +65,5 @@ const DKS = [
   { name:"Na Vyhlídce",       cz:"Na Vyhlídce",    alt:501, prom:69,  izol:2.8,  pasmo:"Pogórze Burgrabickie",             kraj:"CZ",    lat:50.2974383, lng:17.2726228, note:"Najwyższy szczyt Pogórza Burgrabickiego" },
   { name:"Kozie Chrzepty",    cz:"—",              alt:493, prom:133, izol:2.7,  pasmo:"Wzgórza Niemczańsko-Strzelińskie", kraj:"PL",    lat:50.5578, lng:16.7250, note:"Najwyższy szczyt Wzgórz Niemczańsko-Strzelińskich" },
   { name:"Chlum",             cz:"Chlum",          alt:344, prom:59,  izol:8.3,  pasmo:"Pogórze Trszickie",                kraj:"CZ",    lat:49.5408, lng:17.3574, note:"Najwybitniejszy szczyt Pogórza Trszickiego" },
-  { name:"Polana",            cz:"—",              alt:405, prom:20,  izol:4.4,  pasmo:"Kotlina Kłodzka",                  kraj:"PL",    lat:50.3923, lng:16.5976, note:"Najwyższy szczyt Kotliny Kłodzkiej" },
   { name:"Biskupia Kopa",     cz:"Biskupská kupa", alt:890, prom:176, izol:8,    pasmo:"Góry Opawskie",                    kraj:"PL/CZ", lat:50.25667,lng:17.42861,note:"Wieża na granicy PL/CZ" },
 ];
