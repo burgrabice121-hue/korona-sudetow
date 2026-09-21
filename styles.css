@@ -354,6 +354,44 @@ section { position: relative; }
 }
 .criterion-desc.en { display: none; }
 
+.criterion-chart-box {
+  background: var(--cream);
+  border: 1px solid var(--fog);
+  border-radius: 8px;
+  padding: 1.25rem 1.25rem 1rem;
+  margin: 1rem 0;
+}
+.criterion-chart-box + .criterion-chart-box { margin-top: 0.75rem; }
+.criterion-chart-title {
+  font-family: var(--serif);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--stone);
+  margin-bottom: 0.15rem;
+}
+.criterion-chart-sub {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--bark);
+  opacity: 0.75;
+  margin-bottom: 0.75rem;
+}
+.criterion-chart-legend {
+  display: flex;
+  gap: 1.1rem;
+  margin-top: 0.65rem;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--bark);
+}
+.criterion-chart-legend .sw {
+  display: inline-block;
+  width: 9px; height: 9px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+
 .zones-grid {
   display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;
   margin-top: 2.5rem;
