@@ -205,6 +205,43 @@ function migrateV8(s){
   s.schemaV8 = true;
   return s;
 }
+/* Nowe kryterium DKS — wybitność >270 m lub izolacja >10 km, plus reprezentacja
+   pasm bez reprezentanta w KS/WKS (v1.8). Usunięto Lázka i Borową, dodano 12
+   szczytów (w tym drugi szczyt o nazwie "Smrek" — stąd mapowanie po pozycji,
+   nie po nazwie, żeby nie pomylić obu). Mapowanie budowane wprost ze stanu
+   DKS(27) sprzed tej zmiany na DKS(37) obecny. KS/WKS nie ruszone. */
+function migrateV9(s){
+  if(s.schemaV9) return s;
+  const DKS_TO_NEW = [0,1,2,3,4,null,5,6,7,null,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
+  const newDks = new Set();
+  (s.dks||[]).forEach(i=>{
+    const dest = DKS_TO_NEW[i];
+    if(dest===null || dest===undefined) return;
+    newDks.add(dest);
+  });
+  s.dks = Array.from(newDks);
+  s.schemaV9 = true;
+  return s;
+}
+/* Podmiana reprezentanta Pogórza Izerskiego: Andělský vrch (był DKS[10])
+   zastąpiony przez Humrich (v1.9). Był ani pierwszym, ani ostatnim elementem,
+   więc wszystkie indeksy DKS powyżej 10 przesuwają się o 1 w dół. Zdobycie
+   Andělský vrch po prostu przepada — to inny szczyt, nie ma dokąd go
+   przenieść (analogicznie do Spitzbergu w migrateV7). Humrich dodany na
+   końcu, zaczyna niezdobyty. */
+function migrateV10(s){
+  if(s.schemaV10) return s;
+  const oldDks = s.dks || [];
+  const newDks = [];
+  oldDks.forEach(i=>{
+    if(i===10) return;                        // Andělský vrch: był DKS[10], usunięty
+    else if(i>10) newDks.push(i-1);           // reszta DKS powyżej niego przesuwa się o 1 w dół
+    else newDks.push(i);
+  });
+  s.dks = newDks;
+  s.schemaV10 = true;
+  return s;
+}
 function loadState(){
   let s;
   try{
@@ -219,6 +256,8 @@ function loadState(){
   s = migrateV6(s);
   s = migrateV7(s);
   s = migrateV8(s);
+  s = migrateV9(s);
+  s = migrateV10(s);
   saveState(s);
   return s;
 }
@@ -458,7 +497,7 @@ function updateUI(){
   document.getElementById('dks-done').textContent = dksDone;
   document.getElementById('ks-bar').style.width   = (ksDone/8*100)+'%';
   document.getElementById('wks-bar').style.width  = (wksDone/17*100)+'%';
-  document.getElementById('dks-bar').style.width  = (dksDone/27*100)+'%';
+  document.getElementById('dks-bar').style.width  = (dksDone/37*100)+'%';
 
   // Achievements
   const setAch = (id, earned, cls='earned') => {
@@ -471,7 +510,7 @@ function updateUI(){
   setAch('ach-wks1', wksDone>=1,   'wks-earned');
   setAch('ach-wks',  wksDone===14, 'wks-earned');
   setAch('ach-dks1', dksDone>=1,   'dk-earned');
-  setAch('ach-dks',  dksDone===27, 'dk-earned');
+  setAch('ach-dks',  dksDone===37, 'dk-earned');
 
   // Unlock WKS
   if(ksDone===8 && !STATE.unlocked_wks){
@@ -506,7 +545,7 @@ function unlockLevel(type){
     document.getElementById('tab-dks').classList.remove('locked');
     dksMarkers.forEach(m=>m.setOpacity(1));
     document.getElementById('unlock-title').textContent = 'Wielka Korona zdobyta!';
-    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś <strong>14 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 27 szczytów!';
+    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś <strong>14 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 37 szczytów!';
     document.getElementById('unlock-close-btn').textContent = 'Zaczynam Diamentową Koronę →';
     document.getElementById('unlock-close-btn').onclick = function(){ closeUnlock('dks'); };
   }
@@ -839,6 +878,8 @@ async function saveUserState(){
       schemaV6: STATE.schemaV6 || false,
       schemaV7: STATE.schemaV7 || false,
       schemaV8: STATE.schemaV8 || false,
+      schemaV9: STATE.schemaV9 || false,
+      schemaV10: STATE.schemaV10 || false,
       updatedAt: fb.serverTimestamp(),
       displayName: user.displayName || user.email
     }, {merge: true});
@@ -864,7 +905,9 @@ async function loadUserState(user){
       STATE.schemaV6 = d.schemaV6 || false;
       STATE.schemaV7 = d.schemaV7 || false;
       STATE.schemaV8 = d.schemaV8 || false;
-      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8;
+      STATE.schemaV9 = d.schemaV9 || false;
+      STATE.schemaV10 = d.schemaV10 || false;
+      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10;
       STATE = migratePeakTiers(STATE);
       STATE = migrateOkoleToWks(STATE);
       STATE = migrateV4(STATE);
@@ -872,6 +915,8 @@ async function loadUserState(user){
       STATE = migrateV6(STATE);
       STATE = migrateV7(STATE);
       STATE = migrateV8(STATE);
+      STATE = migrateV9(STATE);
+      STATE = migrateV10(STATE);
       saveState(STATE);
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
       placeMarkers();
@@ -915,7 +960,7 @@ async function loadRanking(){
     snap.forEach(d=>{
       const u = d.data();
       if(_rankTab==='wk'  && (u.wks||[]).length<17) return;
-      if(_rankTab==='dk'  && (u.dks||[]).length<27) return;
+      if(_rankTab==='dk'  && (u.dks||[]).length<37) return;
       rows.push(u);
     });
     rows.sort((a,b)=>{
@@ -933,7 +978,7 @@ async function loadRanking(){
       <td><div class="rank-name">${u.displayName||'Anonimowy'}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
       <td>${(u.wks||[]).length}/17 ${(u.wks||[]).length===17?'<span class="rank-crown wk">👑</span>':''}</td>
-      <td>${(u.dks||[]).length}/27 ${(u.dks||[]).length===27?'<span class="rank-crown dk">💎</span>':''}</td>
+      <td>${(u.dks||[]).length}/37 ${(u.dks||[]).length===37?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
 }
