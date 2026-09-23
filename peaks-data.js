@@ -35,7 +35,7 @@ const DKS = [
   { name:"Jagodna Północna",  cz:"—",              alt:985, prom:247, izol:6,    pasmo:"Góry Bystrzyckie",                 kraj:"PL",    lat:50.2609, lng:16.5608, note:"Kulminacja Gór Bystrzyckich" },
   { name:"Wysoka Kopa",       cz:"—",              alt:1126,prom:240, izol:6.7,  pasmo:"Góry Izerskie",                    kraj:"PL",    lat:50.8500, lng:15.4194, note:"Najwyższy szczyt Gór Izerskich" },
   { name:"Skalnik",           cz:"Skalnik",        alt:945, prom:220, izol:7,    pasmo:"Rudawy Janowickie",                kraj:"PL",    lat:50.80736,lng:15.89408,note:"Najwyższy szczyt Rudaw Janowickich" },
-  { name:"Špičák",            cz:"Špičák",         alt:841, prom:121, izol:2.9,  pasmo:"Pogórze Orlickie",                 kraj:"CZ",    lat:50.3106, lng:16.3276, note:"Najwyższy szczyt Pogórza Orlickiego" },
+  { name:"Chlum",             cz:"Chlum",          alt:603, prom:180, izol:11,   pasmo:"Pogórze Orlickie",                 kraj:"CZ",    lat:50.0947553, lng:16.3563128, note:"Najwybitniejszy szczyt Pogórza Orlickiego" },
   { name:"Włodzicka Góra",    cz:"—",              alt:755, prom:110, izol:5.4,  pasmo:"Obniżenie Nowej Rudy",             kraj:"PL",    lat:50.6260, lng:16.4332, note:"Dominanta Obniżenia Nowej Rudy" },
   { name:"Zadzierna",         cz:"—",              alt:724, prom:152, izol:2.7,  pasmo:"Kotlina Kamiennogórska",           kraj:"PL",    lat:50.7221206, lng:15.9597117, note:"Najwyższy szczyt Kotliny Kamiennogórskiej" },
   { name:"Nowa Kopa",         cz:"Nová Kopa",      alt:533, prom:93,  izol:4.9,  pasmo:"Obniżenie Ścinawki (Kotlina Broumovska)", kraj:"PL",    lat:50.5404, lng:16.4462, note:"Najwyższy szczyt Obniżenia Ścinawki" },
