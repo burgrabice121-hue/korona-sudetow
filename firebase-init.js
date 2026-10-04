@@ -1,6 +1,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, arrayUnion, arrayRemove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDcx8nF7_cS30n7jBSPJ9iN3_Utl8cxHg8",
@@ -16,4 +16,14 @@
   const db = getFirestore(app);
 
   // Eksponuj globalnie dla reszty skryptów
-  window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, doc, setDoc, getDoc, collection, getDocs, updateDoc, arrayUnion, arrayRemove, serverTimestamp };
+  window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp };
+
+  // Storage (zdjęcia z pamiętnika) ładowany osobno — ewentualny błąd nie może zepsuć logowania ani postępu.
+  window._fbStorageReady = import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js").then(function(m){
+    window._fb.storage = m.getStorage(app);
+    window._fb.sRef = m.ref;
+    window._fb.uploadBytes = m.uploadBytes;
+    window._fb.getDownloadURL = m.getDownloadURL;
+    window._fb.deleteObject = m.deleteObject;
+    return true;
+  }).catch(function(e){ console.warn('Storage niedostępny', e); return false; });

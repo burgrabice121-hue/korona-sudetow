@@ -1,0 +1,118 @@
+/* diary.css — pamiętnik zdobywania (wejścia na szczyty). Ładowany przez diary.js. */
+
+/* przycisk w popupie szczytu */
+.pop-btn.diary{margin-bottom:6px;background:transparent;border:1px solid #D4A017;color:#D4A017}
+.pop-btn.diary:hover{background:rgba(212,160,23,.15)}
+.pop-btn.diary.has{border-color:#22C55E;color:#22C55E}
+.pop-btn.diary.has:hover{background:rgba(34,197,94,.12)}
+
+/* przycisk w pasku użytkownika */
+.ub-btn.diary{border-color:rgba(212,160,23,.5)}
+
+/* overlaye */
+#diary-overlay,#diary-list-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:8px}
+#diary-overlay.hidden,#diary-list-overlay.hidden{display:none}
+#diary-overlay{z-index:8200}
+.dy-box{background:var(--panel,#1C2330);border:1px solid var(--border,#30363D);border-radius:10px;width:640px;max-width:100%;max-height:calc(100vh - 16px);display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.5);color:#E6EDF3}
+.dy-box.dy-wide{width:720px}
+.dy-hdr{padding:.6rem 1rem .5rem;border-bottom:1px solid var(--border,#30363D);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.dy-title{font-family:'Georgia',serif;font-size:1.1rem;font-weight:700;color:var(--gold,#D4A017);line-height:1.2}
+.dy-sub{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.05em;color:#9AA4B2;margin-top:2px}
+.dy-close{background:none;border:none;color:#C9D1D9;font-size:1.3rem;cursor:pointer;line-height:1;padding:0 4px}
+.dy-close:hover{color:#fff}
+.dy-body{overflow-y:auto;flex:1;padding:.6rem 1rem .4rem}
+
+/* przełącznik wejść */
+.dy-visits{display:flex;flex-wrap:wrap;gap:6px;padding:.5rem 1rem 0}
+.dy-vt{font-family:'Courier New',monospace;font-size:11px;padding:3px 10px;border-radius:14px;border:1px solid var(--border,#30363D);background:transparent;color:#C9D1D9;cursor:pointer}
+.dy-vt:hover{border-color:#8B949E}
+.dy-vt.on{background:var(--gold,#D4A017);border-color:var(--gold,#D4A017);color:#0D1117;font-weight:700}
+.dy-vt.new:not(.on){border-style:dashed;color:#F0C040}
+
+/* siatka pól (12 kolumn) */
+.dy-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:8px 10px}
+.dy-field{min-width:0}
+.dy-field.c3{grid-column:span 3}.dy-field.c4{grid-column:span 4}.dy-field.c6{grid-column:span 6}.dy-field.c12{grid-column:span 12}
+.dy-field label{display:flex;justify-content:space-between;font-family:'Courier New',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#9AA4B2;margin-bottom:3px}
+.dy-field input[type=text],.dy-field input[type=date],.dy-field input[type=url],.dy-field textarea,.dy-comp{width:100%;padding:6px 9px;background:#0D1117;border:1px solid var(--border,#30363D);border-radius:4px;color:#F5F0E8;font-size:13px;font-family:'Georgia',serif;outline:none;box-sizing:border-box;transition:border-color .2s;color-scheme:dark}
+.dy-field textarea{resize:none;line-height:1.4;display:block}
+.dy-field input:focus,.dy-field textarea:focus,.dy-comp:focus-within{border-color:var(--gold,#D4A017)}
+.dy-count{font-size:9px;color:#6B7280;letter-spacing:0;text-transform:none}
+
+/* towarzysze: chipy i pole w jednej ramce */
+.dy-comp{display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:3px 6px;min-height:32px;cursor:text}
+.dy-comp #dy-chips{display:contents}
+.dy-field .dy-comp input[type=text]{flex:1;width:auto;min-width:90px;background:transparent;border:none;border-radius:0;outline:none;color:#F5F0E8;font-size:13px;font-family:'Georgia',serif;padding:3px 2px}
+.dy-chip{display:inline-flex;align-items:center;gap:2px;padding:1px 3px 1px 9px;border-radius:12px;background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.35);color:#F0C040;font-size:12px}
+.dy-chip button{background:none;border:none;color:inherit;cursor:pointer;font-size:14px;line-height:1;padding:0 4px;opacity:.7}
+.dy-chip button:hover{opacity:1}
+.dy-suggest{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+.dy-suggest:empty{display:none}
+.dy-sg{background:transparent;border:1px dashed #4A5568;border-radius:12px;color:#C9D1D9;font-size:11px;padding:1px 9px;cursor:pointer;font-family:inherit}
+.dy-sg:hover{border-color:var(--gold,#D4A017);color:#F0C040}
+
+/* zdjęcia */
+.dy-photos{display:flex;gap:6px}
+.dy-ph{position:relative;flex:0 0 54px;width:54px;height:54px;border-radius:5px;overflow:hidden;background:#0D1117;border:1px solid var(--border,#30363D);padding:0}
+.dy-ph a{display:block;width:100%;height:100%}
+.dy-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.dy-ph img.broken{opacity:.2}
+.dy-ph-x{position:absolute;top:1px;right:1px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.7);color:#fff;font-size:13px;line-height:1;cursor:pointer;padding:0}
+.dy-ph-x:hover{background:#EF4444}
+.dy-ph-pin{position:absolute;left:2px;bottom:2px;width:auto!important;height:auto!important;font-size:12px;line-height:1;text-decoration:none;background:rgba(0,0,0,.6);border-radius:8px;padding:1px 3px}
+.dy-ph-pin:hover{background:rgba(212,160,23,.9)}
+.dy-ph.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:transparent;border:1px dashed #4A5568;color:#F0C040;font-size:18px;line-height:1;cursor:pointer;font-family:inherit}
+.dy-ph.add span{font-size:9px;color:#9AA4B2;margin-top:1px}
+.dy-ph.add:hover{border-color:var(--gold,#D4A017)}
+
+/* stopka */
+.dy-foot{display:flex;align-items:center;gap:8px;padding:.55rem 1rem;border-top:1px solid var(--border,#30363D)}
+.dy-err{flex:1;font-size:11px;color:#F87171;min-width:0}
+.dy-btn{padding:6px 14px;border-radius:4px;border:1px solid transparent;font-family:'Georgia',serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .2s}
+.dy-btn.primary{background:var(--gold,#D4A017);color:#0D1117}
+.dy-btn.primary:hover{background:#F0C040}
+.dy-btn.primary:disabled{opacity:.5;cursor:not-allowed}
+.dy-btn.ghost{background:transparent;border-color:#4A5568;color:#C9D1D9}
+.dy-btn.ghost:hover{border-color:#8B949E}
+.dy-btn.danger{background:transparent;color:#F87171;font-weight:400;padding-left:0;padding-right:6px}
+.dy-btn.danger:hover{text-decoration:underline}
+
+/* lista „Moje wejścia” */
+.dl-stats{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12px;color:#9AA4B2;margin-bottom:.7rem}
+.dl-stats b{color:#F0C040;font-size:14px}
+.dl-tabs{display:flex;gap:8px;margin-bottom:.6rem}
+.dl-tab{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:20px;border:1px solid var(--border,#30363D);background:transparent;color:#C9D1D9;cursor:pointer}
+.dl-tab.on{background:var(--gold,#D4A017);border-color:var(--gold,#D4A017);color:#0D1117}
+.dl-row{display:flex;align-items:flex-start;gap:12px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}
+.dl-row:hover{background:rgba(255,255,255,.04)}
+.dl-badge{flex:none;min-width:38px;text-align:center;font-family:'Courier New',monospace;font-size:10px;font-weight:700;padding:3px 0;border-radius:4px;color:#0D1117;background:#D4A017}
+.dl-badge.wks{background:#22C55E}
+.dl-badge.dks{background:#A78BFA}
+.dl-main{flex:1;min-width:0}
+.dl-name{font-weight:600;color:#F5F0E8}
+.dl-name small{font-weight:400;color:#8B949E;font-size:11px;margin-left:6px}
+.dl-route{font-size:12px;color:#F0C040;margin-top:2px}
+.dl-note{font-size:12px;color:#B6BEC9;margin-top:2px;line-height:1.4;overflow-wrap:anywhere}
+.dl-meta{font-size:11px;color:#9AA4B2;margin-top:2px}
+.dl-add{font-size:11px;color:#8B949E;margin-top:2px}
+.dl-date{flex:none;font-family:'Courier New',monospace;font-size:11px;color:#9AA4B2;white-space:nowrap}
+.dl-date.none{color:#C47A45}
+.dl-empty{text-align:center;padding:2rem;color:#C9D1D9;font-style:italic}
+
+/* komunikat */
+.dy-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#22C55E;color:#0D1117;font-weight:700;font-size:13px;padding:8px 18px;border-radius:20px;opacity:0;pointer-events:none;transition:all .25s;z-index:9000}
+.dy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-height:640px){
+  .dy-field textarea{height:46px}
+}
+@media (max-width:560px){
+  .dy-photos{gap:5px}
+  .dy-ph{flex:1 1 0;width:auto;max-width:54px;height:auto;aspect-ratio:1/1}
+  .dy-field.m6{grid-column:span 6}
+  .dy-field.c4:not(.m6),.dy-field.c3:not(.m6),.dy-field.c6{grid-column:span 12}
+  .dy-body{padding:.5rem .8rem .3rem}
+  .dy-hdr,.dy-foot,.dy-visits{padding-left:.8rem;padding-right:.8rem}
+  .dl-row{flex-wrap:wrap}
+  .dl-date{margin-left:50px}
+}

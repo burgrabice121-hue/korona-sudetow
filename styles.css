@@ -665,21 +665,7 @@ footer {
   nav > div[style] { gap: 0.35rem !important; }
   #user-bar-nav button { padding: 0.3rem 0.5rem; font-size: 0.75rem; }
 }
-@media (max-width: 600px) {
-  #game-wrap { height: auto; flex-direction: column; }
-  #map { height: 320px; min-height: 320px; }
-  #sidebar { width: 100%; border-left: none; border-top: 1px solid #30363D; max-height: 320px; }
-  .sb-tabs { justify-content: space-around; }
-  .map-legend { flex-wrap: wrap; gap: 4px; }
-  #topbar { height: auto; flex-wrap: wrap; padding: 6px 10px; gap: 6px 8px; }
-  .tb-title { display: none; }
-  .tb-sep { display: none; }
-  .prog-block { min-width: 0; flex: 1 1 28%; }
-  #user-bar { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 6px; order: 10; }
-  .btn-reset { order: 11; margin-left: 0; }
-  #map-section { padding: 1.5rem 1rem; }
-  .map-header { margin-bottom: 1rem; }
-}
+/* (reguły telefonu ≤600px przeniesione na koniec pliku — tam muszą być, żeby przebić reguły bazowe #topbar/#game-wrap/#sidebar) */
 
 /* ══════════════════════════════════════════════
    FADE-IN
@@ -868,3 +854,23 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 .sb-tab svg.ci{height:1.4em;width:auto;margin:0}
 .unlock-icon svg.ci{height:2.4em;width:auto}
 .grupy-toggle-btn svg.ci{height:1.2em;width:auto;margin-right:.3em;vertical-align:-3px}
+
+/* ══════════════════════════════════════════════
+   TELEFON ≤600px — musi być NA KOŃCU pliku (po regułach bazowych #topbar, #game-wrap, #sidebar),
+   inaczej reguły bazowe o tej samej specyficzności je nadpisują (pasek użytkownika chował się pod mapą).
+══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  #game-wrap { height: auto; flex-direction: column; }
+  #map { height: 320px; min-height: 320px; flex: none; }
+  #sidebar { width: 100%; border-left: none; border-top: 1px solid #30363D; max-height: 320px; }
+  .sb-tabs { justify-content: space-around; }
+  .map-legend { flex-wrap: wrap; gap: 4px; }
+  #topbar { height: auto; flex-wrap: wrap; padding: 6px 10px; gap: 6px 8px; }
+  .tb-title { display: none; }
+  .tb-sep { display: none; }
+  .prog-block { min-width: 0; flex: 1 1 28%; }
+  #user-bar { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 6px; order: 10; margin-left: 0; }
+  .btn-reset { order: 11; margin-left: 0; }
+  #map-section { padding: 1.5rem 1rem; }
+  .map-header { margin-bottom: 1rem; }
+}

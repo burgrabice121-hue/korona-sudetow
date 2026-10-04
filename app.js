@@ -386,6 +386,7 @@ function buildPopup(p, type, idx){
       <div class="pop-stat"><div class="pop-sl">Kraj</div><div class="pop-sv">${p.kraj}</div></div>
     </div>
     ${p.note?`<div class="pop-note">${p.note}</div>`:''}
+    ${window.Diary?Diary.popupBtn(p,type,idx,conq):''}
     ${btnHtml}
   </div>`;
 }
@@ -469,7 +470,8 @@ window.togglePeak = function(type, idx){
   }
   const arr = STATE[type];
   const pos = arr.indexOf(idx);
-  if(pos===-1) arr.push(idx);
+  const justConquered = pos===-1;
+  if(justConquered) arr.push(idx);
   else arr.splice(pos,1);
   saveState(STATE);
 
@@ -482,6 +484,8 @@ window.togglePeak = function(type, idx){
 
   updateUI();
   saveUserState();
+  // Tuż po „Zdobyty!” od razu otwórz formularz nowego wejścia (można go zamknąć bez zapisu)
+  if(justConquered && window.Diary) Diary.open(type, idx, true);
 };
 
 /* ═══════════════════════════════════════════
@@ -850,6 +854,7 @@ function renderUserBar(user){
   const navBar = document.getElementById('user-bar-nav');
   if(user){
     bar.innerHTML = `<span class="ub-name">Hej, <strong>${user.displayName || user.email}</strong></span>
+      <button class="ub-btn diary" onclick="window.Diary&&Diary.openList()">📖 Moje wejścia</button>
       <button class="ub-btn rank" onclick="openRanking()">🏆 Ranking</button>
       <button class="ub-btn" onclick="doSignOut()">Wyloguj</button>`;
     if(navBar) navBar.innerHTML = `<button style="${navBtnStyle}" onclick="doSignOut()">Wyloguj (${user.displayName || user.email})</button>`;
@@ -994,9 +999,11 @@ renderUserBar(null); // pokaż przycisk od razu, nie czekając na (wolne lub zab
       hideAuthOverlay();
       renderUserBar(user);
       await loadUserState(user);
+      if(window.Diary) Diary.load(user);
       if(_pendingAction){ _pendingAction(); _pendingAction = null; }
     } else {
       renderUserBar(null);
+      if(window.Diary) Diary.clear();
     }
   });
 })();
