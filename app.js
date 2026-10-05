@@ -501,7 +501,7 @@ function updateUI(){
   document.getElementById('dks-done').textContent = dksDone;
   document.getElementById('ks-bar').style.width   = (ksDone/8*100)+'%';
   document.getElementById('wks-bar').style.width  = (wksDone/17*100)+'%';
-  document.getElementById('dks-bar').style.width  = (dksDone/37*100)+'%';
+  document.getElementById('dks-bar').style.width  = (dksDone/38*100)+'%';
 
   // Achievements
   const setAch = (id, earned, cls='earned') => {
@@ -514,7 +514,7 @@ function updateUI(){
   setAch('ach-wks1', wksDone>=1,   'wks-earned');
   setAch('ach-wks',  wksDone===14, 'wks-earned');
   setAch('ach-dks1', dksDone>=1,   'dk-earned');
-  setAch('ach-dks',  dksDone===37, 'dk-earned');
+  setAch('ach-dks',  dksDone===38, 'dk-earned');
 
   // Unlock WKS
   if(ksDone===8 && !STATE.unlocked_wks){
@@ -549,7 +549,7 @@ function unlockLevel(type){
     document.getElementById('tab-dks').classList.remove('locked');
     dksMarkers.forEach(m=>m.setOpacity(1));
     document.getElementById('unlock-title').textContent = 'Wielka Korona zdobyta!';
-    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś <strong>14 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 37 szczytów!';
+    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś <strong>14 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 38 szczytów!';
     document.getElementById('unlock-close-btn').textContent = 'Zaczynam Diamentową Koronę →';
     document.getElementById('unlock-close-btn').onclick = function(){ closeUnlock('dks'); };
   }
@@ -965,7 +965,7 @@ async function loadRanking(){
     snap.forEach(d=>{
       const u = d.data();
       if(_rankTab==='wk'  && (u.wks||[]).length<17) return;
-      if(_rankTab==='dk'  && (u.dks||[]).length<37) return;
+      if(_rankTab==='dk'  && (u.dks||[]).length<38) return;
       rows.push(u);
     });
     rows.sort((a,b)=>{
@@ -983,7 +983,7 @@ async function loadRanking(){
       <td><div class="rank-name">${u.displayName||'Anonimowy'}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
       <td>${(u.wks||[]).length}/17 ${(u.wks||[]).length===17?'<span class="rank-crown wk">👑</span>':''}</td>
-      <td>${(u.dks||[]).length}/37 ${(u.dks||[]).length===37?'<span class="rank-crown dk">💎</span>':''}</td>
+      <td>${(u.dks||[]).length}/38 ${(u.dks||[]).length===38?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
 }

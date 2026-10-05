@@ -67,4 +67,5 @@ const DKS = [
   { id:"grodziec", name:"Grodziec",          cz:"—",              alt:382, prom:130, izol:13.4, pasmo:"Pogórze Kaczawskie",               kraj:"PL",    lat:51.1760319, lng:15.7597319, note:"Szczyt Pogórza Kaczawskiego" },
   { id:"czerwona-gora", name:"Czerwona Góra",     cz:"Červená hora",   alt:749, prom:111, izol:10.6, pasmo:"Niski Jesionik",                   kraj:"CZ",    lat:49.7766550, lng:17.5411975, note:"Szczyt Niskiego Jesionika" },
   { id:"humrich", name:"Humrich",           cz:"Humrich",        alt:512, prom:124, izol:4.3,  pasmo:"Pogórze Izerskie",                 kraj:"CZ",    lat:50.9717142, lng:15.1702069, note:"Najwyższy szczyt Pogórza Izerskiego" },
+  { id:"triebenberg", name:"Triebenberg",       cz:"Triebenberg",    alt:383, prom:108, izol:10.1, pasmo:"Pogórze Zachodniołużyckie",        kraj:"DE",    lat:51.0271161, lng:13.9233822, note:"Szczyt Pogórza Zachodniołużyckiego" },
 ];
