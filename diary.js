@@ -203,34 +203,10 @@ function load(user){
     visits = next;
     loadOk = true;
     refreshAll();
-    return migrateLegacy(user);
   }).catch(function(e){
     console.warn('Odczyt wejść nieudany', e);
   });
   return loadPromise;
-}
-
-/* Jednorazowo: stare wpisy z fazy 1 (users/{uid}/entries/{peakId}) -> wejścia. Najlepsza próba, błędy ignorowane. */
-function migrateLegacy(user){
-  var f = fb();
-  return f.getDocs(f.collection(f.db,'users',user.uid,'entries')).then(function(snap){
-    var olds = [];
-    snap.forEach(function(d){ olds.push({id:d.id, d:d.data()}); });
-    return olds.reduce(function(chain, o){
-      return chain.then(function(){
-        var n = normalize('', o.d);
-        var ref = f.doc(visitsCol(f, user.uid));
-        var data = {
-          peakId: o.id, date: n.date, note: n.note, companions: n.companions.slice(0, MAX_COMP),
-          from: null, to: null, km: null, ascent: null, link: n.link, updatedAt: f.serverTimestamp()
-        };
-        return f.setDoc(ref, data).then(function(){
-          visits[ref.id] = normalize(ref.id, data);
-          return f.deleteDoc(f.doc(f.db,'users',user.uid,'entries',o.id));
-        });
-      });
-    }, Promise.resolve()).then(function(){ if(olds.length) refreshAll(); });
-  }).catch(function(e){ /* brak starych wpisów lub brak dostępu — pomijamy */ });
 }
 
 function clear(){
