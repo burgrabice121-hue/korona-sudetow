@@ -888,7 +888,8 @@ function langSpans(pl, en){
 function escHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* Konto: jedno miejsce w górnym pasku. Niezalogowany: „Zaloguj się”.
-   Zalogowany: menu z imieniem (Moje wejścia, Ranking, Resetuj postęp, Wyloguj). */
+   Zalogowany: menu z imieniem (Moje wejścia, Ranking, Resetuj postęp, Wyloguj).
+   Ranking tylko tam, gdzie strona ma #ranking-overlay (viasudetica.eu; wielkakoronasudetow.pl go nie ma). */
 function renderUserBar(user){
   const navBar = document.getElementById('user-bar-nav');
   if(!navBar) return;
@@ -898,7 +899,7 @@ function renderUserBar(user){
       <button style="${navBtnStyle}" class="acct-btn" onclick="toggleAcctMenu(event)" aria-haspopup="true" aria-expanded="false"><span class="acct-name">${name}</span> ▾</button>
       <div class="acct-menu" hidden>
         <button onclick="closeAcctMenu();window.Diary&&Diary.openList()">📖 ${langSpans('Moje wejścia','My climbs')}</button>
-        <button onclick="closeAcctMenu();openRanking()">🏆 Ranking</button>
+        ${document.getElementById('ranking-overlay') ? `<button onclick="closeAcctMenu();openRanking()">🏆 Ranking</button>` : ''}
         <button class="acct-reset" onclick="closeAcctMenu();resetAll()">↺ ${langSpans('Resetuj postęp','Reset progress')}</button>
         <button onclick="closeAcctMenu();doSignOut()">${langSpans('Wyloguj','Log out')}</button>
       </div></div>`;
