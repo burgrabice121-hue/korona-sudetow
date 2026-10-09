@@ -446,6 +446,25 @@ section { position: relative; }
 .grupy-toggle-btn { background: none; border: 1.5px solid var(--bark); color: var(--bark); font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
 @media (hover: hover) { .grupy-toggle-btn:hover { background: var(--bark); color: var(--snow); } }
 .grupy-toggle-btn.active { background: var(--bark); color: var(--snow); }
+/* sekcje przycisków pod mapą: Szczyty / Podkład / Warstwy */
+.map-legend { gap: 0.6rem 2rem; align-items: center; }
+.ml-group { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.ml-label { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bark); opacity: 0.65; }
+.ml-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+.ml-hint { flex-basis: 100%; margin: 0; font-size: 10px; color: var(--bark); opacity: 0.65; }
+/* pole wyboru (warstwy, szczyty) i kółko (podkład): widać, że przycisk coś włącza */
+.grupy-toggle-btn.chk::before, .basemap-btn::before { content: ''; display: inline-block; width: 8px; height: 8px; border: 1.5px solid currentColor; margin-right: 6px; vertical-align: -1px; }
+.grupy-toggle-btn.chk::before { border-radius: 2px; }
+.basemap-btn::before { border-radius: 50%; }
+.grupy-toggle-btn.chk.active::before, .basemap-btn.active::before { background: currentColor; box-shadow: inset 0 0 0 1.5px var(--bark); }
+/* menu konta w górnym pasku (app.js renderUserBar) */
+.acct { position: relative; }
+.acct-name { max-width: 9em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+.acct-menu { position: absolute; right: 0; top: calc(100% + 6px); min-width: 190px; background: var(--stone); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,0.35); padding: 4px 0; z-index: 1100; }
+.acct-menu[hidden] { display: none; }
+.acct-menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: #E6EDF3; font-family: inherit; font-size: 0.85rem; padding: 0.55rem 0.9rem; cursor: pointer; white-space: nowrap; }
+.acct-menu button:hover { background: rgba(255,255,255,0.08); }
+.acct-menu .acct-reset { color: #F0A0A0; border-top: 1px solid rgba(255,255,255,0.1); }
 .grupy-legend-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.6rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--bark); }
 .grupy-desc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
 .grupy-card { display: flex; flex-direction: column; gap: 0; border-left: 4px solid var(--gc, #888); background: rgba(0,0,0,0.03); border-radius: 0 6px 6px 0; overflow: hidden; }
@@ -656,6 +675,10 @@ footer {
   .nav-links { display: none; }
   .hero-inner { padding: 3rem 1.2rem 2.5rem; }
   #about, #map-section, #peaks-section { padding-left: 1.2rem; padding-right: 1.2rem; }
+}
+/* 801–960px (m.in. telefon poziomo): linki nawigacji spychały przycisk konta poza ekran */
+@media (max-width: 960px) {
+  .nav-links { display: none; }
 }
 @media (max-width: 480px) {
   nav { padding: 0 0.7rem; gap: 0.4rem; }
@@ -878,13 +901,26 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
   .pr-name { font-size: 13px; flex: 0 1 auto; }
   .pr-sub { flex: 1 1 0; margin-top: 0; }
   .pr-elev { margin-top: 0; flex-shrink: 0; }
-  .map-legend { flex-wrap: wrap; gap: 4px; }
+  .map-legend { flex-wrap: wrap; gap: 8px; }
+  .ml-group { width: 100%; flex-wrap: nowrap; align-items: flex-start; }
+  .ml-label { flex: 0 0 5.2em; padding-top: 5px; }
   #topbar { height: auto; flex-wrap: wrap; padding: 6px 10px; gap: 6px 8px; }
   .tb-title { display: none; }
   .tb-sep { display: none; }
   .prog-block { min-width: 0; flex: 1 1 28%; }
-  #user-bar { width: 100%; justify-content: flex-start; flex-wrap: wrap; gap: 6px; order: 10; margin-left: 0; }
-  .btn-reset { order: 11; margin-left: 0; }
   #map-section { padding: 1.5rem 1rem; }
   .map-header { margin-bottom: 1rem; }
+}
+/* telefon obrócony poziomo: szerokość >600px, ale ekran niski; ten sam układ co wyżej,
+   mapa prawie na cały ekran pod stałym paskiem nawigacji (52px) */
+@media (orientation: landscape) and (max-height: 500px) {
+  #game-wrap { height: auto; flex-direction: column; }
+  #map { height: calc(100vh - 64px); height: calc(100svh - 64px); min-height: 220px; flex: none; }
+  #sidebar { width: 100%; border-left: none; border-top: 1px solid #30363D; max-height: none; }
+  .sb-toggle { display: flex; }
+  #sidebar:not(.open) .sb-tabs, #sidebar:not(.open) .sb-list { display: none !important; }
+  #sidebar.open .sb-toggle-arrow { transform: rotate(180deg); }
+  .sb-list { max-height: 60vh; }
+  #topbar { height: auto; padding: 6px 10px; }
+  .tb-title { display: none; }
 }

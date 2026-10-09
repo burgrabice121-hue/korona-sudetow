@@ -44,7 +44,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=20261009">
+<link rel="stylesheet" href="styles.css?v=20261009b">
 
 <!-- Firebase SDK -->
 <script type="module" src="firebase-init.js?v=20261004"></script>
@@ -774,8 +774,6 @@
         <div class="prog-label"><span class="pl-name"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg> Diamentowa</span><span class="pl-count dk-count"><span id="dks-done">0</span>/38</span></div>
         <div class="prog-bar"><div class="prog-fill dk-fill" id="dks-bar" style="width:0%"></div></div>
       </div>
-      <div id="user-bar"></div>
-  <button class="btn-reset" onclick="resetAll()">Reset</button>
     </div>
     <div id="game-wrap">
       <div id="map"></div>
@@ -791,23 +789,38 @@
       </div>
     </div>
     <div class="map-legend fade-in">
-
-      <button id="peaks-ks-btn" onclick="togglePeaksLayer('ks')" class="grupy-toggle-btn active lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg>Korona</button>
-      <button id="peaks-ks-btn-en" onclick="togglePeaksLayer('ks')" class="grupy-toggle-btn active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg>Crown</button>
-      <button id="peaks-wks-btn" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Wielka Korona</button>
-      <button id="peaks-wks-btn-en" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Great Crown</button>
-      <button id="peaks-dks-btn" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn lang-pl"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamentowa</button>
-      <button id="peaks-dks-btn-en" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamond</button>
-      <button id="basemap-standard-btn" onclick="setBasemap('standard')" class="grupy-toggle-btn basemap-btn active lang-pl" data-basemap="standard">🗺️ Standardowa</button>
-      <button id="basemap-standard-btn-en" onclick="setBasemap('standard')" class="grupy-toggle-btn basemap-btn active lang-en" style="display:none" data-basemap="standard">🗺️ Standard</button>
-      <button id="basemap-outdoor-btn" onclick="setBasemap('outdoor')" class="grupy-toggle-btn basemap-btn lang-pl" data-basemap="outdoor">🥾 Turystyczna</button>
-      <button id="basemap-outdoor-btn-en" onclick="setBasemap('outdoor')" class="grupy-toggle-btn basemap-btn lang-en" style="display:none" data-basemap="outdoor">🥾 Outdoor</button>
-      <button id="sudety-btn" onclick="toggleSudety()" class="grupy-toggle-btn lang-pl">🔲 Granica Sudetów</button>
-      <button id="sudety-btn-en" onclick="toggleSudety()" class="grupy-toggle-btn lang-en" style="display:none">🔲 Sudetes boundary</button>
-      <button id="grupy-btn" onclick="toggleGrupy()" class="grupy-toggle-btn lang-pl">🗺 Grupy górskie</button>
-      <button id="grupy-btn-en" onclick="toggleGrupy()" class="grupy-toggle-btn lang-en" style="display:none">🗺 Mountain groups</button>
-      <button id="pasma-btn" onclick="togglePasma()" class="grupy-toggle-btn lang-pl">🏔 Pasma</button>
-      <button id="pasma-btn-en" onclick="togglePasma()" class="grupy-toggle-btn lang-en" style="display:none">🏔 Ranges</button>
+      <div class="ml-group">
+        <span class="ml-label"><span class="lang-pl">Szczyty</span><span class="lang-en" style="display:none">Peaks</span></span>
+        <div class="ml-btns">
+          <button id="peaks-ks-btn" onclick="togglePeaksLayer('ks')" class="grupy-toggle-btn chk active lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg>Korona</button>
+          <button id="peaks-ks-btn-en" onclick="togglePeaksLayer('ks')" class="grupy-toggle-btn chk active lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-ks"/></svg>Crown</button>
+          <button id="peaks-wks-btn" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn chk lang-pl"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Wielka Korona</button>
+          <button id="peaks-wks-btn-en" onclick="togglePeaksLayer('wks')" class="grupy-toggle-btn chk lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 60"><use href="#ci-wks"/></svg>Great Crown</button>
+          <button id="peaks-dks-btn" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn chk lang-pl"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamentowa</button>
+          <button id="peaks-dks-btn-en" onclick="togglePeaksLayer('dks')" class="grupy-toggle-btn chk lang-en" style="display:none"><svg class="ci" viewBox="0 0 72 64"><use href="#ci-dks"/></svg>Diamond</button>
+        </div>
+      </div>
+      <div class="ml-group">
+        <span class="ml-label"><span class="lang-pl">Podkład</span><span class="lang-en" style="display:none">Base map</span></span>
+        <div class="ml-btns">
+          <button id="basemap-standard-btn" onclick="setBasemap('standard')" class="grupy-toggle-btn basemap-btn active lang-pl" data-basemap="standard">Standardowa</button>
+          <button id="basemap-standard-btn-en" onclick="setBasemap('standard')" class="grupy-toggle-btn basemap-btn active lang-en" style="display:none" data-basemap="standard">Standard</button>
+          <button id="basemap-outdoor-btn" onclick="setBasemap('outdoor')" class="grupy-toggle-btn basemap-btn lang-pl" data-basemap="outdoor">Turystyczna</button>
+          <button id="basemap-outdoor-btn-en" onclick="setBasemap('outdoor')" class="grupy-toggle-btn basemap-btn lang-en" style="display:none" data-basemap="outdoor">Outdoor</button>
+        </div>
+      </div>
+      <div class="ml-group">
+        <span class="ml-label"><span class="lang-pl">Warstwy</span><span class="lang-en" style="display:none">Layers</span></span>
+        <div class="ml-btns">
+          <button id="sudety-btn" onclick="toggleSudety()" class="grupy-toggle-btn chk lang-pl">Granica Sudetów</button>
+          <button id="sudety-btn-en" onclick="toggleSudety()" class="grupy-toggle-btn chk lang-en" style="display:none">Sudetes boundary</button>
+          <button id="grupy-btn" onclick="toggleGrupy()" class="grupy-toggle-btn chk lang-pl">Grupy górskie</button>
+          <button id="grupy-btn-en" onclick="toggleGrupy()" class="grupy-toggle-btn chk lang-en" style="display:none">Mountain groups</button>
+          <button id="pasma-btn" onclick="togglePasma()" class="grupy-toggle-btn chk lang-pl">Pasma</button>
+          <button id="pasma-btn-en" onclick="togglePasma()" class="grupy-toggle-btn chk lang-en" style="display:none">Ranges</button>
+        </div>
+      </div>
+      <p class="ml-hint"><span class="lang-pl">Kliknij przycisk, aby pokazać lub ukryć na mapie.</span><span class="lang-en" style="display:none">Click a button to show or hide it on the map.</span></p>
     </div>
     <div id="grupy-legend" class="grupy-legend-row" style="display:none">
       <div class="ml-item"><div class="ml-line" style="background:#5F20B0"></div><span>Sudety Łużyckie</span></div>
@@ -1587,7 +1600,7 @@
 
 <script src="pasma-geojson.js?v=20261009b"></script>
 <script src="peaks-data.js"></script>
-<script src="app.js?v=20261009"></script><script src="diary.js?v=20261009"></script>
+<script src="app.js?v=20261009b"></script><script src="diary.js?v=20261009"></script>
 
 
 <!-- AUTH OVERLAY -->

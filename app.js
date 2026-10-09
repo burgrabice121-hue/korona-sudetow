@@ -664,6 +664,7 @@ function initPeaksTable(){
    RESET
 ═══════════════════════════════════════════ */
 window.resetAll = function(){
+  if(window._fb && !window._fb.auth.currentUser) return; // reset tylko dla zalogowanych (menu konta)
   if(!confirm('Zresetować cały postęp? Tej operacji nie można cofnąć.')) return;
   STATE = {ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false};
   saveState(STATE);
@@ -728,7 +729,7 @@ GRUPY_GEOJSON=computeGrupy();
 PASMA_GEOJSON.features.forEach(f=>{if(f.geometry.type==='Polygon'){f.geometry.coordinates=[f.geometry.coordinates[0]];}else if(f.geometry.type==='MultiPolygon'){f.geometry.coordinates=f.geometry.coordinates.map(p=>[p[0]]);}});const pasmaLayer=L.geoJSON(PASMA_GEOJSON,{style:f=>{const n=f.properties.name;const g=PASMO_GROUP[n]||0;const lv=PASMO_LEVEL[n]||'m';const hue=GRUPY_HUE[g]||0;const [sf,lf]=lv==='h'?[62,36]:lv==='m'?[38,56]:[28,68];return{fillColor:`hsl(${hue},${sf}%,${lf}%)`,fillOpacity:lv==='h'?0.28:lv==='m'?0.18:0.16,color:`hsl(${hue},${sf+12}%,${lf-14}%)`,weight:lv==='h'?1.5:1.2,opacity:0.7};},onEachFeature:(f,l)=>{l.bindTooltip(f.properties.name,{sticky:true,className:'pasmo-tooltip',direction:'top',offset:[0,-4]});l.on('mouseover',function(){this.setStyle({fillOpacity:0.28,weight:2,opacity:0.85});});l.on('mouseout',function(){pasmaLayer.resetStyle(this);});}});
 let grupyVisible=false;
 const grupyLayer=L.geoJSON(GRUPY_GEOJSON,{style:f=>{const c=GRUPY_COLORS[f.properties.id]||{fill:'#888',stroke:'#555'};return{fillColor:c.fill,fillOpacity:0.07,color:c.stroke,weight:2.5,opacity:0.85,dashArray:'8,5'};},onEachFeature:(f,l)=>{l.bindTooltip('<b>'+f.properties.name+'</b>',{sticky:true,className:'pasmo-tooltip',direction:'top',offset:[0,-4]});l.on('mouseover',function(){this.setStyle({fillOpacity:0.18,weight:3.5});});l.on('mouseout',function(){grupyLayer.resetStyle(this);});}});
-window.toggleGrupy=function(){grupyVisible=!grupyVisible;if(grupyVisible){grupyLayer.addTo(map);document.getElementById('grupy-btn').classList.add('active');}else{map.removeLayer(grupyLayer);document.getElementById('grupy-btn').classList.remove('active');}document.getElementById('grupy-legend').style.display=grupyVisible?'flex':'none';};
+window.toggleGrupy=function(){grupyVisible=!grupyVisible;if(grupyVisible){grupyLayer.addTo(map);document.getElementById('grupy-btn').classList.add('active');document.getElementById('grupy-btn-en').classList.add('active');}else{map.removeLayer(grupyLayer);document.getElementById('grupy-btn').classList.remove('active');document.getElementById('grupy-btn-en').classList.remove('active');}document.getElementById('grupy-legend').style.display=grupyVisible?'flex':'none';};
 let sudetyOutline=null; /* computed lazily on first toggle */
 const sudetyLayer=L.geoJSON(sudetyOutline,{style:{fillColor:'transparent',fillOpacity:0,color:'#C0392B',weight:2.5,opacity:0.9,dashArray:'10,6'}});
 let sudetyVisible=false;
@@ -865,20 +866,46 @@ window.submitFeedback = async function(){
 
 const navBtnStyle = 'background:none;border:1px solid rgba(255,255,255,0.25);color:#E6EDF3;border-radius:6px;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;transition:background 0.2s;font-family:inherit;white-space:nowrap';
 
+/* Napis PL/EN z widocznością zgodną z bieżącym językiem (dla HTML wstawianego po setLang) */
+function langSpans(pl, en){
+  const b = document.getElementById('btn-en');
+  const isEn = !!(b && b.classList.contains('active'));
+  return `<span class="lang-pl"${isEn?' style="display:none"':''}>${pl}</span><span class="lang-en"${isEn?'':' style="display:none"'}>${en}</span>`;
+}
+function escHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* Konto: jedno miejsce w górnym pasku. Niezalogowany: „Zaloguj się”.
+   Zalogowany: menu z imieniem (Moje wejścia, Ranking, Resetuj postęp, Wyloguj). */
 function renderUserBar(user){
-  const bar = document.getElementById('user-bar');
   const navBar = document.getElementById('user-bar-nav');
+  if(!navBar) return;
   if(user){
-    bar.innerHTML = `<span class="ub-name">Hej, <strong>${user.displayName || user.email}</strong></span>
-      <button class="ub-btn diary" onclick="window.Diary&&Diary.openList()">📖 Moje wejścia</button>
-      <button class="ub-btn rank" onclick="openRanking()">🏆 Ranking</button>
-      <button class="ub-btn" onclick="doSignOut()">Wyloguj</button>`;
-    if(navBar) navBar.innerHTML = `<button style="${navBtnStyle}" onclick="doSignOut()">Wyloguj (${user.displayName || user.email})</button>`;
+    const name = escHtml(user.displayName || user.email);
+    navBar.innerHTML = `<div class="acct">
+      <button style="${navBtnStyle}" class="acct-btn" onclick="toggleAcctMenu(event)" aria-haspopup="true" aria-expanded="false"><span class="acct-name">${name}</span> ▾</button>
+      <div class="acct-menu" hidden>
+        <button onclick="closeAcctMenu();window.Diary&&Diary.openList()">📖 ${langSpans('Moje wejścia','My climbs')}</button>
+        <button onclick="closeAcctMenu();openRanking()">🏆 Ranking</button>
+        <button class="acct-reset" onclick="closeAcctMenu();resetAll()">↺ ${langSpans('Resetuj postęp','Reset progress')}</button>
+        <button onclick="closeAcctMenu();doSignOut()">${langSpans('Wyloguj','Log out')}</button>
+      </div></div>`;
   } else {
-    bar.innerHTML = `<button class="ub-btn" onclick="showAuthOverlay()">Zaloguj się</button>`;
-    if(navBar) navBar.innerHTML = `<button style="${navBtnStyle}" onclick="showAuthOverlay()"><span class="lang-pl">Zaloguj się</span><span class="lang-en" style="display:none">Log in</span></button>`;
+    navBar.innerHTML = `<button style="${navBtnStyle}" onclick="showAuthOverlay()">${langSpans('Zaloguj się','Log in')}</button>`;
   }
 }
+window.toggleAcctMenu = function(e){
+  e.stopPropagation();
+  const m = document.querySelector('#user-bar-nav .acct-menu');
+  if(!m) return;
+  m.hidden = !m.hidden;
+  document.querySelector('#user-bar-nav .acct-btn').setAttribute('aria-expanded', !m.hidden);
+};
+window.closeAcctMenu = function(){
+  const m = document.querySelector('#user-bar-nav .acct-menu');
+  if(m && !m.hidden){ m.hidden = true; document.querySelector('#user-bar-nav .acct-btn').setAttribute('aria-expanded','false'); }
+};
+document.addEventListener('click', e=>{ if(!e.target.closest('#user-bar-nav .acct')) window.closeAcctMenu(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') window.closeAcctMenu(); });
 
 async function saveUserState(){
   const fb = window._fb;
