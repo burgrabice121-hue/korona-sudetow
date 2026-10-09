@@ -686,6 +686,22 @@ renderList('wks');
 renderList('dks');
 initPeaksTable();
 
+/* Telefon (≤600px): lista szczytów pod mapą domyślnie zwinięta, rozwijana przyciskiem.
+   Przycisk wstawiany tu, żeby nie zmieniać obu index.html; na komputerze ukrywa go CSS. */
+(function(){
+  const sb = document.getElementById('sidebar');
+  if(!sb || sb.querySelector('.sb-toggle')) return;
+  const btnEn = document.getElementById('btn-en');
+  const en = btnEn && btnEn.classList.contains('active');
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sb-toggle';
+  b.setAttribute('aria-expanded','false');
+  b.innerHTML = `<span class="lang-pl"${en?' style="display:none"':''}>Lista szczytów</span><span class="lang-en"${en?'':' style="display:none"'}>Peak list</span><span class="sb-toggle-arrow">▾</span>`;
+  b.onclick = ()=>{ b.setAttribute('aria-expanded', sb.classList.toggle('open')); };
+  sb.prepend(b);
+})();
+
 if(STATE.unlocked_dks) document.getElementById('tab-dks').classList.remove('locked');
 // Naprawia renderowanie kafelków gdy mapa była ukryta podczas inicjalizacji
 setTimeout(()=>{ map.invalidateSize(); }, 300);

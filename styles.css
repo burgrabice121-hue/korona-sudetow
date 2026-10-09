@@ -706,6 +706,8 @@ footer {
 .sb-tab.active{color:#D4A017;border-bottom-color:#D4A017}
 .sb-tab.dk-tab.active{color:#A78BFA;border-bottom-color:#A78BFA}
 .sb-tab.locked{opacity:.4;cursor:not-allowed}
+.sb-toggle{display:none;width:100%;align-items:center;justify-content:center;gap:8px;padding:12px;background:#161B22;border:none;color:#D4A017;font-family:'Courier New',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;flex-shrink:0}
+.sb-toggle-arrow{display:inline-block;transition:transform .2s}
 .sb-list{overflow-y:scroll;flex:1;scrollbar-width:thin;scrollbar-color:#4A5568 #1C2330}
 .sb-list::-webkit-scrollbar{width:8px}
 .sb-list::-webkit-scrollbar-track{background:#1C2330}
@@ -861,9 +863,21 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 ══════════════════════════════════════════════ */
 @media (max-width: 600px) {
   #game-wrap { height: auto; flex-direction: column; }
-  #map { height: 320px; min-height: 320px; flex: none; }
-  #sidebar { width: 100%; border-left: none; border-top: 1px solid #30363D; max-height: 320px; }
+  #map { height: 70vh; height: 70svh; min-height: 320px; flex: none; }
+  #sidebar { width: 100%; border-left: none; border-top: 1px solid #30363D; max-height: none; }
   .sb-tabs { justify-content: space-around; }
+  /* lista zwinięta domyślnie (przycisk .sb-toggle wstawia app.js); !important przebija inline display z switchTab */
+  .sb-toggle { display: flex; }
+  #sidebar:not(.open) .sb-tabs, #sidebar:not(.open) .sb-list { display: none !important; }
+  #sidebar.open .sb-toggle-arrow { transform: rotate(180deg); }
+  .sb-list { max-height: 260px; }
+  /* wiersz w jednej linii: ○ nazwa · pasmo · wysokość */
+  .peak-row { padding: 7px 12px; gap: 8px; }
+  .pr-check { width: 16px; height: 16px; }
+  .pr-info { display: flex; align-items: baseline; gap: 8px; }
+  .pr-name { font-size: 13px; flex: 0 1 auto; }
+  .pr-sub { flex: 1 1 0; margin-top: 0; }
+  .pr-elev { margin-top: 0; flex-shrink: 0; }
   .map-legend { flex-wrap: wrap; gap: 4px; }
   #topbar { height: auto; flex-wrap: wrap; padding: 6px 10px; gap: 6px 8px; }
   .tb-title { display: none; }
