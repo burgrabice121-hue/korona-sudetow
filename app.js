@@ -666,6 +666,10 @@ function initPeaksTable(){
 window.resetAll = function(){
   if(window._fb && !window._fb.auth.currentUser) return; // reset tylko dla zalogowanych (menu konta)
   if(!confirm('Zresetować cały postęp? Tej operacji nie można cofnąć.')) return;
+  clearProgress();
+};
+/* Pusty postęp na mapie, w liście i pasku (reset albo wylogowanie) */
+function clearProgress(){
   STATE = {ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false};
   saveState(STATE);
   document.getElementById('tab-wks').classList.add('locked');
@@ -675,7 +679,7 @@ window.resetAll = function(){
   renderList('wks');
   renderList('dks');
   switchTab('ks');
-};
+}
 
 /* ═══════════════════════════════════════════
    INIT
@@ -1037,6 +1041,7 @@ async function loadRanking(){
 renderUserBar(null); // pokaż przycisk od razu, nie czekając na (wolne lub zablokowane) połączenie z Firebase
 (function waitForFb(){
   if(!window._fb){ setTimeout(waitForFb, 100); return; }
+  let _wasSignedIn = false;
   window._fb.onAuthStateChanged(window._fb.auth, async function(user){
     if(user){
       hideAuthOverlay();
@@ -1047,7 +1052,11 @@ renderUserBar(null); // pokaż przycisk od razu, nie czekając na (wolne lub zab
     } else {
       renderUserBar(null);
       if(window.Diary) Diary.clear();
+      // po wylogowaniu nie pokazywać postępu poprzedniego użytkownika (i nie przenosić go na kolejne konto);
+      // tylko przy przejściu zalogowany → wylogowany, żeby nie kasować starego postępu lokalnego przy wejściu na stronę
+      if(_wasSignedIn) clearProgress();
     }
+    _wasSignedIn = !!user;
   });
 })();
 
