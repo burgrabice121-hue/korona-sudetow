@@ -600,7 +600,7 @@ tbody tr { cursor: pointer; }
 ══════════════════════════════════════════════ */
 footer {
   background: var(--stone);
-  padding: 3rem 2.5rem;
+  padding: 1.5rem 2.5rem;
   text-align: center;
 }
 .footer-inner { max-width: 1100px; margin: 0 auto; }
@@ -611,20 +611,12 @@ footer {
   color: var(--cream);
   margin-bottom: 0.5rem;
 }
-.footer-sub {
-  font-family: var(--mono); font-size: 11px;
-  letter-spacing: 0.08em; color: var(--fog); margin-bottom: 2rem;
-}
-.footer-sources {
-  font-size: 12px; color: var(--fog); opacity: 0.6;
-  line-height: 1.8;
-}
-.footer-sources a { color: var(--clay); text-decoration: none; }
 .footer-copy {
-  margin-top: 2rem;
-  font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
-  color: var(--fog); text-transform: uppercase;
+  margin-top: 0.6rem;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+  color: var(--fog);
 }
+.footer-copy a { text-decoration: none; }
 
 /* ══════════════════════════════════════════════
    LEAFLET OVERRIDES

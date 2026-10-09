@@ -249,6 +249,13 @@ function loadState(){
   }catch(e){
     s = {ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false};
   }
+  s = migrateAll(s);
+  saveState(s);
+  return s;
+}
+/* Wszystkie migracje po kolei. Nowa migracja (migrateVN) trafia TYLKO tutaj;
+   korzystają z tego loadState, loadUserState i clearProgress. */
+function migrateAll(s){
   s = migratePeakTiers(s);
   s = migrateOkoleToWks(s);
   s = migrateV4(s);
@@ -258,7 +265,6 @@ function loadState(){
   s = migrateV8(s);
   s = migrateV9(s);
   s = migrateV10(s);
-  saveState(s);
   return s;
 }
 function saveState(s){
@@ -665,12 +671,15 @@ function initPeaksTable(){
 ═══════════════════════════════════════════ */
 window.resetAll = function(){
   if(window._fb && !window._fb.auth.currentUser) return; // reset tylko dla zalogowanych (menu konta)
-  if(!confirm('Zresetować cały postęp? Tej operacji nie można cofnąć.')) return;
+  if(!confirm('Zresetować cały postęp na koncie (zdobyte szczyty i ranking, na obu stronach)? Wpisy w „Moje wejścia” zostaną. Tej operacji nie można cofnąć.')) return;
   clearProgress();
+  saveUserState(); // także w chmurze; inaczej po odświeżeniu loadUserState przywraca postęp
 };
 /* Pusty postęp na mapie, w liście i pasku (reset albo wylogowanie) */
 function clearProgress(){
-  STATE = {ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false};
+  // migrateAll na pustym stanie tylko ustawia znaczniki schemaV*; bez nich po kolejnym
+  // wczytaniu migracje przestawiłyby indeksy szczytów zaznaczonych już po resecie
+  STATE = migrateAll({ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false});
   saveState(STATE);
   document.getElementById('tab-wks').classList.add('locked');
   document.getElementById('tab-dks').classList.add('locked');
@@ -960,15 +969,7 @@ async function loadUserState(user){
       STATE.schemaV9 = d.schemaV9 || false;
       STATE.schemaV10 = d.schemaV10 || false;
       const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10;
-      STATE = migratePeakTiers(STATE);
-      STATE = migrateOkoleToWks(STATE);
-      STATE = migrateV4(STATE);
-      STATE = migrateV5(STATE);
-      STATE = migrateV6(STATE);
-      STATE = migrateV7(STATE);
-      STATE = migrateV8(STATE);
-      STATE = migrateV9(STATE);
-      STATE = migrateV10(STATE);
+      STATE = migrateAll(STATE);
       saveState(STATE);
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
       placeMarkers();
