@@ -850,11 +850,21 @@ function friendlyError(code){
 /* Potwierdzenie adresu e-mail (warunek przyjmowania udostępnionych zdobyć).
    Link z maila wraca na tę samą stronę; gdy domena nie jest na liście Firebase, mail idzie bez linku powrotu. */
 function sendVerification(user){
-  const {sendEmailVerification, callable} = window._fb;
-  // po wdrożeniu funkcji serwera: własny mail przez Resend (functions/index.js sendVerificationEmail)
+  const {callable} = window._fb;
+  // po wdrożeniu funkcji serwera: własny mail przez Resend (functions/index.js sendVerificationEmail);
+  // gdy serwer lub Resend zawiedzie (poza limitem częstotliwości) — zapasowo mail z szablonu Firebase
   if(window.Diary && Diary.serverOn && Diary.serverOn() && callable){
-    return callable('sendVerificationEmail').then(fn => fn({url: location.origin + location.pathname})).then(() => 'server');
+    return callable('sendVerificationEmail').then(fn => fn({url: location.origin + location.pathname})).then(() => 'server')
+      .catch(e=>{
+        if(e && e.code==='functions/resource-exhausted') throw e;
+        console.warn('Mail potwierdzający przez serwer nieudany, zapasowo Firebase', e);
+        return firebaseVerification(user);
+      });
   }
+  return firebaseVerification(user);
+}
+function firebaseVerification(user){
+  const {sendEmailVerification} = window._fb;
   return sendEmailVerification(user, {url: location.origin + location.pathname})
     .catch(e=>{
       if(e && (e.code==='auth/unauthorized-continue-uri' || e.code==='auth/invalid-continue-uri')) return sendEmailVerification(user);
@@ -949,6 +959,13 @@ function langSpans(pl, en){
   const isEn = !!(b && b.classList.contains('active'));
   return `<span class="lang-pl"${isEn?' style="display:none"':''}>${pl}</span><span class="lang-en"${isEn?'':' style="display:none"'}>${en}</span>`;
 }
+/* Nazwa publiczna (ranking, dokument users/{uid} czytelny dla wszystkich): nigdy adres e-mail.
+   Bez imienia albo z imieniem wyglądającym na adres — „Zdobywca” + 4 znaki uid. */
+function publicName(user){
+  const n = String(user && user.displayName || '').trim();
+  if(n && n.indexOf('@')===-1) return n.slice(0, 80);
+  return 'Zdobywca ' + String(user && user.uid || '').slice(0, 4);
+}
 function escHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* Konto: jedno miejsce w górnym pasku. Niezalogowany: „Zaloguj się”.
@@ -1009,7 +1026,7 @@ async function saveUserState(){
       schemaV9: STATE.schemaV9 || false,
       schemaV10: STATE.schemaV10 || false,
       updatedAt: fb.serverTimestamp(),
-      displayName: user.displayName || user.email
+      displayName: publicName(user)   // dokument publiczny (ranking): bez adresu e-mail
     }, {merge: true});
   } catch(e){ console.warn('Zapis do Firebase nieudany', e); }
 }
@@ -1095,7 +1112,7 @@ async function loadRanking(){
       <th>#</th><th>Zdobywca</th><th>KS</th><th>WKS</th><th>DKS</th>
     </tr></thead><tbody>${rows.map((u,i)=>`<tr>
       <td class="rank-medal">${medals[i]||i+1}</td>
-      <td><div class="rank-name">${u.displayName||'Anonimowy'}</div></td>
+      <td><div class="rank-name">${escHtml(u.displayName && String(u.displayName).indexOf('@')===-1 ? u.displayName : 'Anonimowy')}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
       <td>${(u.wks||[]).length}/17 ${(u.wks||[]).length===17?'<span class="rank-crown wk">👑</span>':''}</td>
       <td>${(u.dks||[]).length}/38 ${(u.dks||[]).length===38?'<span class="rank-crown dk">💎</span>':''}</td>

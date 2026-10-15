@@ -993,7 +993,7 @@ function sendInvite(){
   var data = {
     fromUid: user.uid,
     // tylko podgląd; serwer i tak nadpisuje imię danymi z konta (functions/index.js onInviteCreated)
-    fromName: String(user.displayName || user.email.split('@')[0]).replace(/[@\/:<>\\]/g, ' ').trim().slice(0, 80) || 'Uczestnik',
+    fromName: (typeof publicName==='function' ? publicName(user) : 'Uczestnik').replace(/[@\/:<>\\]/g, ' ').trim().slice(0, 80) || 'Uczestnik',
     visitId: cur.visitId,
     peakId: cur.p.id,
     date: v.date || null,
