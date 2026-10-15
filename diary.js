@@ -52,6 +52,8 @@ function fmtDate(iso){
   var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');
   return m ? m[3]+'.'+m[2]+'.'+m[1] : '';
 }
+/* data wejścia do pokazania; orientacyjna (dateApprox) z „ok.” */
+function fmtVisitDate(v){ return v && v.date ? (v.dateApprox ? 'ok. ' : '') + fmtDate(v.date) : ''; }
 function fmtNum(n){ return String(n).replace('.', ','); }
 function todayIso(){
   var d = new Date();
@@ -71,6 +73,7 @@ function normalize(id, d){
     id: id,
     peakId: typeof d.peakId==='string' ? d.peakId : '',
     date: typeof d.date==='string' ? d.date : null,
+    dateApprox: d.dateApprox===true && typeof d.date==='string',
     note: typeof d.note==='string' ? d.note : '',
     companions: comp,
     from: typeof d.from==='string' ? d.from : null,
@@ -248,7 +251,7 @@ function popupBtn(p, type, idx, conq){
   if(!vs.length) label = '📖 Dodaj wejście';
   else {
     var last = vs.filter(function(v){ return v.date; }).pop();
-    label = '📖 Wejścia ('+vs.length+')' + (last ? ' · '+fmtDate(last.date) : '');
+    label = '📖 Wejścia ('+vs.length+')' + (last ? ' · '+fmtVisitDate(last) : '');
   }
   return '<button class="pop-btn diary'+(vs.length?' has':'')+'" onclick="Diary.open(\''+type+'\','+idx+')">'+esc(label)+'</button>';
 }
@@ -264,7 +267,9 @@ function ensureDom(){
         '<button class="dy-close" id="dy-x" title="Zamknij">✕</button></div>'+
       '<div class="dy-visits" id="dy-visits"></div>'+
       '<div class="dy-body"><div class="dy-grid">'+
-        '<div class="dy-field c4"><label for="dy-date">Data wejścia</label><input type="date" id="dy-date"></div>'+
+        '<div class="dy-field c4"><label for="dy-date">Data wejścia</label><input type="date" id="dy-date">'+
+          '<label class="dy-approx" title="Zaznacz, gdy nie pamiętasz dokładnego dnia (np. wejścia sprzed lat). Odznacz, gdy ustalisz dokładną datę.">'+
+          '<input type="checkbox" id="dy-date-approx"> data orientacyjna</label></div>'+
         '<div class="dy-field c4 m6"><label for="dy-from">Skąd</label><input type="text" id="dy-from" list="dy-places" maxlength="'+MAX_PLACE+'" placeholder="np. Karpacz" autocomplete="off"></div>'+
         '<div class="dy-field c4 m6"><label for="dy-to">Dokąd</label><input type="text" id="dy-to" list="dy-places" maxlength="'+MAX_PLACE+'" placeholder="np. Śnieżka" autocomplete="off"></div>'+
         '<div class="dy-field c3 m6"><label for="dy-km">Dystans (km)</label><input type="text" id="dy-km" inputmode="decimal" placeholder="12,5" autocomplete="off"></div>'+
@@ -416,6 +421,7 @@ function openForm(type, idx, which){
   $('dy-sub').textContent = tierLabel(type)+' · '+p.pasmo+' · '+p.alt+' m n.p.m.';
   $('dy-date').max = todayIso();
   $('dy-date').value = v && v.date ? v.date : '';
+  $('dy-date-approx').checked = !!(v && v.dateApprox);
   $('dy-from').value = v && v.from ? v.from : '';
   $('dy-to').value = v && v.to ? v.to : '';
   $('dy-km').value = v && v.km!=null ? fmtNum(v.km) : '';
@@ -434,7 +440,7 @@ function openForm(type, idx, which){
 }
 
 function formSig(){
-  return JSON.stringify([$('dy-date').value, $('dy-from').value.trim(), $('dy-to').value.trim(),
+  return JSON.stringify([$('dy-date').value, $('dy-date-approx').checked, $('dy-from').value.trim(), $('dy-to').value.trim(),
     $('dy-km').value.trim(), $('dy-asc').value.trim(), $('dy-link').value.trim(),
     $('dy-note').value.trim(), cur ? cur.companions : [],
     cur ? cur.photos.map(function(p){ return p.id; }) : []]);
@@ -521,7 +527,7 @@ function addPhotoFiles(files){
 /* przełącznik wejść na ten szczyt: [12.08.2025] [03.09.2025] [＋ Nowe] */
 function renderVisitTabs(list){
   var h = list.map(function(v, i){
-    var lbl = v.date ? fmtDate(v.date) : 'bez daty';
+    var lbl = v.date ? fmtVisitDate(v) : 'bez daty';
     return '<button type="button" class="dy-vt'+(cur.visitId===v.id?' on':'')+'" data-vid="'+esc(v.id)+'" title="Wejście '+(i+1)+'">'+esc(lbl)+'</button>';
   }).join('');
   h += '<button type="button" class="dy-vt new'+(cur.visitId===null?' on':'')+'" data-vid="">＋ '+(list.length?'Nowe wejście':'Pierwsze wejście')+'</button>';
@@ -628,6 +634,7 @@ function save(){
   var data = {
     peakId: cur.p.id,
     date: date,
+    dateApprox: !!date && $('dy-date-approx').checked,
     note: note,
     companions: cur.companions.slice(0, MAX_COMP),
     from: from,
@@ -822,7 +829,7 @@ function renderList(){
         (meta.length ? '<div class="dl-meta">'+meta.join(' · ')+'</div>' : '')+
         (!v ? '<div class="dl-add">＋ Dodaj wejście</div>' : '')+
       '</div>'+
-      '<div class="dl-date'+(v && v.date ? '' : ' none')+'">'+(v && v.date ? fmtDate(v.date) : (v ? 'brak daty' : ''))+'</div>'+
+      '<div class="dl-date'+(v && v.date ? '' : ' none')+'">'+(v && v.date ? fmtVisitDate(v) : (v ? 'brak daty' : ''))+'</div>'+
     '</div>';
   }).join('');
 }
@@ -899,7 +906,7 @@ function renderInvites(){
   box.innerHTML = '<div class="dl-inv-title">Zaproszenia do potwierdzenia</div>' + incoming.map(function(inv){
     var pk = peakById(inv.peakId);
     var meta = [];
-    if(inv.date) meta.push(fmtDate(inv.date));
+    if(inv.date) meta.push((inv.dateApprox ? 'ok. ' : '') + fmtDate(inv.date));
     meta.push('od: '+esc(inv.fromName || 'uczestnik'));
     if(inv.photoCount) meta.push('📷 '+inv.photoCount);
     return '<div class="dl-inv">'+
@@ -997,6 +1004,7 @@ function sendInvite(){
     visitId: cur.visitId,
     peakId: cur.p.id,
     date: v.date || null,
+    dateApprox: !!(v.date && v.dateApprox),
     photoCount: (v.photos||[]).length,
     toEmail: email,
     status: 'pending',
