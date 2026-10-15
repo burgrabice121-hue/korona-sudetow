@@ -297,7 +297,7 @@ function ensureDom(){
     '<div class="dy-box dy-wide">'+
       '<div class="dy-hdr"><div class="dy-title" id="dl-title">📖 Moje wejścia</div>'+
         '<button class="dy-close" id="dl-x" title="Zamknij">✕</button></div>'+
-      '<div class="dy-body"><div id="dl-invites"></div><div class="dl-stats" id="dl-stats"></div>'+
+      '<div class="dy-body"><div id="dl-invites"></div><div class="dl-stats" id="dl-stats"></div><div class="dl-comps" id="dl-comps" hidden></div>'+
         '<div class="dl-tabs" id="dl-tabs"></div><div id="dl-rows"></div></div>'+
     '</div></div>'+
   '<div id="dy-toast" class="dy-toast"></div>';
@@ -797,6 +797,14 @@ function renderList(){
   if(topPeak) stats.push('<span>najczęściej na: <b>'+topPeak.names.map(esc).join('</b>, <b>')+'</b> ×'+topPeak.c+'</span>');
   if(topComp) stats.push('<span>najczęściej z: <b>'+topComp.names.map(esc).join('</b>, <b>')+'</b> ×'+topComp.c+'</span>');
   $('dl-stats').innerHTML = stats.join('');
+
+  // wszyscy towarzysze: od najczęstszych, przy równej liczbie alfabetycznie
+  var comps = Object.keys(perComp).map(function(k){ return perComp[k]; }).sort(function(a, b){
+    return b.c - a.c || a.name.localeCompare(b.name, 'pl');
+  });
+  $('dl-comps').hidden = !comps.length;
+  $('dl-comps').innerHTML = comps.length ? '<span class="dl-comps-lbl">Towarzysze ('+comps.length+'):</span> '+
+    comps.map(function(x){ return '<span class="dl-comp">'+esc(x.name)+(x.c>1 ? ' <i>×'+x.c+'</i>' : '')+'</span>'; }).join('') : '';
 
   $('dl-tabs').innerHTML = [['all','Wszystkie'],['ks','KS'],['wks','WKS'],['dks','DKS']].map(function(t){
     return '<button type="button" class="dl-tab'+(listTab===t[0]?' on':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>';
