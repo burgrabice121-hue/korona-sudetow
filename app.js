@@ -806,6 +806,8 @@ window.doRegister = async function(){
     const {auth, createUserWithEmailAndPassword, updateProfile} = window._fb;
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     if(name) await updateProfile(cred.user, {displayName: name});
+    sendVerification(cred.user).catch(e=>console.warn('Mail potwierdzający nie wysłany', e));
+    if(name) renderUserBar(cred.user); // onAuthStateChanged zadziałał przed updateProfile
   } catch(e) {
     err.textContent = friendlyError(e.code);
     btn.disabled = false;
@@ -824,6 +826,35 @@ function friendlyError(code){
   };
   return map[code] || 'Wystąpił błąd. Spróbuj ponownie.';
 }
+
+/* Potwierdzenie adresu e-mail (warunek przyjmowania udostępnionych zdobyć).
+   Link z maila wraca na tę samą stronę; gdy domena nie jest na liście Firebase, mail idzie bez linku powrotu. */
+function sendVerification(user){
+  const {sendEmailVerification} = window._fb;
+  return sendEmailVerification(user, {url: location.origin + location.pathname})
+    .catch(e=>{
+      if(e && (e.code==='auth/unauthorized-continue-uri' || e.code==='auth/invalid-continue-uri')) return sendEmailVerification(user);
+      throw e;
+    });
+}
+window.verifyEmail = async function(){
+  const user = window._fb && window._fb.auth.currentUser;
+  if(!user || user.emailVerified) return;
+  try {
+    await sendVerification(user);
+    alert('Wysłaliśmy link potwierdzający na adres ' + user.email + '. Kliknij go, a potem wróć na tę stronę.');
+  } catch(e) {
+    alert(e && e.code==='auth/too-many-requests' ? 'Link był już wysłany przed chwilą. Sprawdź pocztę (także spam) lub spróbuj za kilka minut.' : 'Nie udało się wysłać linku. Spróbuj ponownie.');
+  }
+};
+/* Po powrocie z poczty: odśwież stan konta, żeby zniknęła prośba o potwierdzenie */
+async function refreshVerified(){
+  const fb = window._fb, user = fb && fb.auth.currentUser;
+  if(!user || user.emailVerified) return;
+  try { await fb.reload(user); } catch(e){ return; }
+  if(fb.auth.currentUser && fb.auth.currentUser.emailVerified) renderUserBar(fb.auth.currentUser);
+}
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') refreshVerified(); });
 
 window.doSignOut = async function(){
   const {auth, signOut} = window._fb;
@@ -898,6 +929,7 @@ function renderUserBar(user){
     navBar.innerHTML = `<div class="acct">
       <button style="${navBtnStyle}" class="acct-btn" onclick="toggleAcctMenu(event)" aria-haspopup="true" aria-expanded="false"><span class="acct-name">${name}</span> ▾</button>
       <div class="acct-menu" hidden>
+        ${user.emailVerified ? '' : `<button class="acct-verify" onclick="closeAcctMenu();verifyEmail()">✉ ${langSpans('Potwierdź adres e-mail','Confirm e-mail address')}</button>`}
         <button onclick="closeAcctMenu();window.Diary&&Diary.openList()">📖 ${langSpans('Moje wejścia','My climbs')}</button>
         ${document.getElementById('ranking-overlay') ? `<button onclick="closeAcctMenu();openRanking()">🏆 Ranking</button>` : ''}
         <button class="acct-reset" onclick="closeAcctMenu();resetAll()">↺ ${langSpans('Resetuj postęp','Reset progress')}</button>
@@ -1048,6 +1080,7 @@ renderUserBar(null); // pokaż przycisk od razu, nie czekając na (wolne lub zab
     if(user){
       hideAuthOverlay();
       renderUserBar(user);
+      refreshVerified(); // potwierdzenie mogło nastąpić na innym urządzeniu
       await loadUserState(user);
       if(window.Diary) Diary.load(user);
       if(_pendingAction){ _pendingAction(); _pendingAction = null; }

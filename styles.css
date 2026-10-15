@@ -465,6 +465,7 @@ section { position: relative; }
 .acct-menu button { display: block; width: 100%; text-align: left; background: none; border: none; color: #E6EDF3; font-family: inherit; font-size: 0.85rem; padding: 0.55rem 0.9rem; cursor: pointer; white-space: nowrap; }
 .acct-menu button:hover { background: rgba(255,255,255,0.08); }
 .acct-menu .acct-reset { color: #F0A0A0; border-top: 1px solid rgba(255,255,255,0.1); }
+.acct-menu .acct-verify { color: #F0C040; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .grupy-legend-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.6rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em; color: var(--bark); }
 .grupy-desc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
 .grupy-card { display: flex; flex-direction: column; gap: 0; border-left: 4px solid var(--gc, #888); background: rgba(0,0,0,0.03); border-radius: 0 6px 6px 0; overflow: hidden; }
