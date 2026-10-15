@@ -766,23 +766,36 @@ function renderList(){
   ensureDom();
   renderInvites();
   var all = listRows();
-  var conq = {}, n = 0, km = 0, asc = 0, perPeak = {};
+  var conq = {}, n = 0, km = 0, asc = 0, perPeak = {}, perComp = {};
   all.forEach(function(r){
     conq[r.p.id] = 1;
     if(r.v){
       n++; km += r.v.km||0; asc += r.v.ascent||0;
-      perPeak[r.p.id] = (perPeak[r.p.id]||0) + 1;
+      if(!perPeak[r.p.id]) perPeak[r.p.id] = {name:r.p.name, c:0};
+      perPeak[r.p.id].c++;
+      // towarzysz liczony raz na wejście; „Ania” i „ania ” to ta sama osoba (pokazujemy pierwszą pisownię)
+      var seen = {};
+      r.v.companions.forEach(function(c){
+        var key = c.trim().toLowerCase();
+        if(!key || seen[key]) return;
+        seen[key] = 1;
+        if(!perComp[key]) perComp[key] = {name:c.trim(), c:0};
+        perComp[key].c++;
+      });
     }
   });
-  var top = null;
-  all.forEach(function(r){
-    var c = perPeak[r.p.id]||0;
-    if(c>=2 && (!top || c>top.c)) top = {name:r.p.name, c:c};
-  });
+  // najczęstsze (od 2 razy); przy remisie wszystkie
+  function leaders(map){
+    var items = Object.keys(map).map(function(k){ return map[k]; });
+    var max = items.reduce(function(m, x){ return Math.max(m, x.c); }, 0);
+    return max>=2 ? {c:max, names:items.filter(function(x){ return x.c===max; }).map(function(x){ return x.name; })} : null;
+  }
+  var topPeak = leaders(perPeak), topComp = leaders(perComp);
   var stats = ['<span><b>'+Object.keys(conq).length+'</b> zdobytych</span>', '<span><b>'+n+'</b> wejść</span>'];
   if(km) stats.push('<span><b>'+fmtNum(Math.round(km*10)/10)+'</b> km</span>');
   if(asc) stats.push('<span><b>'+asc+'</b> m podejść</span>');
-  if(top) stats.push('<span>najczęściej: <b>'+esc(top.name)+'</b> ×'+top.c+'</span>');
+  if(topPeak) stats.push('<span>najczęściej na: <b>'+topPeak.names.map(esc).join('</b>, <b>')+'</b> ×'+topPeak.c+'</span>');
+  if(topComp) stats.push('<span>najczęściej z: <b>'+topComp.names.map(esc).join('</b>, <b>')+'</b> ×'+topComp.c+'</span>');
   $('dl-stats').innerHTML = stats.join('');
 
   $('dl-tabs').innerHTML = [['all','Wszystkie'],['ks','KS'],['wks','WKS'],['dks','DKS']].map(function(t){
