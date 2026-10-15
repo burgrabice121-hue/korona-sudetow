@@ -34,7 +34,7 @@
 .dy-field{min-width:0}
 .dy-field.c3{grid-column:span 3}.dy-field.c4{grid-column:span 4}.dy-field.c6{grid-column:span 6}.dy-field.c12{grid-column:span 12}
 .dy-field label{display:flex;justify-content:space-between;font-family:'Courier New',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#9AA4B2;margin-bottom:3px}
-.dy-field input[type=text],.dy-field input[type=date],.dy-field input[type=url],.dy-field textarea,.dy-comp{width:100%;padding:6px 9px;background:#0D1117;border:1px solid var(--border,#30363D);border-radius:4px;color:#F5F0E8;font-size:13px;font-family:'Georgia',serif;outline:none;box-sizing:border-box;transition:border-color .2s;color-scheme:dark}
+.dy-field input[type=text],.dy-field input[type=date],.dy-field input[type=url],.dy-field input[type=email],.dy-field textarea,.dy-comp{width:100%;padding:6px 9px;background:#0D1117;border:1px solid var(--border,#30363D);border-radius:4px;color:#F5F0E8;font-size:13px;font-family:'Georgia',serif;outline:none;box-sizing:border-box;transition:border-color .2s;color-scheme:dark}
 .dy-field textarea{resize:none;line-height:1.4;display:block}
 .dy-field input:focus,.dy-field textarea:focus,.dy-comp:focus-within{border-color:var(--gold,#D4A017)}
 .dy-count{font-size:9px;color:#6B7280;letter-spacing:0;text-transform:none}
@@ -116,3 +116,27 @@
   .dl-row{flex-wrap:wrap}
   .dl-date{margin-left:50px}
 }
+/* udostępnianie wejścia uczestnikom (zaproszenia) */
+.dy-share-row{display:flex;gap:6px}
+.dy-share-row input{flex:1;min-width:0}
+.dy-share-row .dy-btn:disabled,#dy-share-in:disabled{opacity:.45;cursor:not-allowed}
+.dy-share-hint{font-size:11px;color:#8B949E;margin-top:4px;line-height:1.4}
+.dy-share-list:empty{display:none}
+.dy-share-list{margin-top:6px;display:flex;flex-direction:column;gap:3px}
+.dy-inv{display:flex;align-items:center;gap:8px;font-size:12px;color:#C9D1D9}
+.dy-inv-mail{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dy-inv-st{font-family:'Courier New',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,.07);color:#9AA4B2}
+.dy-inv-st.pending{color:#F0C040}
+.dy-inv-st.accepted{color:#22C55E}
+.dy-inv-st.declined,.dy-inv-st.expired{color:#F87171}
+.dy-inv-x{background:none;border:none;color:#8B949E;font-size:11px;cursor:pointer;text-decoration:underline;padding:0}
+.dy-inv-x:hover{color:#F87171}
+#dl-invites:empty{display:none}
+#dl-invites{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(212,160,23,.4);border-radius:6px;background:rgba(212,160,23,.06)}
+.dl-inv-title{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#F0C040;margin-bottom:6px}
+.dl-inv{display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid rgba(255,255,255,.06)}
+.dl-inv:first-of-type{border-top:none}
+.dl-inv-btns{display:flex;gap:6px;flex:none}
+.dl-inv-note{font-size:12px;color:#C9D1D9}
+.dl-inv-link{background:none;border:none;padding:0;color:#F0C040;text-decoration:underline;cursor:pointer;font:inherit}
+@media (max-width:600px){ .dl-inv{flex-wrap:wrap} .dl-inv-btns{width:100%;justify-content:flex-end} }

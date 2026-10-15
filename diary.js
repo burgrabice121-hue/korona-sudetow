@@ -13,6 +13,16 @@ var MAX_KM = 1000, MAX_ASCENT = 10000;
 var MAX_PHOTOS = 6, PHOTO_MAX_PX = 1600, THUMB_MAX_PX = 320, MAX_SRC_BYTES = 30*1024*1024;
 var urlCache = {};     // ścieżka w Storage -> adres do pokazania
 
+/* Udostępnianie wejść uczestnikom (zaproszenia, kolekcja invites/). Plan:
+   session-logs/2026-10-15-udostepnianie-zdobycia-plan.md. Wyłączone do czasu funkcji serwera
+   (mail, przyjęcie z kopią); do testów: localStorage korona_invites = '1'. */
+var INVITES_ON = false;
+try{ if(localStorage.getItem('korona_invites')==='1') INVITES_ON = true; }catch(e){}
+var MAX_INVITES = 20, INVITE_DAYS = 30, FN_REGION = 'europe-west1';
+var EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/i;
+var incoming = [];     // zaproszenia do mnie (oczekujące)
+var sent = [];         // zaproszenia wysłane dla wejścia w formularzu
+
 var visits = {};       // visitId -> dane wejścia (z polem peakId)
 var loadOk = false;    // true tylko po udanym odczycie (inaczej nie pozwalamy zapisywać "na ślepo")
 var loadPromise = null;
@@ -203,6 +213,7 @@ function load(user){
     visits = next;
     loadOk = true;
     refreshAll();
+    loadInvites(user);
   }).catch(function(e){
     console.warn('Odczyt wejść nieudany', e);
   });
@@ -210,7 +221,9 @@ function load(user){
 }
 
 function clear(){
-  visits = {}; loadOk = false; loadPromise = null; cur = null;
+  visits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = [];
+  // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> loadInvites() otworzy listę
+  if(INVITES_ON && hashInvite() && typeof showAuthOverlay==='function') showAuthOverlay(function(){});
   closeForm(); closeList();
   refreshAll();
 }
@@ -261,6 +274,10 @@ function ensureDom(){
           '<div class="dy-comp" id="dy-comp"><span id="dy-chips"></span>'+
           '<input type="text" id="dy-comp-in" maxlength="'+MAX_COMP_LEN+'" placeholder="Imię i Enter" autocomplete="off"></div>'+
           '<div class="dy-suggest" id="dy-suggest"></div></div>'+
+        '<div class="dy-field c12" id="dy-share" hidden><label for="dy-share-in">Udostępnij uczestnikom (e-mail)</label>'+
+          '<div class="dy-share-row"><input type="email" id="dy-share-in" maxlength="254" placeholder="adres@przyklad.pl" autocomplete="off">'+
+          '<button type="button" class="dy-btn ghost" id="dy-share-go">Wyślij zaproszenie</button></div>'+
+          '<div class="dy-share-hint" id="dy-share-hint"></div><div class="dy-share-list" id="dy-share-list"></div></div>'+
         '<div class="dy-field c12"><label>Zdjęcia <span class="dy-count" id="dy-ph-count"></span></label>'+
           '<div class="dy-photos" id="dy-photos"></div>'+
           '<input type="file" id="dy-ph-file" accept="image/*" multiple hidden></div>'+
@@ -275,7 +292,7 @@ function ensureDom(){
     '<div class="dy-box dy-wide">'+
       '<div class="dy-hdr"><div class="dy-title" id="dl-title">📖 Moje wejścia</div>'+
         '<button class="dy-close" id="dl-x" title="Zamknij">✕</button></div>'+
-      '<div class="dy-body"><div class="dl-stats" id="dl-stats"></div>'+
+      '<div class="dy-body"><div id="dl-invites"></div><div class="dl-stats" id="dl-stats"></div>'+
         '<div class="dl-tabs" id="dl-tabs"></div><div id="dl-rows"></div></div>'+
     '</div></div>'+
   '<div id="dy-toast" class="dy-toast"></div>';
@@ -327,6 +344,16 @@ function ensureDom(){
     if(isDirty() && !confirm('Odrzucić niezapisane zmiany w tym wejściu?')) return;
     releasePhotoUrls();
     openForm(cur.type, cur.idx, vid || 'new');
+  });
+  $('dy-share-go').onclick = sendInvite;
+  $('dy-share-in').addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); sendInvite(); } });
+  $('dy-share-list').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-cancel]'); if(b) cancelInvite(b.getAttribute('data-cancel'));
+  });
+  $('dl-invites').addEventListener('click', function(ev){
+    var a = ev.target.closest('[data-accept]'); if(a) return acceptInvite(a.getAttribute('data-accept'), a);
+    var d = ev.target.closest('[data-decline]'); if(d) return declineInvite(d.getAttribute('data-decline'));
+    var v = ev.target.closest('[data-verify]'); if(v && typeof verifyEmail==='function') verifyEmail();
   });
   $('dl-tabs').addEventListener('click', function(ev){
     var b = ev.target.closest('[data-tab]'); if(!b) return;
@@ -401,6 +428,7 @@ function openForm(type, idx, which){
   $('dy-save').disabled = false; $('dy-save').textContent = 'Zapisz';
   renderPlaces(); renderVisitTabs(list); renderChips(); renderPhotos(); updateCount();
   curSig = formSig();
+  sent = []; renderShare(); loadSent();
   $('diary-overlay').classList.remove('hidden');
   setTimeout(function(){ try{ $('dy-date').focus(); }catch(x){} }, 30);
 }
@@ -681,6 +709,7 @@ function remove(){
   var oldPhotos = visits[vid] ? visits[vid].photos.map(function(p){ return p.id; }) : [];
   f.deleteDoc(f.doc(f.db,'users',user.uid,'visits',vid)).then(function(){
     deleteFiles(user.uid, vid, oldPhotos);
+    cancelAllFor(vid);
     delete visits[vid];
     refreshPopup(type, idx);
     closeForm();
@@ -728,6 +757,7 @@ function listRows(){
 
 function renderList(){
   ensureDom();
+  renderInvites();
   var all = listRows();
   var conq = {}, n = 0, km = 0, asc = 0, perPeak = {};
   all.forEach(function(r){
@@ -797,11 +827,216 @@ function renderList(){
   }).join('');
 }
 
+/* ── zaproszenia: udostępnianie wejścia uczestnikom ── */
+function invitesCol(f){ return f.collection(f.db,'invites'); }
+function peakById(id){
+  var r = null;
+  ['ks','wks','dks'].some(function(type){
+    var arr = tierArr(type);
+    for(var i=0;i<arr.length;i++) if(arr[i].id===id){ r = {p:arr[i], type:type, idx:i}; return true; }
+    return false;
+  });
+  return r;
+}
+function tsMs(t){ return t && typeof t.toMillis==='function' ? t.toMillis() : 0; }
+function isExpired(inv){ var c = tsMs(inv.createdAt); return !!c && Date.now() - c > INVITE_DAYS*864e5; }
+function statusOf(inv){ return inv.status==='pending' && isExpired(inv) ? 'expired' : inv.status; }
+var STATUS_PL = {pending:'oczekuje', accepted:'przyjęte', declined:'odrzucone', cancelled:'anulowane', expired:'wygasło'};
+
+/* zaproszenia do mnie: tylko z potwierdzonym adresem (tak samo sprawdzają reguły) */
+function loadInvites(user){
+  var f = fb();
+  incoming = [];
+  if(!INVITES_ON || !f || !user || !user.email || !user.emailVerified || !f.query){ notifyInvites(); openFromHash(); return Promise.resolve(); }
+  var q = f.query(invitesCol(f), f.where('toEmail','==',user.email.toLowerCase()), f.where('status','==','pending'));
+  return f.getDocs(q).then(function(snap){
+    var next = [];
+    snap.forEach(function(d){ var x = d.data(); x.id = d.id; if(!isExpired(x)) next.push(x); });
+    next.sort(function(a,b){ return tsMs(b.createdAt) - tsMs(a.createdAt); });
+    incoming = next;
+    notifyInvites();
+    if(incoming.length && !notifyInvites._shown){
+      notifyInvites._shown = true;
+      toast(incoming.length===1 ? 'Masz zaproszenie do wspólnego wejścia — zobacz w „Moje wejścia”'
+        : 'Masz '+incoming.length+' zaproszenia do wspólnych wejść — zobacz w „Moje wejścia”');
+    }
+    openFromHash();
+  }).catch(function(e){ console.warn('Odczyt zaproszeń nieudany', e); });
+}
+function notifyInvites(){
+  if(typeof renderUserBar==='function' && curUser()) renderUserBar(curUser());
+  var lo = $('diary-list-overlay');
+  if(lo && !lo.classList.contains('hidden')) renderInvites();
+}
+
+/* link z maila: #zaproszenie=<id> -> po zalogowaniu otwórz „Moje wejścia” */
+function hashInvite(){ var m = /^#zaproszenie=([A-Za-z0-9]{1,40})$/.exec(location.hash||''); return m ? m[1] : null; }
+function openFromHash(){
+  if(!INVITES_ON || !hashInvite()) return;
+  var user = curUser();
+  if(!user){ if(typeof showAuthOverlay==='function') showAuthOverlay(openFromHash); return; }
+  try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  openList();
+}
+
+function renderInvites(){
+  var box = $('dl-invites'); if(!box) return;
+  var user = curUser();
+  if(!INVITES_ON || !user){ box.innerHTML = ''; return; }
+  if(!user.emailVerified){
+    box.innerHTML = '<div class="dl-inv-note">Ktoś mógł udostępnić Ci wspólne wejście. Aby zobaczyć zaproszenia, '+
+      '<button type="button" class="dl-inv-link" data-verify="1">potwierdź swój adres e-mail</button>.</div>';
+    return;
+  }
+  if(!incoming.length){ box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="dl-inv-title">Zaproszenia do potwierdzenia</div>' + incoming.map(function(inv){
+    var pk = peakById(inv.peakId);
+    var meta = [];
+    if(inv.date) meta.push(fmtDate(inv.date));
+    meta.push('od: '+esc(inv.fromName || 'uczestnik'));
+    if(inv.photoCount) meta.push('📷 '+inv.photoCount);
+    return '<div class="dl-inv">'+
+      (pk ? '<span class="dl-badge '+pk.type+'">'+tierLabel(pk.type)+'</span>' : '')+
+      '<div class="dl-main"><div class="dl-name">'+esc(pk ? pk.p.name : inv.peakId)+(pk ? ' <small>'+esc(pk.p.pasmo)+'</small>' : '')+'</div>'+
+        '<div class="dl-meta">'+meta.join(' · ')+'</div></div>'+
+      '<div class="dl-inv-btns"><button type="button" class="dy-btn ghost" data-decline="'+esc(inv.id)+'">Odrzuć</button>'+
+        '<button type="button" class="dy-btn primary" data-accept="'+esc(inv.id)+'">Przyjmij</button></div>'+
+    '</div>';
+  }).join('');
+}
+
+/* przyjęcie: kopię wejścia i zdjęć robi funkcja serwera (krok 3), potem zaznaczamy szczyt jako zdobyty */
+var fnPromise = null;
+function callable(name){
+  var f = fb();
+  if(!fnPromise){
+    fnPromise = import('https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js').then(function(m){
+      return {m:m, fns:m.getFunctions(f.app, FN_REGION)};
+    });
+  }
+  return fnPromise.then(function(x){ return x.m.httpsCallable(x.fns, name); });
+}
+function acceptInvite(id, btn){
+  var user = curUser(); if(!user) return;
+  var inv = incoming.filter(function(x){ return x.id===id; })[0]; if(!inv) return;
+  if(btn){ btn.disabled = true; btn.textContent = 'Kopiuję…'; }
+  callable('acceptInvite').then(function(fn){ return fn({inviteId:id}); }).then(function(res){
+    incoming = incoming.filter(function(x){ return x.id!==id; });
+    if(typeof markConquered==='function') markConquered(inv.peakId);
+    return load(user).then(function(){
+      notifyInvites();
+      toast('Wejście dodane do Twojego pamiętnika ✓');
+    });
+  }).catch(function(e){
+    console.warn('Przyjęcie zaproszenia nieudane', e);
+    if(btn){ btn.disabled = false; btn.textContent = 'Przyjmij'; }
+    var code = e && e.code || '';
+    alert(code==='functions/not-found' || code==='functions/internal' ? 'Przyjmowanie zaproszeń nie jest jeszcze dostępne. Spróbuj później.'
+      : code==='functions/failed-precondition' ? (e.message || 'Zaproszenie jest już nieaktualne.')
+      : 'Nie udało się przyjąć zaproszenia. Spróbuj ponownie.');
+  });
+}
+function declineInvite(id){
+  var f = fb();
+  if(!confirm('Odrzucić to zaproszenie? Nadawca zobaczy, że zostało odrzucone.')) return;
+  f.updateDoc(f.doc(f.db,'invites',id), {status:'declined', closedAt:f.serverTimestamp()}).then(function(){
+    incoming = incoming.filter(function(x){ return x.id!==id; });
+    notifyInvites();
+  }).catch(function(e){ console.warn('Odrzucenie nieudane', e); alert('Nie udało się odrzucić. Spróbuj ponownie.'); });
+}
+
+/* nadawca: pole w formularzu wejścia */
+function renderShare(){
+  var box = $('dy-share'); if(!box) return;
+  box.hidden = !INVITES_ON;
+  if(!INVITES_ON || !cur) return;
+  var user = curUser();
+  var hint = '', can = false;
+  if(!cur.visitId) hint = 'Najpierw zapisz wejście — potem możesz je udostępnić uczestnikom.';
+  else if(!user || !user.emailVerified) hint = 'Aby wysyłać zaproszenia, potwierdź swój adres e-mail (menu konta).';
+  else { can = true; hint = 'Uczestnik dostanie e-mail z zaproszeniem. Po przyjęciu zobaczy u siebie kopię tego wejścia (data, trasa, zdjęcia) i szczyt jako zdobyty.'; }
+  $('dy-share-in').disabled = $('dy-share-go').disabled = !can;
+  $('dy-share-hint').textContent = hint;
+  $('dy-share-list').innerHTML = sent.map(function(inv){
+    var st = statusOf(inv);
+    return '<div class="dy-inv"><span class="dy-inv-mail">'+esc(inv.toEmail)+'</span>'+
+      '<span class="dy-inv-st '+st+'">'+STATUS_PL[st]+'</span>'+
+      (st==='pending' ? '<button type="button" class="dy-inv-x" data-cancel="'+esc(inv.id)+'">Anuluj</button>' : '')+'</div>';
+  }).join('');
+}
+function loadSent(){
+  var f = fb(), user = curUser();
+  if(!INVITES_ON || !cur || !cur.visitId || !user || !f.query) return;
+  var tok = cur, vid = cur.visitId;
+  var q = f.query(invitesCol(f), f.where('fromUid','==',user.uid), f.where('visitId','==',vid));
+  f.getDocs(q).then(function(snap){
+    if(cur !== tok) return;
+    var next = [];
+    snap.forEach(function(d){ var x = d.data(); x.id = d.id; next.push(x); });
+    next.sort(function(a,b){ return tsMs(a.createdAt) - tsMs(b.createdAt); });
+    sent = next; renderShare();
+  }).catch(function(e){ console.warn('Odczyt wysłanych zaproszeń nieudany', e); });
+}
+function sendInvite(){
+  if(!cur || !cur.visitId) return;
+  var f = fb(), user = curUser(), err = $('dy-err');
+  if(!user || !user.emailVerified) return;
+  var email = $('dy-share-in').value.trim().toLowerCase();
+  if(!EMAIL_RE.test(email) || email.length > 254){ err.textContent = 'Podaj poprawny adres e-mail uczestnika.'; return; }
+  if(email === (user.email||'').toLowerCase()){ err.textContent = 'To Twój własny adres.'; return; }
+  if(isDirty()){ err.textContent = 'Najpierw zapisz zmiany w wejściu — uczestnik dostanie zapisaną wersję.'; return; }
+  var active = sent.filter(function(x){ var st = statusOf(x); return st!=='cancelled' && st!=='expired'; });
+  if(active.some(function(x){ return x.toEmail===email; })){ err.textContent = 'Ta osoba ma już zaproszenie do tego wejścia.'; return; }
+  if(active.length >= MAX_INVITES){ err.textContent = 'Maksymalnie '+MAX_INVITES+' zaproszeń na wejście.'; return; }
+  var v = visits[cur.visitId] || {};
+  var data = {
+    fromUid: user.uid,
+    fromName: String(user.displayName || user.email.split('@')[0]).slice(0, 80),
+    visitId: cur.visitId,
+    peakId: cur.p.id,
+    date: v.date || null,
+    photoCount: (v.photos||[]).length,
+    toEmail: email,
+    status: 'pending',
+    createdAt: f.serverTimestamp()
+  };
+  var ref = f.doc(invitesCol(f)), tok = cur;
+  $('dy-share-go').disabled = true; err.textContent = '';
+  f.setDoc(ref, data).then(function(){
+    if(cur !== tok) return;
+    data.createdAt = {toMillis:function(){ return Date.now(); }};
+    data.id = ref.id; sent.push(data);
+    $('dy-share-in').value = '';
+    renderShare();
+    toast('Zaproszenie wysłane do '+email);
+  }).catch(function(e){
+    console.warn('Wysłanie zaproszenia nieudane', e);
+    if(cur === tok){ $('dy-share-go').disabled = false; err.textContent = 'Nie udało się wysłać zaproszenia. Spróbuj ponownie.'; }
+  });
+}
+function cancelInvite(id){
+  var f = fb();
+  f.updateDoc(f.doc(f.db,'invites',id), {status:'cancelled', closedAt:f.serverTimestamp()}).then(function(){
+    sent.forEach(function(x){ if(x.id===id) x.status = 'cancelled'; });
+    renderShare();
+  }).catch(function(e){ console.warn('Anulowanie nieudane', e); $('dy-err').textContent = 'Nie udało się anulować. Spróbuj ponownie.'; });
+}
+/* po usunięciu wejścia: anuluj jego oczekujące zaproszenia (najlepsza próba) */
+function cancelAllFor(vid){
+  var f = fb(), user = curUser();
+  if(!INVITES_ON || !user || !f.query) return;
+  var q = f.query(invitesCol(f), f.where('fromUid','==',user.uid), f.where('visitId','==',vid), f.where('status','==','pending'));
+  f.getDocs(q).then(function(snap){
+    snap.forEach(function(d){ f.updateDoc(d.ref, {status:'cancelled', closedAt:f.serverTimestamp()}).catch(function(){}); });
+  }).catch(function(){});
+}
+
 /* ── start ── */
 window.Diary = {
   load: load, clear: clear, popupBtn: popupBtn,
   open: open, openList: openList,
-  visits: function(){ return visits; }
+  visits: function(){ return visits; },
+  inviteCount: function(){ return incoming.length; }
 };
 ensureDom();
 // markery mogły powstać zanim diary.js się załadował — przebuduj popupy z przyciskiem

@@ -494,6 +494,26 @@ window.togglePeak = function(type, idx){
   if(justConquered && window.Diary) Diary.open(type, idx, true);
 };
 
+/* Zaznacz szczyt jako zdobyty bez otwierania formularza (np. po przyjęciu udostępnionego wejścia).
+   peakId = id z peaks-data.js; zwraca true, gdy szczyt został właśnie dopisany. */
+window.markConquered = function(peakId){
+  for(const type of ['ks','wks','dks']){
+    const data = type==='ks'?KS:type==='wks'?WKS:DKS;
+    const idx = data.findIndex(p=>p.id===peakId);
+    if(idx===-1) continue;
+    if(STATE[type].includes(idx)) return false;
+    STATE[type].push(idx);
+    saveState(STATE);
+    const markers = type==='ks'?ksMarkers:type==='wks'?wksMarkers:dksMarkers;
+    if(markers[idx]){ markers[idx].setIcon(makeIcon(data[idx],type,true)); markers[idx].setPopupContent(buildPopup(data[idx],type,idx)); }
+    updateUI();
+    renderList(type);
+    saveUserState();
+    return true;
+  }
+  return false;
+};
+
 /* ═══════════════════════════════════════════
    UI UPDATE
 ═══════════════════════════════════════════ */
@@ -842,7 +862,11 @@ window.verifyEmail = async function(){
   if(!user || user.emailVerified) return;
   try {
     await sendVerification(user);
-    alert('Wysłaliśmy link potwierdzający na adres ' + user.email + '. Kliknij go, a potem wróć na tę stronę.');
+    // szablon Firebase (nieedytowalny) mówi o „nowym koncie”; uprzedzamy, że chodzi o obecne konto
+    const en = document.getElementById('btn-en') && document.getElementById('btn-en').classList.contains('active');
+    alert(en
+      ? 'We have sent a confirmation link to ' + user.email + '. The email from ViaSudetica may mention a new account — it refers to your existing account; nothing in it changes. Click the link, then come back to this page.'
+      : 'Wysłaliśmy link potwierdzający na adres ' + user.email + '. Mail od ViaSudetica może wspominać o nowym koncie — dotyczy Twojego obecnego konta, nic się w nim nie zmienia. Kliknij link, a potem wróć na tę stronę.');
   } catch(e) {
     alert(e && e.code==='auth/too-many-requests' ? 'Link był już wysłany przed chwilą. Sprawdź pocztę (także spam) lub spróbuj za kilka minut.' : 'Nie udało się wysłać linku. Spróbuj ponownie.');
   }
@@ -926,11 +950,12 @@ function renderUserBar(user){
   if(!navBar) return;
   if(user){
     const name = escHtml(user.displayName || user.email);
+    const inv = window.Diary && Diary.inviteCount ? Diary.inviteCount() : 0; // zaproszenia do potwierdzenia
     navBar.innerHTML = `<div class="acct">
-      <button style="${navBtnStyle}" class="acct-btn" onclick="toggleAcctMenu(event)" aria-haspopup="true" aria-expanded="false"><span class="acct-name">${name}</span> ▾</button>
+      <button style="${navBtnStyle}" class="acct-btn" onclick="toggleAcctMenu(event)" aria-haspopup="true" aria-expanded="false"><span class="acct-name">${name}</span>${inv ? '<span class="acct-dot" aria-label="nowe zaproszenia"></span>' : ''} ▾</button>
       <div class="acct-menu" hidden>
         ${user.emailVerified ? '' : `<button class="acct-verify" onclick="closeAcctMenu();verifyEmail()">✉ ${langSpans('Potwierdź adres e-mail','Confirm e-mail address')}</button>`}
-        <button onclick="closeAcctMenu();window.Diary&&Diary.openList()">📖 ${langSpans('Moje wejścia','My climbs')}</button>
+        <button onclick="closeAcctMenu();window.Diary&&Diary.openList()">📖 ${langSpans('Moje wejścia','My climbs')}${inv ? ' <b class="acct-badge">'+inv+'</b>' : ''}</button>
         ${document.getElementById('ranking-overlay') ? `<button onclick="closeAcctMenu();openRanking()">🏆 Ranking</button>` : ''}
         <button class="acct-reset" onclick="closeAcctMenu();resetAll()">↺ ${langSpans('Resetuj postęp','Reset progress')}</button>
         <button onclick="closeAcctMenu();doSignOut()">${langSpans('Wyloguj','Log out')}</button>

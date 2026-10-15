@@ -1,6 +1,6 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, reload } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDcx8nF7_cS30n7jBSPJ9iN3_Utl8cxHg8",
@@ -17,7 +17,7 @@
   const db = getFirestore(app);
 
   // Eksponuj globalnie dla reszty skryptów
-  window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, reload, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp };
+  window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, reload, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp, query, where, app };
 
   // Storage (zdjęcia z pamiętnika) ładowany osobno — ewentualny błąd nie może zepsuć logowania ani postępu.
   window._fbStorageReady = import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js").then(function(m){
