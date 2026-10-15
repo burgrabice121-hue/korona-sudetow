@@ -14,11 +14,11 @@ var MAX_PHOTOS = 6, PHOTO_MAX_PX = 1600, THUMB_MAX_PX = 320, MAX_SRC_BYTES = 30*
 var urlCache = {};     // ścieżka w Storage -> adres do pokazania
 
 /* Udostępnianie wejść uczestnikom (zaproszenia, kolekcja invites/). Plan:
-   session-logs/2026-10-15-udostepnianie-zdobycia-plan.md. Wyłączone do czasu funkcji serwera
-   (mail, przyjęcie z kopią); do testów: localStorage korona_invites = '1'. */
-var INVITES_ON = false;
-try{ if(localStorage.getItem('korona_invites')==='1') INVITES_ON = true; }catch(e){}
-var MAX_INVITES = 20, INVITE_DAYS = 30, FN_REGION = 'europe-west1';
+   session-logs/2026-10-15-udostepnianie-zdobycia-plan.md. Włączone 2026-10-15 po wdrożeniu funkcji
+   serwera (functions/) i reguł; awaryjne wyłączenie u siebie: localStorage korona_invites = '0'. */
+var INVITES_ON = true;
+try{ if(localStorage.getItem('korona_invites')==='0') INVITES_ON = false; }catch(e){}
+var MAX_INVITES = 20, INVITE_DAYS = 30;
 var EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/i;
 var incoming = [];     // zaproszenia do mnie (oczekujące)
 var sent = [];         // zaproszenia wysłane dla wejścia w formularzu
@@ -223,7 +223,7 @@ function load(user){
 function clear(){
   visits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = [];
   // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> loadInvites() otworzy listę
-  if(INVITES_ON && hashInvite() && typeof showAuthOverlay==='function') showAuthOverlay(function(){});
+  if(INVITES_ON && hashInvite()) askLogin();
   closeForm(); closeList();
   refreshAll();
 }
@@ -841,7 +841,7 @@ function peakById(id){
 function tsMs(t){ return t && typeof t.toMillis==='function' ? t.toMillis() : 0; }
 function isExpired(inv){ var c = tsMs(inv.createdAt); return !!c && Date.now() - c > INVITE_DAYS*864e5; }
 function statusOf(inv){ return inv.status==='pending' && isExpired(inv) ? 'expired' : inv.status; }
-var STATUS_PL = {pending:'oczekuje', accepted:'przyjęte', declined:'odrzucone', cancelled:'anulowane', expired:'wygasło'};
+var STATUS_PL = {pending:'oczekuje', accepting:'przyjmowanie…', accepted:'przyjęte', declined:'odrzucone', cancelled:'anulowane', expired:'wygasło'};
 
 /* zaproszenia do mnie: tylko z potwierdzonym adresem (tak samo sprawdzają reguły) */
 function loadInvites(user){
@@ -870,11 +870,18 @@ function notifyInvites(){
 }
 
 /* link z maila: #zaproszenie=<id> -> po zalogowaniu otwórz „Moje wejścia” */
-function hashInvite(){ var m = /^#zaproszenie=([A-Za-z0-9]{1,40})$/.exec(location.hash||''); return m ? m[1] : null; }
+/* osoba bez konta dostaje link z „&rejestracja” — wtedy okno logowania otwiera się na zakładce rejestracji */
+function hashInvite(){ var m = /^#zaproszenie=([A-Za-z0-9]{1,40})(&rejestracja)?$/.exec(location.hash||''); return m ? m[1] : null; }
+function hashWantsRegister(){ return /&rejestracja$/.test(location.hash||''); }
+function askLogin(){
+  if(typeof showAuthOverlay!=='function') return;
+  showAuthOverlay(function(){});
+  if(hashWantsRegister() && typeof authTab==='function') authTab('reg');
+}
 function openFromHash(){
   if(!INVITES_ON || !hashInvite()) return;
   var user = curUser();
-  if(!user){ if(typeof showAuthOverlay==='function') showAuthOverlay(openFromHash); return; }
+  if(!user){ askLogin(); return; }
   try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
   openList();
 }
@@ -905,22 +912,12 @@ function renderInvites(){
   }).join('');
 }
 
-/* przyjęcie: kopię wejścia i zdjęć robi funkcja serwera (krok 3), potem zaznaczamy szczyt jako zdobyty */
-var fnPromise = null;
-function callable(name){
-  var f = fb();
-  if(!fnPromise){
-    fnPromise = import('https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js').then(function(m){
-      return {m:m, fns:m.getFunctions(f.app, FN_REGION)};
-    });
-  }
-  return fnPromise.then(function(x){ return x.m.httpsCallable(x.fns, name); });
-}
+/* przyjęcie: kopię wejścia i zdjęć robi funkcja serwera acceptInvite, potem zaznaczamy szczyt jako zdobyty */
 function acceptInvite(id, btn){
   var user = curUser(); if(!user) return;
   var inv = incoming.filter(function(x){ return x.id===id; })[0]; if(!inv) return;
   if(btn){ btn.disabled = true; btn.textContent = 'Kopiuję…'; }
-  callable('acceptInvite').then(function(fn){ return fn({inviteId:id}); }).then(function(res){
+  fb().callable('acceptInvite').then(function(fn){ return fn({inviteId:id}); }).then(function(res){
     incoming = incoming.filter(function(x){ return x.id!==id; });
     if(typeof markConquered==='function') markConquered(inv.peakId);
     return load(user).then(function(){
@@ -931,9 +928,13 @@ function acceptInvite(id, btn){
     console.warn('Przyjęcie zaproszenia nieudane', e);
     if(btn){ btn.disabled = false; btn.textContent = 'Przyjmij'; }
     var code = e && e.code || '';
-    alert(code==='functions/not-found' || code==='functions/internal' ? 'Przyjmowanie zaproszeń nie jest jeszcze dostępne. Spróbuj później.'
-      : code==='functions/failed-precondition' ? (e.message || 'Zaproszenie jest już nieaktualne.')
-      : 'Nie udało się przyjąć zaproszenia. Spróbuj ponownie.');
+    // komunikaty z serwera (functions/index.js) są po polsku i nadają się do pokazania
+    var known = ['functions/failed-precondition','functions/permission-denied','functions/not-found','functions/unauthenticated','functions/invalid-argument','functions/internal'];
+    alert(known.indexOf(code)!==-1 && e.message && e.message!=='internal' && e.message!=='not-found' ? e.message
+      : 'Nie udało się przyjąć zaproszenia. Spróbuj ponownie później.');
+    if(code==='functions/failed-precondition' || code==='functions/not-found'){
+      incoming = incoming.filter(function(x){ return x.id!==id; }); notifyInvites();
+    }
   });
 }
 function declineInvite(id){
@@ -991,7 +992,8 @@ function sendInvite(){
   var v = visits[cur.visitId] || {};
   var data = {
     fromUid: user.uid,
-    fromName: String(user.displayName || user.email.split('@')[0]).slice(0, 80),
+    // tylko podgląd; serwer i tak nadpisuje imię danymi z konta (functions/index.js onInviteCreated)
+    fromName: String(user.displayName || user.email.split('@')[0]).replace(/[@\/:<>\\]/g, ' ').trim().slice(0, 80) || 'Uczestnik',
     visitId: cur.visitId,
     peakId: cur.p.id,
     date: v.date || null,
@@ -1036,7 +1038,8 @@ window.Diary = {
   load: load, clear: clear, popupBtn: popupBtn,
   open: open, openList: openList,
   visits: function(){ return visits; },
-  inviteCount: function(){ return incoming.length; }
+  inviteCount: function(){ return incoming.length; },
+  serverOn: function(){ return INVITES_ON; }   // funkcje serwera wdrożone (także własny mail weryfikacyjny)
 };
 ensureDom();
 // markery mogły powstać zanim diary.js się załadował — przebuduj popupy z przyciskiem

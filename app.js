@@ -850,7 +850,11 @@ function friendlyError(code){
 /* Potwierdzenie adresu e-mail (warunek przyjmowania udostępnionych zdobyć).
    Link z maila wraca na tę samą stronę; gdy domena nie jest na liście Firebase, mail idzie bez linku powrotu. */
 function sendVerification(user){
-  const {sendEmailVerification} = window._fb;
+  const {sendEmailVerification, callable} = window._fb;
+  // po wdrożeniu funkcji serwera: własny mail przez Resend (functions/index.js sendVerificationEmail)
+  if(window.Diary && Diary.serverOn && Diary.serverOn() && callable){
+    return callable('sendVerificationEmail').then(fn => fn({url: location.origin + location.pathname})).then(() => 'server');
+  }
   return sendEmailVerification(user, {url: location.origin + location.pathname})
     .catch(e=>{
       if(e && (e.code==='auth/unauthorized-continue-uri' || e.code==='auth/invalid-continue-uri')) return sendEmailVerification(user);
@@ -861,14 +865,19 @@ window.verifyEmail = async function(){
   const user = window._fb && window._fb.auth.currentUser;
   if(!user || user.emailVerified) return;
   try {
-    await sendVerification(user);
-    // szablon Firebase (nieedytowalny) mówi o „nowym koncie”; uprzedzamy, że chodzi o obecne konto
+    const via = await sendVerification(user);
     const en = document.getElementById('btn-en') && document.getElementById('btn-en').classList.contains('active');
+    if(via==='server'){
+      alert(en ? 'We have sent a confirmation link to ' + user.email + '. Click it, then come back to this page.'
+               : 'Wysłaliśmy link potwierdzający na adres ' + user.email + '. Kliknij go, a potem wróć na tę stronę.');
+      return;
+    }
+    // szablon Firebase (nieedytowalny) mówi o „nowym koncie”; uprzedzamy, że chodzi o obecne konto
     alert(en
       ? 'We have sent a confirmation link to ' + user.email + '. The email from ViaSudetica may mention a new account — it refers to your existing account; nothing in it changes. Click the link, then come back to this page.'
       : 'Wysłaliśmy link potwierdzający na adres ' + user.email + '. Mail od ViaSudetica może wspominać o nowym koncie — dotyczy Twojego obecnego konta, nic się w nim nie zmienia. Kliknij link, a potem wróć na tę stronę.');
   } catch(e) {
-    alert(e && e.code==='auth/too-many-requests' ? 'Link był już wysłany przed chwilą. Sprawdź pocztę (także spam) lub spróbuj za kilka minut.' : 'Nie udało się wysłać linku. Spróbuj ponownie.');
+    alert(e && (e.code==='auth/too-many-requests' || e.code==='functions/resource-exhausted') ? 'Link był już wysłany przed chwilą. Sprawdź pocztę (także spam) lub spróbuj za kilka minut.' : 'Nie udało się wysłać linku. Spróbuj ponownie.');
   }
 };
 /* Po powrocie z poczty: odśwież stan konta, żeby zniknęła prośba o potwierdzenie */

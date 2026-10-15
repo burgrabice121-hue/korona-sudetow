@@ -19,6 +19,18 @@
   // Eksponuj globalnie dla reszty skryptów
   window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, reload, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp, query, where, app };
 
+  // Funkcje serwera (functions/index.js): region musi się zgadzać z REGION w functions/index.js.
+  // Moduł ładowany dopiero przy pierwszym wywołaniu.
+  const FN_REGION = "europe-west1";
+  let fnPromise = null;
+  window._fb.callable = function(name){
+    if(!fnPromise){
+      fnPromise = import("https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js")
+        .then(m => ({m, fns: m.getFunctions(app, FN_REGION)}));
+    }
+    return fnPromise.then(x => x.m.httpsCallable(x.fns, name));
+  };
+
   // Storage (zdjęcia z pamiętnika) ładowany osobno — ewentualny błąd nie może zepsuć logowania ani postępu.
   window._fbStorageReady = import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js").then(function(m){
     window._fb.storage = m.getStorage(app);
