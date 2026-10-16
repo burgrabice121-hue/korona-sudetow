@@ -242,6 +242,23 @@ function migrateV10(s){
   s.schemaV10 = true;
   return s;
 }
+/* Usunięcie Sasa (był DKS[11]): po zmianie granic Pogórza Wałbrzyskiego nie
+   jest jego najwyższym szczytem, a na pogórzu nie ma szczytu o znacznej
+   wybitności (v1.10). Zdobycie Sasa przepada, indeksy DKS powyżej 11
+   przesuwają się o 1 w dół (jak w migrateV10). */
+function migrateV11(s){
+  if(s.schemaV11) return s;
+  const oldDks = s.dks || [];
+  const newDks = [];
+  oldDks.forEach(i=>{
+    if(i===11) return;                        // Sas: był DKS[11], usunięty
+    else if(i>11) newDks.push(i-1);           // reszta DKS powyżej niego przesuwa się o 1 w dół
+    else newDks.push(i);
+  });
+  s.dks = newDks;
+  s.schemaV11 = true;
+  return s;
+}
 function loadState(){
   let s;
   try{
@@ -265,6 +282,7 @@ function migrateAll(s){
   s = migrateV8(s);
   s = migrateV9(s);
   s = migrateV10(s);
+  s = migrateV11(s);
   return s;
 }
 function saveState(s){
@@ -527,7 +545,7 @@ function updateUI(){
   document.getElementById('dks-done').textContent = dksDone;
   document.getElementById('ks-bar').style.width   = (ksDone/8*100)+'%';
   document.getElementById('wks-bar').style.width  = (wksDone/17*100)+'%';
-  document.getElementById('dks-bar').style.width  = (dksDone/38*100)+'%';
+  document.getElementById('dks-bar').style.width  = (dksDone/37*100)+'%';
 
   // Achievements
   const setAch = (id, earned, cls='earned') => {
@@ -540,7 +558,7 @@ function updateUI(){
   setAch('ach-wks1', wksDone>=1,   'wks-earned');
   setAch('ach-wks',  wksDone===14, 'wks-earned');
   setAch('ach-dks1', dksDone>=1,   'dk-earned');
-  setAch('ach-dks',  dksDone===38, 'dk-earned');
+  setAch('ach-dks',  dksDone===37, 'dk-earned');
 
   // Unlock WKS
   if(ksDone===8 && !STATE.unlocked_wks){
@@ -575,7 +593,7 @@ function unlockLevel(type){
     document.getElementById('tab-dks').classList.remove('locked');
     dksMarkers.forEach(m=>m.setOpacity(1));
     document.getElementById('unlock-title').textContent = 'Wielka Korona zdobyta!';
-    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś <strong>14 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 38 szczytów!';
+    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś <strong>14 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 37 szczytów!';
     document.getElementById('unlock-close-btn').textContent = 'Zaczynam Diamentową Koronę →';
     document.getElementById('unlock-close-btn').onclick = function(){ closeUnlock('dks'); };
   }
@@ -1025,6 +1043,7 @@ async function saveUserState(){
       schemaV8: STATE.schemaV8 || false,
       schemaV9: STATE.schemaV9 || false,
       schemaV10: STATE.schemaV10 || false,
+      schemaV11: STATE.schemaV11 || false,
       updatedAt: fb.serverTimestamp(),
       displayName: publicName(user)   // dokument publiczny (ranking): bez adresu e-mail
     }, {merge: true});
@@ -1052,7 +1071,8 @@ async function loadUserState(user){
       STATE.schemaV8 = d.schemaV8 || false;
       STATE.schemaV9 = d.schemaV9 || false;
       STATE.schemaV10 = d.schemaV10 || false;
-      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10;
+      STATE.schemaV11 = d.schemaV11 || false;
+      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10 && STATE.schemaV11;
       STATE = migrateAll(STATE);
       saveState(STATE);
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
@@ -1097,7 +1117,7 @@ async function loadRanking(){
     snap.forEach(d=>{
       const u = d.data();
       if(_rankTab==='wk'  && (u.wks||[]).length<17) return;
-      if(_rankTab==='dk'  && (u.dks||[]).length<38) return;
+      if(_rankTab==='dk'  && (u.dks||[]).length<37) return;
       rows.push(u);
     });
     rows.sort((a,b)=>{
@@ -1115,7 +1135,7 @@ async function loadRanking(){
       <td><div class="rank-name">${escHtml(u.displayName && String(u.displayName).indexOf('@')===-1 ? u.displayName : 'Anonimowy')}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
       <td>${(u.wks||[]).length}/17 ${(u.wks||[]).length===17?'<span class="rank-crown wk">👑</span>':''}</td>
-      <td>${(u.dks||[]).length}/38 ${(u.dks||[]).length===38?'<span class="rank-crown dk">💎</span>':''}</td>
+      <td>${(u.dks||[]).length}/37 ${(u.dks||[]).length===37?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
 }
