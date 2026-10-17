@@ -897,10 +897,25 @@ function notifyInvites(){
   if(lo && !lo.classList.contains('hidden')) renderInvites();
 }
 
-/* link z maila: #zaproszenie=<id> -> po zalogowaniu otwórz „Moje wejścia” */
-/* osoba bez konta dostaje link z „&rejestracja” — wtedy okno logowania otwiera się na zakładce rejestracji */
-function hashInvite(){ var m = /^#zaproszenie=([A-Za-z0-9]{1,40})(&rejestracja)?$/.exec(location.hash||''); return m ? m[1] : null; }
-function hashWantsRegister(){ return /&rejestracja$/.test(location.hash||''); }
+/* link z maila: ?zaproszenie=<id> (dawniej #zaproszenie=<id>; część po „#” potrafią gubić
+   przekierowania śledzenia kliknięć) -> po zalogowaniu otwórz „Moje wejścia”.
+   Osoba bez konta dostaje „rejestracja=1” (dawniej „&rejestracja”) — okno logowania na zakładce rejestracji. */
+function urlParam(name){
+  try{ return new URLSearchParams(location.search).get(name); }catch(e){ return null; }
+}
+function hashInvite(){
+  var q = urlParam('zaproszenie');
+  if(q && /^[A-Za-z0-9]{1,40}$/.test(q)) return q;
+  var m = /^#zaproszenie=([A-Za-z0-9]{1,40})(&rejestracja)?$/.exec(location.hash||''); return m ? m[1] : null;
+}
+function hashWantsRegister(){ return urlParam('rejestracja')==='1' || /&rejestracja$/.test(location.hash||''); }
+function clearInviteUrl(){
+  try{
+    var p = new URLSearchParams(location.search); p.delete('zaproszenie'); p.delete('rejestracja');
+    var q = p.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?'+q : ''));
+  }catch(e){}
+}
 function askLogin(){
   if(typeof showAuthOverlay!=='function') return;
   showAuthOverlay(function(){});
@@ -910,7 +925,7 @@ function openFromHash(){
   if(!INVITES_ON || !hashInvite()) return;
   var user = curUser();
   if(!user){ askLogin(); return; }
-  try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){}
+  clearInviteUrl();
   openList();
 }
 

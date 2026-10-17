@@ -909,11 +909,26 @@ window.verifyEmail = async function(){
   }
 };
 /* Po powrocie z poczty: odśwież stan konta, żeby zniknęła prośba o potwierdzenie */
-async function refreshVerified(){
+/* Reguły Firestore i funkcje serwera czytają email_verified z tokenu, który przeglądarka trzyma
+   do godziny — po potwierdzeniu adresu token trzeba wymusić od nowa, inaczej zaproszenia
+   są niewidoczne, a „Przyjmij” kończy się „najpierw potwierdź adres”. reloadDiary: wczytaj
+   zaproszenia ponownie, gdy adres właśnie został potwierdzony. */
+async function refreshVerified(reloadDiary){
   const fb = window._fb, user = fb && fb.auth.currentUser;
-  if(!user || user.emailVerified) return;
-  try { await fb.reload(user); } catch(e){ return; }
-  if(fb.auth.currentUser && fb.auth.currentUser.emailVerified) renderUserBar(fb.auth.currentUser);
+  if(!user) return false;
+  const was = user.emailVerified;
+  if(!was){ try { await fb.reload(user); } catch(e){ return false; } }
+  const u = fb.auth.currentUser;
+  if(!u || !u.emailVerified) return false;
+  try {
+    const t = await u.getIdTokenResult();
+    if(t.claims.email_verified !== true) await u.getIdToken(true);
+  } catch(e){ return false; }
+  if(!was){
+    renderUserBar(u);
+    if(reloadDiary !== false && window.Diary) Diary.load(u);
+  }
+  return true;
 }
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') refreshVerified(); });
 
@@ -1151,7 +1166,8 @@ renderUserBar(null); // pokaż przycisk od razu, nie czekając na (wolne lub zab
     if(user){
       hideAuthOverlay();
       renderUserBar(user);
-      refreshVerified(); // potwierdzenie mogło nastąpić na innym urządzeniu
+      // potwierdzenie mogło nastąpić na innym urządzeniu; świeży token przed odczytem zaproszeń
+      await refreshVerified(false);
       await loadUserState(user);
       if(window.Diary) Diary.load(user);
       if(_pendingAction){ _pendingAction(); _pendingAction = null; }
