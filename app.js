@@ -372,13 +372,19 @@ function markerSize(alt,type){
 
 function makeIcon(p, type, conquered){
   const sz = markerSize(p.alt, type);
-  let col;
+  let col, border;
   if(conquered){
-    col = type==='ks' ? '#F5C542' : type==='wks' ? '#22C55E' : '#A78BFA';
+    col = type==='ks' ? COLOR_KS : type==='wks' ? '#22C55E' : '#A78BFA';
+    border = type==='ks' ? '#fff' : 'rgba(255,255,255,0.7)';
+  } else if(type==='ks'){
+    /* Korona: niezdobyty = jasny środek ze złotym obrysem, zdobyty = pełne złoto.
+       Wcześniej oba stany różniły się tylko jasnością złota (zgłoszenie 2026-10-26). */
+    col = 'rgba(255,255,255,0.85)';
+    border = '#B8860B';
   } else {
-    col = type==='ks' ? COLOR_KS : type==='wks' ? (COLORS_WKS[p.strefa]||'#3D7ABF') : COLOR_DKS;
+    col = type==='wks' ? (COLORS_WKS[p.strefa]||'#3D7ABF') : COLOR_DKS;
+    border = 'rgba(255,255,255,0.25)';
   }
-  const border = conquered ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.25)';
   const inner = conquered ? `<span style="font-size:${sz*0.55}px;line-height:1;color:#fff">✓</span>` : '';
   const shape = type==='ks' ? '4px' : '50%';
   return L.divIcon({
