@@ -10,8 +10,9 @@
 .ub-btn.diary{border-color:rgba(212,160,23,.5)}
 
 /* overlaye */
-#diary-overlay,#diary-list-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:8px}
-#diary-overlay.hidden,#diary-list-overlay.hidden{display:none}
+#diary-overlay,#diary-list-overlay,#invite-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:8px}
+#diary-overlay.hidden,#diary-list-overlay.hidden,#invite-overlay.hidden{display:none}
+#invite-overlay{z-index:8300}
 #diary-overlay{z-index:8200}
 .dy-box{background:var(--panel,#1C2330);border:1px solid var(--border,#30363D);border-radius:10px;width:640px;max-width:100%;max-height:calc(100vh - 16px);display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.5);color:#E6EDF3}
 .dy-box.dy-wide{width:720px}
@@ -149,3 +150,25 @@
 /* data orientacyjna (pole wyboru pod datą wejścia) */
 .dy-field label.dy-approx{display:flex;justify-content:flex-start;align-items:center;gap:5px;margin:5px 0 0;font-family:'Georgia',serif;font-size:11px;letter-spacing:0;text-transform:none;color:#9AA4B2;cursor:pointer}
 .dy-approx input{margin:0;accent-color:#D4A017;cursor:pointer}
+/* okno zaproszenia do wspólnego wejścia (z linku w mailu albo po zalogowaniu) */
+.iv-box{width:480px}
+.iv-msg{font-size:13px;line-height:1.5;color:#E6EDF3;margin:.4rem 0 .8rem}
+.iv-card{padding:12px 0;border-top:1px solid rgba(255,255,255,.08)}
+.iv-card:first-child{border-top:none}
+.iv-who{font-size:13px;color:#C9D1D9}
+.iv-who b{color:#F0C040}
+.iv-peak{font-family:'Georgia',serif;font-size:20px;font-weight:700;color:#F5F0E8;margin:6px 0 2px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.iv-peak small{font-size:12px;font-weight:400;color:#8B949E}
+.iv-meta{font-size:12px;color:#9AA4B2}
+.iv-after{font-size:12px;color:#8B949E;line-height:1.45;margin-top:8px}
+.iv-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:10px}
+.iv-btns .dy-btn.primary{padding:8px 22px;font-size:13px}
+.dy-foot[hidden]{display:none}
+.iv-intro{margin:.2rem 0 .4rem}
+/* błąd formularza na całą szerokość nad przyciskami (długie komunikaty na telefonie) */
+.dy-foot{flex-wrap:wrap}
+.dy-foot .dy-err:not(:empty){flex-basis:100%;order:-1}
+.dy-foot .dy-err:not(:empty) + .dy-btn{margin-left:auto}
+.iv-tier{margin:2px 0 4px}
+.iv-tier .dl-badge{display:inline-block;padding:2px 8px;white-space:nowrap}
+.dl-tabs{flex-wrap:wrap}

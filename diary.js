@@ -26,6 +26,7 @@ var sent = [];         // zaproszenia wysłane dla wejścia w formularzu
 var visits = {};       // visitId -> dane wejścia (z polem peakId)
 var loadOk = false;    // true tylko po udanym odczycie (inaczej nie pozwalamy zapisywać "na ślepo")
 var loadPromise = null;
+var loadedAt = 0;      // kiedy ostatnio wczytano wejścia (odświeżanie po powrocie na kartę)
 var cur = null;        // stan formularza
 var curSig = '';       // podpis formularza do wykrywania niezapisanych zmian
 var listTab = 'all';
@@ -64,6 +65,10 @@ function fb(){ return window._fb; }
 function curUser(){ var f = fb(); return f && f.auth && f.auth.currentUser; }
 function tierArr(type){ return type==='ks'?KS:type==='wks'?WKS:DKS; }
 function tierLabel(type){ return type==='ks'?'KS':type==='wks'?'WKS':'DKS'; }
+/* krótka nazwa jak w górnym pasku — tam, gdzie mieści się zamiast skrótu (zakładki, podtytuł) */
+function tierShort(type){ return type==='ks'?'Korona':type==='wks'?'Wielka':'Diamentowa'; }
+/* pełna nazwa: dla osób nowych na portalu (okno zaproszenia) i w podpowiedzi do skrótu */
+function tierName(type){ return type==='ks'?'Korona Sudetów':type==='wks'?'Wielka Korona Sudetów':'Diamentowa Korona Sudetów'; }
 function visitsCol(f, uid){ return f.collection(f.db,'users',uid,'visits'); }
 
 function normalize(id, d){
@@ -81,7 +86,8 @@ function normalize(id, d){
     km: typeof d.km==='number' ? d.km : null,
     ascent: typeof d.ascent==='number' ? d.ascent : null,
     link: typeof d.link==='string' ? d.link : null,
-    photos: normalizePhotos(d.photos)
+    photos: normalizePhotos(d.photos),
+    updatedAtMs: d.updatedAt && typeof d.updatedAt.toMillis==='function' ? d.updatedAt.toMillis() : 0
   };
 }
 
@@ -215,8 +221,10 @@ function load(user){
     snap.forEach(function(d){ next[d.id] = normalize(d.id, d.data()); });
     visits = next;
     loadOk = true;
+    loadedAt = Date.now();
     refreshAll();
     loadInvites(user);
+    handleLinkInvite(user);
   }).catch(function(e){
     console.warn('Odczyt wejść nieudany', e);
   });
@@ -225,8 +233,8 @@ function load(user){
 
 function clear(){
   visits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = [];
-  // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> loadInvites() otworzy listę
-  if(INVITES_ON && hashInvite()) askLogin();
+  // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> handleLinkInvite() otworzy zaproszenie
+  if(INVITES_ON && pendingLink()) askLogin();
   closeForm(); closeList();
   refreshAll();
 }
@@ -300,6 +308,13 @@ function ensureDom(){
       '<div class="dy-body"><div id="dl-invites"></div><div class="dl-stats" id="dl-stats"></div><div class="dl-comps" id="dl-comps" hidden></div>'+
         '<div class="dl-tabs" id="dl-tabs"></div><div id="dl-rows"></div></div>'+
     '</div></div>'+
+  '<div id="invite-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="iv-title">'+
+    '<div class="dy-box iv-box">'+
+      '<div class="dy-hdr"><div class="dy-title" id="iv-title">🤝 Zaproszenie do wspólnego wejścia</div>'+
+        '<button class="dy-close" id="iv-x" title="Zamknij">✕</button></div>'+
+      '<div class="dy-body" id="iv-body"></div>'+
+      '<div class="dy-foot"><span class="dy-err"></span><button class="dy-btn ghost" id="iv-later">Później</button></div>'+
+    '</div></div>'+
   '<div id="dy-toast" class="dy-toast"></div>';
   while(wrap.firstChild) document.body.appendChild(wrap.firstChild);
 
@@ -350,6 +365,11 @@ function ensureDom(){
     releasePhotoUrls();
     openForm(cur.type, cur.idx, vid || 'new');
   });
+  $('iv-x').onclick = $('iv-later').onclick = closeInviteModal;
+  $('iv-body').addEventListener('click', function(ev){
+    var a = ev.target.closest('[data-accept]'); if(a) return acceptInvite(a.getAttribute('data-accept'), a);
+    if(ev.target.closest('[data-later]')) return closeInviteModal();
+  });
   $('dy-share-go').onclick = sendInvite;
   $('dy-share-in').addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); sendInvite(); } });
   $('dy-share-list').addEventListener('click', function(ev){
@@ -357,7 +377,6 @@ function ensureDom(){
   });
   $('dl-invites').addEventListener('click', function(ev){
     var a = ev.target.closest('[data-accept]'); if(a) return acceptInvite(a.getAttribute('data-accept'), a);
-    var d = ev.target.closest('[data-decline]'); if(d) return declineInvite(d.getAttribute('data-decline'));
     var v = ev.target.closest('[data-verify]'); if(v && typeof verifyEmail==='function') verifyEmail();
   });
   $('dl-tabs').addEventListener('click', function(ev){
@@ -396,7 +415,8 @@ function open(type, idx, asNew){
     if(!loadOk){ alert('Nie udało się wczytać Twoich wejść. Odśwież stronę i spróbuj ponownie.'); return; }
     openForm(type, idx, asNew ? 'new' : undefined);
   };
-  if(loadOk) return go();
+  // zawsze świeży odczyt: wejście mogło zostać zmienione na innym urządzeniu (stara kopia w pamięci
+  // karty nadpisywała przy zapisie np. zdjęcia dodane na telefonie)
   load(curUser()).then(go);
 }
 
@@ -415,10 +435,12 @@ function openForm(type, idx, which){
     companions: v ? v.companions.slice() : [],
     photos: v ? v.photos.map(function(ph){ return Object.assign({isNew:false}, ph); }) : [],
     removedPhotos: [],
+    loadedMs: v ? v.updatedAtMs : 0,
     busy: false
   };
   $('dy-title').textContent = p.name;
-  $('dy-sub').textContent = tierLabel(type)+' · '+p.pasmo+' · '+p.alt+' m n.p.m.';
+  $('dy-sub').textContent = tierShort(type)+' · '+p.pasmo+' · '+p.alt+' m n.p.m.';
+  $('dy-sub').title = tierName(type);
   $('dy-date').max = todayIso();
   $('dy-date').value = v && v.date ? v.date : '';
   $('dy-date-approx').checked = !!(v && v.dateApprox);
@@ -656,6 +678,14 @@ function save(){
   }
   $('dy-save').disabled = true; state.busy = true; err.textContent = '';
 
+  // 0) wejście zmienione w międzyczasie (inne urządzenie/karta)? Wtedy nie nadpisujemy.
+  var check = state.visitId ? f.getDoc(ref).then(function(snap){
+    var now = snap.exists() ? normalize(ref.id, snap.data()) : null;
+    if(!now || now.updatedAtMs !== state.loadedMs){
+      var e = new Error('conflict'); e.code = 'conflict'; e.gone = !now; throw e;
+    }
+  }) : Promise.resolve();
+
   // 1) wyślij nowe zdjęcia (pełne + miniatura), 2) zapisz wejście, 3) posprzątaj usunięte pliki
   var upload = fresh.reduce(function(chain, p, i){
     return chain.then(function(){
@@ -666,7 +696,7 @@ function save(){
         return f.uploadBytes(f.sRef(f.storage, photoPath(user.uid, ref.id, p.id, true)), p.thumb, meta);
       }).then(function(){ uploaded.push(photoPath(user.uid, ref.id, p.id, true)); });
     });
-  }, Promise.resolve());
+  }, check);
 
   upload.then(function(){
     $('dy-save').textContent = 'Zapisuję…';
@@ -688,6 +718,12 @@ function save(){
     state.busy = false;
     $('dy-save').disabled = false; $('dy-save').textContent = 'Zapisz';
     var code = e && e.code || '';
+    if(code==='conflict'){
+      err.textContent = e.gone ? 'To wejście zostało usunięte na innym urządzeniu.'
+        : 'To wejście zmieniono w międzyczasie (np. na telefonie) — nic nie nadpisano. Zamknij je i otwórz ponownie, a potem wprowadź zmiany jeszcze raz.';
+      load(user);
+      return;
+    }
     err.textContent = code==='permission-denied' ? 'Brak uprawnień — zaloguj się ponownie.'
       : code.indexOf('storage/')===0 ? 'Nie udało się wysłać zdjęć. Sprawdź połączenie i spróbuj ponownie.'
       : 'Nie udało się zapisać. Spróbuj ponownie.';
@@ -806,7 +842,7 @@ function renderList(){
   $('dl-comps').innerHTML = comps.length ? '<span class="dl-comps-lbl">Towarzysze ('+comps.length+'):</span> '+
     comps.map(function(x){ return '<span class="dl-comp">'+esc(x.name)+(x.c>1 ? ' <i>×'+x.c+'</i>' : '')+'</span>'; }).join('') : '';
 
-  $('dl-tabs').innerHTML = [['all','Wszystkie'],['ks','KS'],['wks','WKS'],['dks','DKS']].map(function(t){
+  $('dl-tabs').innerHTML = [['all','Wszystkie'],['ks',tierShort('ks')],['wks',tierShort('wks')],['dks',tierShort('dks')]].map(function(t){
     return '<button type="button" class="dl-tab'+(listTab===t[0]?' on':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>';
   }).join('');
 
@@ -843,7 +879,7 @@ function renderList(){
     if(v && v.photos.length) meta.push('📷 '+v.photos.length);
     if(v && v.link) meta.push('🔗');
     return '<div class="dl-row" data-type="'+r.type+'" data-idx="'+r.idx+'" data-vid="'+(v?esc(v.id):'')+'" tabindex="0">'+
-      '<span class="dl-badge '+r.type+'">'+tierLabel(r.type)+'</span>'+
+      '<span class="dl-badge '+r.type+'" title="'+tierName(r.type)+'">'+tierLabel(r.type)+'</span>'+
       '<div class="dl-main"><div class="dl-name">'+esc(r.p.name)+' <small>'+esc(r.p.pasmo)+'</small></div>'+
         (route ? '<div class="dl-route">'+route+'</div>' : '')+
         (note ? '<div class="dl-note">'+esc(note)+'</div>' : '')+
@@ -875,7 +911,7 @@ var STATUS_PL = {pending:'oczekuje', accepting:'przyjmowanie…', accepted:'przy
 function loadInvites(user){
   var f = fb();
   incoming = [];
-  if(!INVITES_ON || !f || !user || !user.email || !user.emailVerified || !f.query){ notifyInvites(); openFromHash(); return Promise.resolve(); }
+  if(!INVITES_ON || !f || !user || !user.email || !user.emailVerified || !f.query){ notifyInvites(); return Promise.resolve(); }
   var q = f.query(invitesCol(f), f.where('toEmail','==',user.email.toLowerCase()), f.where('status','==','pending'));
   return f.getDocs(q).then(function(snap){
     var next = [];
@@ -883,12 +919,10 @@ function loadInvites(user){
     next.sort(function(a,b){ return tsMs(b.createdAt) - tsMs(a.createdAt); });
     incoming = next;
     notifyInvites();
-    if(incoming.length && !notifyInvites._shown){
+    if(incoming.length && !notifyInvites._shown && !pendingLink()){
       notifyInvites._shown = true;
-      toast(incoming.length===1 ? 'Masz zaproszenie do wspólnego wejścia — zobacz w „Moje wejścia”'
-        : 'Masz '+incoming.length+' zaproszenia do wspólnych wejść — zobacz w „Moje wejścia”');
+      showInviteModal(incoming, '');
     }
-    openFromHash();
   }).catch(function(e){ console.warn('Odczyt zaproszeń nieudany', e); });
 }
 function notifyInvites(){
@@ -909,6 +943,26 @@ function hashInvite(){
   var m = /^#zaproszenie=([A-Za-z0-9]{1,40})(&rejestracja)?$/.exec(location.hash||''); return m ? m[1] : null;
 }
 function hashWantsRegister(){ return urlParam('rejestracja')==='1' || /&rejestracja$/.test(location.hash||''); }
+
+/* Zaproszenie z linku zapamiętujemy w localStorage: przetrwa rejestrację, potwierdzanie adresu
+   i powrót z poczty (link z maila potwierdzającego nie zawiera już numeru zaproszenia). */
+var LINK_KEY = 'korona_invite_link';
+function pendingLink(){
+  try{
+    var x = JSON.parse(localStorage.getItem(LINK_KEY) || 'null');
+    if(x && /^[A-Za-z0-9]{1,40}$/.test(x.id) && Date.now() - (x.t||0) < INVITE_DAYS*864e5) return x;
+  }catch(e){}
+  return null;
+}
+function setPendingLink(x){ try{ x ? localStorage.setItem(LINK_KEY, JSON.stringify(x)) : localStorage.removeItem(LINK_KEY); }catch(e){} }
+(function captureLink(){
+  if(!INVITES_ON) return;
+  var id = hashInvite();
+  if(!id) return;
+  setPendingLink({id:id, reg:hashWantsRegister(), t:Date.now()});
+  clearInviteUrl();
+  if(location.hash){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} }
+})();
 function clearInviteUrl(){
   try{
     var p = new URLSearchParams(location.search); p.delete('zaproszenie'); p.delete('rejestracja');
@@ -918,15 +972,81 @@ function clearInviteUrl(){
 }
 function askLogin(){
   if(typeof showAuthOverlay!=='function') return;
+  var pl = pendingLink();
   showAuthOverlay(function(){});
-  if(hashWantsRegister() && typeof authTab==='function') authTab('reg');
+  var sub = document.querySelector('#auth-overlay .auth-sub');
+  if(sub){
+    if(!sub.getAttribute('data-orig')) sub.setAttribute('data-orig', sub.textContent);
+    sub.textContent = pl ? 'Masz zaproszenie do wspólnego wejścia. Zaloguj się albo załóż konto na adres e-mail, na który przyszło zaproszenie — zaraz potem je przyjmiesz.'
+      : sub.getAttribute('data-orig');
+  }
+  if(pl && pl.reg && typeof authTab==='function') authTab('reg');
 }
-function openFromHash(){
-  if(!INVITES_ON || !hashInvite()) return;
-  var user = curUser();
-  if(!user){ askLogin(); return; }
-  clearInviteUrl();
-  openList();
+function openFromHash(){ /* zastąpione przez handleLinkInvite (link zapamiętany w localStorage) */ }
+
+/* Po zalogowaniu: zaproszenie z linku — podgląd przez serwer (bez wymogu potwierdzonego adresu) */
+var linkBusy = false;
+function handleLinkInvite(user){
+  var pl = pendingLink();
+  if(!INVITES_ON || !pl || !user || linkBusy) return;
+  var f = fb(); if(!f || !f.callable) return;
+  linkBusy = true;
+  f.callable('inviteAction').then(function(fn){ return fn({inviteId:pl.id, action:'peek'}); }).then(function(res){
+    linkBusy = false;
+    var d = res.data || {};
+    if(d.status==='pending'){ showInviteModal([d], ''); return; }
+    setPendingLink(null);
+    var pk = peakById(d.peakId);
+    showInviteModal([], d.status==='accepted' && d.copyVisitId
+      ? 'To zaproszenie zostało już przyjęte — wejście'+(pk ? ' („'+pk.p.name+'”)' : '')+' jest w Twoim pamiętniku („Moje wejścia”).'
+      : 'To zaproszenie jest już nieaktualne ('+(STATUS_PL[d.status]||d.status)+'). Poproś nadawcę o nowe.');
+  }).catch(function(e){
+    linkBusy = false;
+    var code = e && e.code || '';
+    if(code==='functions/permission-denied' || code==='functions/not-found'){
+      if(code==='functions/not-found') setPendingLink(null);
+      showInviteModal([], e.message || 'Nie znaleziono zaproszenia.');
+    } else console.warn('Podgląd zaproszenia nieudany', e);
+  });
+}
+
+/* Okno zaproszeń: z linku (jedno) albo po zalogowaniu (wszystkie oczekujące). msg: komunikat zamiast listy. */
+function showInviteModal(list, msg){
+  ensureDom();
+  var o = $('invite-overlay');
+  var h = '', many = list.length > 1;
+  var AFTER = 'Po przyjęciu kopia wejścia (data, trasa, zdjęcia) trafi do Twojego pamiętnika, a szczyt zostanie oznaczony jako zdobyty.';
+  if(msg) h = '<p class="iv-msg">'+esc(msg)+'</p>';
+  if(many) h += '<p class="iv-after iv-intro">'+AFTER+'</p>';
+  h += list.map(function(inv){
+    var pk = peakById(inv.peakId);
+    var name = pk ? pk.p.name : (inv.peakName || inv.peakId);
+    var meta = [];
+    if(inv.date) meta.push((inv.dateApprox ? 'ok. ' : '') + fmtDate(inv.date));
+    if(inv.photoCount) meta.push('📷 '+inv.photoCount);
+    return '<div class="iv-card" data-iv="'+esc(inv.id)+'">'+
+      '<div class="iv-who"><b>'+esc(inv.fromName || 'Uczestnik wycieczki')+'</b> zaprasza Cię do potwierdzenia wspólnego wejścia:</div>'+
+      '<div class="iv-peak">'+esc(name)+
+        (pk ? ' <small>'+esc(pk.p.pasmo)+'</small>' : '')+'</div>'+
+      (pk ? '<div class="iv-tier"><span class="dl-badge '+pk.type+'">'+tierName(pk.type)+'</span></div>' : '')+
+      (meta.length ? '<div class="iv-meta">'+meta.join(' · ')+'</div>' : '')+
+      (many ? '' : '<div class="iv-after">'+AFTER+'</div>')+
+      '<div class="iv-btns">'+(many ? '' : '<button type="button" class="dy-btn ghost" data-later="1">Później</button>')+
+        '<button type="button" class="dy-btn primary" data-accept="'+esc(inv.id)+'">Przyjmij</button></div>'+
+    '</div>';
+  }).join('');
+  $('iv-body').innerHTML = h;
+  // jedno zaproszenie: „Później” obok „Przyjmij”, bez stopki; kilka: wspólne „Później” w stopce; komunikat: „OK”
+  $('iv-later').textContent = list.length ? 'Później' : 'OK';
+  $('iv-later').parentNode.hidden = list.length === 1;
+  o.classList.remove('hidden');
+  o._list = list;
+}
+function closeInviteModal(){ var o = $('invite-overlay'); if(o) o.classList.add('hidden'); }
+function inviteFromAnywhere(id){
+  var o = $('invite-overlay');
+  var a = (o && o._list || []).concat(incoming).filter(function(x){ return x.id===id; });
+  return a[0] || null;
 }
 
 function renderInvites(){
@@ -946,11 +1066,10 @@ function renderInvites(){
     meta.push('od: '+esc(inv.fromName || 'uczestnik'));
     if(inv.photoCount) meta.push('📷 '+inv.photoCount);
     return '<div class="dl-inv">'+
-      (pk ? '<span class="dl-badge '+pk.type+'">'+tierLabel(pk.type)+'</span>' : '')+
       '<div class="dl-main"><div class="dl-name">'+esc(pk ? pk.p.name : inv.peakId)+(pk ? ' <small>'+esc(pk.p.pasmo)+'</small>' : '')+'</div>'+
+        (pk ? '<div class="iv-tier"><span class="dl-badge '+pk.type+'">'+tierName(pk.type)+'</span></div>' : '')+
         '<div class="dl-meta">'+meta.join(' · ')+'</div></div>'+
-      '<div class="dl-inv-btns"><button type="button" class="dy-btn ghost" data-decline="'+esc(inv.id)+'">Odrzuć</button>'+
-        '<button type="button" class="dy-btn primary" data-accept="'+esc(inv.id)+'">Przyjmij</button></div>'+
+      '<div class="dl-inv-btns"><button type="button" class="dy-btn primary" data-accept="'+esc(inv.id)+'">Przyjmij</button></div>'+
     '</div>';
   }).join('');
 }
@@ -958,13 +1077,20 @@ function renderInvites(){
 /* przyjęcie: kopię wejścia i zdjęć robi funkcja serwera acceptInvite, potem zaznaczamy szczyt jako zdobyty */
 function acceptInvite(id, btn){
   var user = curUser(); if(!user) return;
-  var inv = incoming.filter(function(x){ return x.id===id; })[0]; if(!inv) return;
+  var inv = inviteFromAnywhere(id); if(!inv) return;
   if(btn){ btn.disabled = true; btn.textContent = 'Kopiuję…'; }
   fb().callable('acceptInvite').then(function(fn){ return fn({inviteId:id}); }).then(function(res){
     incoming = incoming.filter(function(x){ return x.id!==id; });
-    if(typeof markConquered==='function') markConquered(inv.peakId);
+    var pl = pendingLink(); if(pl && pl.id===id) setPendingLink(null);
+    var peakId = (res && res.data && res.data.peakId) || inv.peakId;
+    if(typeof markConquered==='function') markConquered(peakId);
     return load(user).then(function(){
       notifyInvites();
+      closeInviteModal(); closeList();
+      var pk = peakById(peakId);
+      // przewiń do mapy (na viasudetica.eu jest niżej) i pokaż szczyt
+      if(pk && typeof jumpToPeak==='function') jumpToPeak(pk.type, pk.idx);
+      else if(pk && typeof focusPeak==='function') focusPeak(pk.type, pk.idx);
       toast('Wejście dodane do Twojego pamiętnika ✓');
     });
   }).catch(function(e){
@@ -977,18 +1103,11 @@ function acceptInvite(id, btn){
       : 'Nie udało się przyjąć zaproszenia. Spróbuj ponownie później.');
     if(code==='functions/failed-precondition' || code==='functions/not-found'){
       incoming = incoming.filter(function(x){ return x.id!==id; }); notifyInvites();
+      var pl = pendingLink(); if(pl && pl.id===id) setPendingLink(null);
+      closeInviteModal();
     }
   });
 }
-function declineInvite(id){
-  var f = fb();
-  if(!confirm('Odrzucić to zaproszenie? Nadawca zobaczy, że zostało odrzucone.')) return;
-  f.updateDoc(f.doc(f.db,'invites',id), {status:'declined', closedAt:f.serverTimestamp()}).then(function(){
-    incoming = incoming.filter(function(x){ return x.id!==id; });
-    notifyInvites();
-  }).catch(function(e){ console.warn('Odrzucenie nieudane', e); alert('Nie udało się odrzucić. Spróbuj ponownie.'); });
-}
-
 /* nadawca: pole w formularzu wejścia */
 function renderShare(){
   var box = $('dy-share'); if(!box) return;
@@ -1076,6 +1195,14 @@ function cancelAllFor(vid){
     snap.forEach(function(d){ f.updateDoc(d.ref, {status:'cancelled', closedAt:f.serverTimestamp()}).catch(function(){}); });
   }).catch(function(){});
 }
+
+/* powrót na kartę po dłuższej chwili: świeże wejścia i zaproszenia (zmiany z innego urządzenia) */
+document.addEventListener('visibilitychange', function(){
+  if(document.visibilityState!=='visible') return;
+  var user = curUser();
+  if(!user || cur || Date.now() - loadedAt < 60e3) return;
+  load(user);
+});
 
 /* ── start ── */
 window.Diary = {

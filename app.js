@@ -608,6 +608,21 @@ window.closeUnlock = function(tab){
 /* ═══════════════════════════════════════════
    TABS
 ═══════════════════════════════════════════ */
+/* Karta poziomu („Korona Sudetów” itd. w sekcji „3 Korony”): przewiń do mapy, pokaż tylko szczyty
+   tego poziomu (pozostałe ukryj, jak przełącznikami pod mapą), dopasuj widok i przełącz listę obok mapy. */
+window.showTier = function(type){
+  ['ks','wks','dks'].forEach(t=>{ if((t===type) !== peaksVisible[t]) window.togglePeaksLayer(t); });
+  window.switchTab(type);
+  const sec = document.getElementById('map-section');
+  if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
+  const data = type==='ks'?KS:type==='wks'?WKS:DKS;
+  setTimeout(()=>{
+    map.invalidateSize();
+    map.fitBounds(L.latLngBounds(data.map(p=>[p.lat,p.lng])), {padding:[30,30]});
+  }, 500);
+  return false;
+};
+
 window.switchTab = function(tab){
   currentTab = tab;
   ['ks','wks','dks'].forEach(t=>{
@@ -1144,7 +1159,7 @@ async function loadRanking(){
     if(!rows.length){ el.innerHTML='<div class="rank-empty">Brak wyników w tej kategorii.</div>'; return; }
     const medals=['🥇','🥈','🥉'];
     el.innerHTML=`<table class="rank-table"><thead><tr>
-      <th>#</th><th>Zdobywca</th><th>KS</th><th>WKS</th><th>DKS</th>
+      <th>#</th><th>Zdobywca</th><th>Korona</th><th>Wielka</th><th>Diamentowa</th>
     </tr></thead><tbody>${rows.map((u,i)=>`<tr>
       <td class="rank-medal">${medals[i]||i+1}</td>
       <td><div class="rank-name">${escHtml(u.displayName && String(u.displayName).indexOf('@')===-1 ? u.displayName : 'Anonimowy')}</div></td>
