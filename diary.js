@@ -377,7 +377,6 @@ function ensureDom(){
   });
   $('dl-invites').addEventListener('click', function(ev){
     var a = ev.target.closest('[data-accept]'); if(a) return acceptInvite(a.getAttribute('data-accept'), a);
-    var v = ev.target.closest('[data-verify]'); if(v && typeof verifyEmail==='function') verifyEmail();
   });
   $('dl-tabs').addEventListener('click', function(ev){
     var b = ev.target.closest('[data-tab]'); if(!b) return;
@@ -769,6 +768,9 @@ function remove(){
 function openList(){
   if(!requireLogin(openList)) return;
   ensureDom();
+  // adres mógł zostać potwierdzony w innej karcie/aplikacji poczty — odśwież stan konta (i zaproszenia)
+  var u = curUser();
+  if(u && !u.emailVerified && typeof refreshVerified==='function') refreshVerified();
   $('diary-list-overlay').classList.remove('hidden');
   if(loadOk) renderList();
   else {
@@ -1053,11 +1055,9 @@ function renderInvites(){
   var box = $('dl-invites'); if(!box) return;
   var user = curUser();
   if(!INVITES_ON || !user){ box.innerHTML = ''; return; }
-  if(!user.emailVerified){
-    box.innerHTML = '<div class="dl-inv-note">Ktoś mógł udostępnić Ci wspólne wejście. Aby zobaczyć zaproszenia, '+
-      '<button type="button" class="dl-inv-link" data-verify="1">potwierdź swój adres e-mail</button>.</div>';
-    return;
-  }
+  // bez potwierdzonego adresu lista zaproszeń jest niedostępna (reguły), ale zaproszenia i tak
+  // przyjmuje się z linku w mailu — nie pokazujemy mylącej prośby o potwierdzenie (test 2026-10-26)
+  if(!user.emailVerified){ box.innerHTML = ''; return; }
   if(!incoming.length){ box.innerHTML = ''; return; }
   box.innerHTML = '<div class="dl-inv-title">Zaproszenia do potwierdzenia</div>' + incoming.map(function(inv){
     var pk = peakById(inv.peakId);

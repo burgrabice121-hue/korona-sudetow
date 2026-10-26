@@ -144,8 +144,6 @@
 .dl-inv{display:flex;align-items:center;gap:12px;padding:6px 0;border-top:1px solid rgba(255,255,255,.06)}
 .dl-inv:first-of-type{border-top:none}
 .dl-inv-btns{display:flex;gap:6px;flex:none}
-.dl-inv-note{font-size:12px;color:#C9D1D9}
-.dl-inv-link{background:none;border:none;padding:0;color:#F0C040;text-decoration:underline;cursor:pointer;font:inherit}
 @media (max-width:600px){ .dl-inv{flex-wrap:wrap} .dl-inv-btns{width:100%;justify-content:flex-end} }
 /* data orientacyjna (pole wyboru pod datą wejścia) */
 .dy-field label.dy-approx{display:flex;justify-content:flex-start;align-items:center;gap:5px;margin:5px 0 0;font-family:'Georgia',serif;font-size:11px;letter-spacing:0;text-transform:none;color:#9AA4B2;cursor:pointer}

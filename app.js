@@ -887,7 +887,8 @@ function sendVerification(user){
   // po wdrożeniu funkcji serwera: własny mail przez Resend (functions/index.js sendVerificationEmail);
   // gdy serwer lub Resend zawiedzie (poza limitem częstotliwości) — zapasowo mail z szablonu Firebase
   if(window.Diary && Diary.serverOn && Diary.serverOn() && callable){
-    return callable('sendVerificationEmail').then(fn => fn({url: location.origin + location.pathname})).then(() => 'server')
+    return callable('sendVerificationEmail').then(fn => fn({url: location.origin + location.pathname}))
+      .then(r => r && r.data && r.data.already ? 'already' : 'server')
       .catch(e=>{
         if(e && e.code==='functions/resource-exhausted') throw e;
         console.warn('Mail potwierdzający przez serwer nieudany, zapasowo Firebase', e);
@@ -910,6 +911,12 @@ window.verifyEmail = async function(){
   try {
     const via = await sendVerification(user);
     const en = document.getElementById('btn-en') && document.getElementById('btn-en').classList.contains('active');
+    if(via==='already'){
+      // potwierdzony wcześniej (np. linkiem z maila w innej karcie): odśwież stan zamiast obiecywać nowy link
+      await refreshVerified();
+      alert(en ? 'Your e-mail address is already confirmed.' : 'Twój adres e-mail jest już potwierdzony.');
+      return;
+    }
     if(via==='server'){
       alert(en ? 'We have sent a confirmation link to ' + user.email + '. Click it, then come back to this page.'
                : 'Wysłaliśmy link potwierdzający na adres ' + user.email + '. Kliknij go, a potem wróć na tę stronę.');
