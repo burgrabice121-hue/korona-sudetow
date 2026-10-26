@@ -373,6 +373,7 @@ function ensureDom(){
   $('dy-share-go').onclick = sendInvite;
   $('dy-share-in').addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); sendInvite(); } });
   $('dy-share-list').addEventListener('click', function(ev){
+    var r = ev.target.closest('[data-remind]'); if(r) return remindInvite(r.getAttribute('data-remind'), r);
     var b = ev.target.closest('[data-cancel]'); if(b) cancelInvite(b.getAttribute('data-cancel'));
   });
   $('dl-invites').addEventListener('click', function(ev){
@@ -1124,8 +1125,34 @@ function renderShare(){
     var st = statusOf(inv);
     return '<div class="dy-inv"><span class="dy-inv-mail">'+esc(inv.toEmail)+'</span>'+
       '<span class="dy-inv-st '+st+'">'+STATUS_PL[st]+'</span>'+
+      (st==='pending' && canRemind(inv) ? '<button type="button" class="dy-inv-x dy-inv-re" data-remind="'+esc(inv.id)+'">Przypomnij</button>' : '')+
+      (st==='pending' && !canRemind(inv) && tsMs(inv.remindedAt) ? '<span class="dy-inv-note">przypomniano</span>' : '')+
       (st==='pending' ? '<button type="button" class="dy-inv-x" data-cancel="'+esc(inv.id)+'">Anuluj</button>' : '')+'</div>';
   }).join('');
+}
+/* przypomnienie: najwcześniej dobę po poprzednim mailu, najwyżej REMIND_MAX razy (sprawdza też serwer, remindInvite) */
+var REMIND_MAX = 2;
+function canRemind(inv){
+  var last = Math.max(tsMs(inv.createdAt), tsMs(inv.mailedAt), tsMs(inv.remindedAt));
+  return (inv.remindCount||0) < REMIND_MAX && !!last && Date.now() - last >= 864e5;
+}
+function remindInvite(id, btn){
+  var f = fb(); if(!f || !f.callable) return;
+  if(btn){ btn.disabled = true; btn.textContent = 'Wysyłam…'; }
+  $('dy-err').textContent = '';
+  f.callable('remindInvite').then(function(fn){ return fn({inviteId:id}); }).then(function(res){
+    var n = res && res.data && res.data.remindCount;
+    sent.forEach(function(x){ if(x.id===id){ x.remindedAt = {toMillis:function(){ return Date.now(); }}; x.remindCount = n || (x.remindCount||0)+1; } });
+    renderShare();
+    var inv = sent.filter(function(x){ return x.id===id; })[0];
+    toast('Przypomnienie wysłane'+(inv ? ' do '+inv.toEmail : ''));
+  }).catch(function(e){
+    console.warn('Przypomnienie nieudane', e);
+    var code = e && e.code || '';
+    var known = ['functions/failed-precondition','functions/resource-exhausted','functions/permission-denied','functions/not-found'];
+    $('dy-err').textContent = known.indexOf(code)!==-1 && e.message ? e.message : 'Nie udało się wysłać przypomnienia. Spróbuj później.';
+    loadSent();   // świeży stan (np. zaproszenie w międzyczasie przyjęte)
+  });
 }
 function loadSent(){
   var f = fb(), user = curUser();

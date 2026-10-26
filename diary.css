@@ -138,6 +138,9 @@
 .dy-inv-st.declined,.dy-inv-st.expired{color:#F87171}
 .dy-inv-x{background:none;border:none;color:#8B949E;font-size:11px;cursor:pointer;text-decoration:underline;padding:0}
 .dy-inv-x:hover{color:#F87171}
+.dy-inv-x.dy-inv-re:hover{color:#F0C040}
+.dy-inv-x:disabled{cursor:default;text-decoration:none}
+.dy-inv-note{font-size:11px;color:#8B949E}
 #dl-invites:empty{display:none}
 #dl-invites{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(212,160,23,.4);border-radius:6px;background:rgba(212,160,23,.06)}
 .dl-inv-title{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:#F0C040;margin-bottom:6px}
