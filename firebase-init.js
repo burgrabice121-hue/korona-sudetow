@@ -1,5 +1,5 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, reload } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, reload, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -17,7 +17,7 @@
   const db = getFirestore(app);
 
   // Eksponuj globalnie dla reszty skryptów
-  window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, reload, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp, query, where, app };
+  window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendEmailVerification, reload, sendPasswordResetEmail, doc, setDoc, getDoc, collection, getDocs, updateDoc, deleteDoc, arrayUnion, arrayRemove, serverTimestamp, query, where, app };
 
   // Funkcje serwera (functions/index.js): region musi się zgadzać z REGION w functions/index.js.
   // Moduł ładowany dopiero przy pierwszym wywołaniu.

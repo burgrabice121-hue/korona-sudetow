@@ -929,3 +929,8 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
   .rank-table th, .rank-table td { padding-left: 6px; padding-right: 6px; }
   .rank-table th { letter-spacing: .04em; }
 }
+/* „Nie pamiętasz hasła?” pod przyciskiem logowania; komunikat informacyjny na zielono */
+.auth-forgot { display: block; margin: .7rem auto 0; background: none; border: none; color: var(--fog); font-family: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; }
+.auth-forgot:hover { color: var(--gold); }
+.auth-forgot:disabled { opacity: .5; cursor: wait; }
+.auth-err.ok { color: #6EE7A0; }

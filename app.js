@@ -828,7 +828,58 @@ window.authTab = function(tab){
   document.getElementById('auth-reg').style.display   = tab==='reg'?'':'none';
   document.getElementById('at-login').classList.toggle('on', tab==='login');
   document.getElementById('at-reg').classList.toggle('on', tab==='reg');
-  document.getElementById('auth-err').textContent = '';
+  authMsg('');
+};
+
+/* komunikat w oknie logowania; ok = zielony (informacja), inaczej czerwony (błąd) */
+function authMsg(text, ok){
+  const el = document.getElementById('auth-err');
+  if(!el) return;
+  el.textContent = text || '';
+  el.classList.toggle('ok', !!ok);
+}
+
+/* „Nie pamiętasz hasła?” — odnośnik pod przyciskiem logowania (wstawiany tu, oba index.html bez zmian).
+   Link do ustawienia nowego hasła wysyła funkcja serwera sendPasswordReset (Resend, nasza treść);
+   gdy serwer zawiedzie — zapasowo mail z szablonu Firebase. Odpowiedź zawsze ta sama (bez zdradzania, czy konto istnieje). */
+function addForgotLink(){
+  const btn = document.querySelector('#auth-login .auth-btn');
+  if(!btn || document.getElementById('auth-forgot')) return;
+  const b = document.createElement('button');
+  b.type = 'button'; b.id = 'auth-forgot'; b.className = 'auth-forgot';
+  b.innerHTML = langSpans('Nie pamiętasz hasła?', 'Forgot your password?');
+  b.onclick = () => window.forgotPassword();
+  btn.insertAdjacentElement('afterend', b);
+}
+// okno logowania stoi w index.html za skryptem app.js — wstaw po wczytaniu całej strony
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addForgotLink); else addForgotLink();
+window.forgotPassword = async function(){
+  const email = (document.getElementById('li-email').value || '').trim();
+  const en = document.getElementById('btn-en') && document.getElementById('btn-en').classList.contains('active');
+  if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){
+    authMsg(en ? 'Enter your account e-mail above, then click “Forgot your password?”.' : 'Wpisz powyżej adres e-mail konta, a potem kliknij „Nie pamiętasz hasła?”.');
+    document.getElementById('li-email').focus();
+    return;
+  }
+  const b = document.getElementById('auth-forgot');
+  if(b) b.disabled = true;
+  const done = () => authMsg(en
+    ? 'If an account with ' + email + ' exists, we have sent a link to set a new password. Check your inbox (and spam).'
+    : 'Jeśli konto z adresem ' + email + ' istnieje, wysłaliśmy na nie link do ustawienia nowego hasła. Sprawdź pocztę (także spam).', true);
+  const back = location.origin + location.pathname;
+  try {
+    const fn = await window._fb.callable('sendPasswordReset');
+    await fn({email, url: back});
+    done();
+  } catch(e){
+    const code = e && e.code || '';
+    if(code==='functions/resource-exhausted' || code==='functions/invalid-argument'){ authMsg(e.message); }
+    else {
+      // zapasowo: mail z szablonu Firebase; błąd „brak konta” przemilczamy (ta sama odpowiedź)
+      try { await window._fb.sendPasswordResetEmail(window._fb.auth, email, {url: back}); done(); }
+      catch(e2){ if(e2 && e2.code==='auth/user-not-found') done(); else authMsg(en ? 'Could not send the link. Try again later.' : 'Nie udało się wysłać linku. Spróbuj ponownie później.'); }
+    }
+  } finally { if(b) b.disabled = false; }
 };
 
 window.doLogin = async function(){
@@ -836,7 +887,7 @@ window.doLogin = async function(){
   const pass  = document.getElementById('li-pass').value;
   const err   = document.getElementById('auth-err');
   const btn   = document.querySelector('#auth-login .auth-btn');
-  err.textContent = '';
+  authMsg('');
   btn.disabled = true;
   try {
     const {auth, signInWithEmailAndPassword} = window._fb;
@@ -853,7 +904,7 @@ window.doRegister = async function(){
   const pass  = document.getElementById('re-pass').value;
   const err   = document.getElementById('auth-err');
   const btn   = document.querySelector('#auth-reg .auth-btn');
-  err.textContent = '';
+  authMsg('');
   btn.disabled = true;
   try {
     const {auth, createUserWithEmailAndPassword, updateProfile} = window._fb;
