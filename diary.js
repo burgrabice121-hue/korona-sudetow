@@ -805,11 +805,13 @@ function renderList(){
   ensureDom();
   renderInvites();
   var all = listRows();
-  var conq = {}, n = 0, km = 0, asc = 0, perPeak = {}, perComp = {};
+  var conq = {}, n = 0, km = 0, asc = 0, team = 0, perPeak = {}, perComp = {};
   all.forEach(function(r){
     conq[r.p.id] = 1;
     if(r.v){
       n++; km += r.v.km||0; asc += r.v.ascent||0;
+      // „w zespole” = wpisany choć jeden towarzysz; bez towarzyszy liczymy jako „samemu”
+      if(r.v.companions.some(function(c){ return c.trim(); })) team++;
       if(!perPeak[r.p.id]) perPeak[r.p.id] = {name:r.p.name, c:0};
       perPeak[r.p.id].c++;
       // towarzysz liczony raz na wejście; „Ania” i „ania ” to ta sama osoba (pokazujemy pierwszą pisownię)
@@ -831,6 +833,7 @@ function renderList(){
   }
   var topPeak = leaders(perPeak), topComp = leaders(perComp);
   var stats = ['<span><b>'+Object.keys(conq).length+'</b> zdobytych</span>', '<span><b>'+n+'</b> wejść</span>'];
+  if(n) stats.push('<span><b>'+(n-team)+'</b> samemu · <b>'+team+'</b> w zespole</span>');
   if(km) stats.push('<span><b>'+fmtNum(Math.round(km*10)/10)+'</b> km</span>');
   if(asc) stats.push('<span><b>'+asc+'</b> m podejść</span>');
   if(topPeak) stats.push('<span>najczęściej na: <b>'+topPeak.names.map(esc).join('</b>, <b>')+'</b> ×'+topPeak.c+'</span>');
