@@ -68,4 +68,5 @@ const DKS = [
   { id:"humrich", name:"Humrich",           cz:"Humrich",        alt:512, prom:124, izol:4.3,  pasmo:"Pogórze Izerskie",                 kraj:"CZ",    lat:50.9717142, lng:15.1702069, note:"Najwyższy szczyt Pogórza Izerskiego" },
   { id:"triebenberg", name:"Triebenberg",       cz:"Triebenberg",    alt:383, prom:108, izol:10.1, pasmo:"Pogórze Zachodniołużyckie",        kraj:"DE",    lat:51.0271161, lng:13.9233822, note:"Szczyt Pogórza Zachodniołużyckiego" },
   { id:"pyszczynska-gora", name:"Pyszczyńska Góra", cz:"—",              alt:273, prom:90,  izol:10.5, pasmo:"Równina Świdnicka",                kraj:"PL",    lat:50.9812659, lng:16.5450303, note:"Najwyższy szczyt Wzgórz Imbramowickich, izolacja ponad 10 km" },
+  { id:"hurka",       name:"Hůrka",             cz:"—",              alt:530, prom:62,  izol:10,   pasmo:"Pogórze Witkowskie",               kraj:"CZ",    lat:49.85155,   lng:17.96003,   note:"Najwyższy punkt Parku Przyrody Moravice, izolacja 10 km" },
 ];
