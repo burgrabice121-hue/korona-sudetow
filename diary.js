@@ -1046,7 +1046,8 @@ function showInviteModal(list, msg){
   var o = $('invite-overlay');
   $('iv-title').textContent = '🤝 Zaproszenie do wspólnego wejścia';   // to samo okno służy propozycjom zmian
   var h = '', many = list.length > 1;
-  var AFTER = 'Po przyjęciu kopia wejścia (data, trasa, zdjęcia) trafi do Twojego pamiętnika, a szczyt zostanie oznaczony jako zdobyty.';
+  var AFTER = 'Po przyjęciu kopia wejścia (data, trasa, zdjęcia) trafi do Twojego pamiętnika, a szczyt zostanie oznaczony jako zdobyty. '+
+    'Swoje zdjęcia i brakujące dane możesz potem dodać w swojej kopii i przyciskiem „Wyślij zmiany” zaproponować je osobie, która Cię zaprosiła.';
   if(msg) h = '<p class="iv-msg">'+esc(msg)+'</p>';
   if(many) h += '<p class="iv-after iv-intro">'+AFTER+'</p>';
   h += list.map(function(inv){
@@ -1147,7 +1148,12 @@ function renderShare(){
   var hint = '', can = false;
   if(!cur.visitId) hint = 'Najpierw zapisz wejście — potem możesz je udostępnić uczestnikom.';
   else if(!user || !user.emailVerified) hint = 'Aby wysyłać zaproszenia, potwierdź swój adres e-mail (menu konta).';
-  else { can = true; hint = 'Uczestnik dostanie e-mail z zaproszeniem. Po przyjęciu zobaczy u siebie kopię tego wejścia (data, trasa, zdjęcia) i szczyt jako zdobyty.'; }
+  else { can = true; hint = 'Uczestnik dostanie e-mail z zaproszeniem. Po przyjęciu zobaczy u siebie kopię tego wejścia (data, trasa, zdjęcia) i szczyt jako zdobyty. '+
+    'Zdjęcia i dane dodane później możecie sobie nawzajem przesłać przyciskiem „Wyślij zmiany”.'; }
+  // wspólne wejście (przyjęte zaproszenie, w którąkolwiek stronę): wyjaśnienie przycisku „Wyślij zmiany”
+  var shared = linked.length || sent.some(function(x){ return statusOf(x)==='accepted'; });
+  if(shared) hint += (hint ? ' ' : '') + '„Wyślij zmiany” proponuje drugiej osobie Twoje nowe zdjęcia i dane, których ona nie ma — '+
+    'nic jej nie nadpisuje, a ona sama decyduje, czy je przyjąć. Najpierw zapisz wejście.';
   $('dy-share-in').disabled = $('dy-share-go').disabled = !can;
   $('dy-share-hint').textContent = hint;
   $('dy-share-list').innerHTML = sent.map(function(inv){
@@ -1157,14 +1163,15 @@ function renderShare(){
       (st==='pending' && canRemind(inv) ? '<button type="button" class="dy-inv-x dy-inv-re" data-remind="'+esc(inv.id)+'">Przypomnij</button>' : '')+
       (st==='pending' && !canRemind(inv) && tsMs(inv.remindedAt) ? '<span class="dy-inv-note">przypomniano</span>' : '')+
       (st==='pending' ? '<button type="button" class="dy-inv-x" data-cancel="'+esc(inv.id)+'">Anuluj</button>' : '')+
-      (st==='accepted' ? '<button type="button" class="dy-inv-x dy-inv-re" data-offer="'+esc(inv.id)+'">Wyślij zmiany</button>' : '')+'</div>';
+      (st==='accepted' ? '<button type="button" class="dy-inv-x dy-inv-re" data-offer="'+esc(inv.id)+'" title="'+OFFER_TIP+'">Wyślij zmiany</button>' : '')+'</div>';
   }).join('') + linked.map(function(inv){
     // ta kopia pochodzi z przyjętego zaproszenia: aktualizacja w drugą stronę, do nadawcy
     return '<div class="dy-inv"><span class="dy-inv-mail">wspólne z: '+esc(inv.fromName || 'uczestnik')+'</span>'+
       '<span class="dy-inv-st accepted">przyjęte</span>'+
-      '<button type="button" class="dy-inv-x dy-inv-re" data-offer="'+esc(inv.id)+'">Wyślij zmiany</button></div>';
+      '<button type="button" class="dy-inv-x dy-inv-re" data-offer="'+esc(inv.id)+'" title="'+OFFER_TIP+'">Wyślij zmiany</button></div>';
   }).join('');
 }
+var OFFER_TIP = 'Zaproponuj drugiej osobie swoje nowe zdjęcia i dane, których nie ma (nic nie nadpisuje; ona decyduje, czy przyjąć)';
 
 /* ── aktualizacja wspólnego wejścia (offerUpdate / answerUpdate w functions/index.js) ──
    Każda strona przyjętego zaproszenia może zaproponować drugiej nowe zdjęcia i pola, które tamta ma puste.
