@@ -22,6 +22,8 @@ var MAX_INVITES = 20, INVITE_DAYS = 30;
 var EMAIL_RE = /^[^\s@]{1,64}@[^\s@]{1,190}\.[a-z]{2,24}$/i;
 var incoming = [];     // zaproszenia do mnie (oczekujące)
 var sent = [];         // zaproszenia wysłane dla wejścia w formularzu
+var linked = [];       // przyjęte zaproszenie, z którego pochodzi wejście w formularzu (strona odbiorcy)
+var offersIn = [];     // propozycje zmian we wspólnych wejściach, do mnie (oczekujące)
 
 var visits = {};       // visitId -> dane wejścia (z polem peakId)
 var loadOk = false;    // true tylko po udanym odczycie (inaczej nie pozwalamy zapisywać "na ślepo")
@@ -223,7 +225,8 @@ function load(user){
     loadOk = true;
     loadedAt = Date.now();
     refreshAll();
-    loadInvites(user);
+    // zaproszenia przed propozycjami zmian: okno zaproszenia ma pierwszeństwo
+    Promise.resolve(loadInvites(user)).then(function(){ loadOffers(user); });
     handleLinkInvite(user);
   }).catch(function(e){
     console.warn('Odczyt wejść nieudany', e);
@@ -232,7 +235,7 @@ function load(user){
 }
 
 function clear(){
-  visits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = [];
+  visits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = []; linked = []; offersIn = [];
   // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> handleLinkInvite() otworzy zaproszenie
   if(INVITES_ON && pendingLink()) askLogin();
   closeForm(); closeList();
@@ -368,16 +371,21 @@ function ensureDom(){
   $('iv-x').onclick = $('iv-later').onclick = closeInviteModal;
   $('iv-body').addEventListener('click', function(ev){
     var a = ev.target.closest('[data-accept]'); if(a) return acceptInvite(a.getAttribute('data-accept'), a);
+    var oa = ev.target.closest('[data-oapply]'); if(oa) return answerOffer(oa.getAttribute('data-oapply'), 'apply', oa);
+    var od = ev.target.closest('[data-odecline]'); if(od) return answerOffer(od.getAttribute('data-odecline'), 'decline', od);
     if(ev.target.closest('[data-later]')) return closeInviteModal();
   });
   $('dy-share-go').onclick = sendInvite;
   $('dy-share-in').addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); sendInvite(); } });
   $('dy-share-list').addEventListener('click', function(ev){
     var r = ev.target.closest('[data-remind]'); if(r) return remindInvite(r.getAttribute('data-remind'), r);
+    var u = ev.target.closest('[data-offer]'); if(u) return sendOffer(u.getAttribute('data-offer'), u);
     var b = ev.target.closest('[data-cancel]'); if(b) cancelInvite(b.getAttribute('data-cancel'));
   });
   $('dl-invites').addEventListener('click', function(ev){
     var a = ev.target.closest('[data-accept]'); if(a) return acceptInvite(a.getAttribute('data-accept'), a);
+    var oa = ev.target.closest('[data-oapply]'); if(oa) return answerOffer(oa.getAttribute('data-oapply'), 'apply', oa);
+    var od = ev.target.closest('[data-odecline]'); if(od) return answerOffer(od.getAttribute('data-odecline'), 'decline', od);
   });
   $('dl-tabs').addEventListener('click', function(ev){
     var b = ev.target.closest('[data-tab]'); if(!b) return;
@@ -456,7 +464,7 @@ function openForm(type, idx, which){
   $('dy-save').disabled = false; $('dy-save').textContent = 'Zapisz';
   renderPlaces(); renderVisitTabs(list); renderChips(); renderPhotos(); updateCount();
   curSig = formSig();
-  sent = []; renderShare(); loadSent();
+  sent = []; linked = []; renderShare(); loadSent();
   $('diary-overlay').classList.remove('hidden');
   setTimeout(function(){ try{ $('dy-date').focus(); }catch(x){} }, 30);
 }
@@ -1020,6 +1028,7 @@ function handleLinkInvite(user){
 function showInviteModal(list, msg){
   ensureDom();
   var o = $('invite-overlay');
+  $('iv-title').textContent = '🤝 Zaproszenie do wspólnego wejścia';   // to samo okno służy propozycjom zmian
   var h = '', many = list.length > 1;
   var AFTER = 'Po przyjęciu kopia wejścia (data, trasa, zdjęcia) trafi do Twojego pamiętnika, a szczyt zostanie oznaczony jako zdobyty.';
   if(msg) h = '<p class="iv-msg">'+esc(msg)+'</p>';
@@ -1061,9 +1070,10 @@ function renderInvites(){
   if(!INVITES_ON || !user){ box.innerHTML = ''; return; }
   // bez potwierdzonego adresu lista zaproszeń jest niedostępna (reguły), ale zaproszenia i tak
   // przyjmuje się z linku w mailu — nie pokazujemy mylącej prośby o potwierdzenie (test 2026-10-26)
-  if(!user.emailVerified){ box.innerHTML = ''; return; }
-  if(!incoming.length){ box.innerHTML = ''; return; }
-  box.innerHTML = '<div class="dl-inv-title">Zaproszenia do potwierdzenia</div>' + incoming.map(function(inv){
+  var offersHtml = offersIn.length ? '<div class="dl-inv-title">Zmiany we wspólnych wejściach</div>' +
+    offersIn.map(function(x){ return offerCard(x, true); }).join('') : '';
+  if(!user.emailVerified || !incoming.length){ box.innerHTML = offersHtml; return; }
+  box.innerHTML = offersHtml + '<div class="dl-inv-title">Zaproszenia do potwierdzenia</div>' + incoming.map(function(inv){
     var pk = peakById(inv.peakId);
     var meta = [];
     if(inv.date) meta.push((inv.dateApprox ? 'ok. ' : '') + fmtDate(inv.date));
@@ -1130,8 +1140,115 @@ function renderShare(){
       '<span class="dy-inv-st '+st+'">'+STATUS_PL[st]+'</span>'+
       (st==='pending' && canRemind(inv) ? '<button type="button" class="dy-inv-x dy-inv-re" data-remind="'+esc(inv.id)+'">Przypomnij</button>' : '')+
       (st==='pending' && !canRemind(inv) && tsMs(inv.remindedAt) ? '<span class="dy-inv-note">przypomniano</span>' : '')+
-      (st==='pending' ? '<button type="button" class="dy-inv-x" data-cancel="'+esc(inv.id)+'">Anuluj</button>' : '')+'</div>';
+      (st==='pending' ? '<button type="button" class="dy-inv-x" data-cancel="'+esc(inv.id)+'">Anuluj</button>' : '')+
+      (st==='accepted' ? '<button type="button" class="dy-inv-x dy-inv-re" data-offer="'+esc(inv.id)+'">Wyślij zmiany</button>' : '')+'</div>';
+  }).join('') + linked.map(function(inv){
+    // ta kopia pochodzi z przyjętego zaproszenia: aktualizacja w drugą stronę, do nadawcy
+    return '<div class="dy-inv"><span class="dy-inv-mail">wspólne z: '+esc(inv.fromName || 'uczestnik')+'</span>'+
+      '<span class="dy-inv-st accepted">przyjęte</span>'+
+      '<button type="button" class="dy-inv-x dy-inv-re" data-offer="'+esc(inv.id)+'">Wyślij zmiany</button></div>';
   }).join('');
+}
+
+/* ── aktualizacja wspólnego wejścia (offerUpdate / answerUpdate w functions/index.js) ──
+   Każda strona przyjętego zaproszenia może zaproponować drugiej nowe zdjęcia i pola, które tamta ma puste.
+   Nic nie jest nadpisywane; adresat przyjmuje albo odrzuca propozycję. */
+var FIELD_PL = {date:'data', from:'skąd', to:'dokąd', km:'dystans', ascent:'podejście', note:'wspomnienie', link:'link'};
+function offerSummary(n, keys){
+  var parts = [];
+  if(n) parts.push(n===1 ? '1 nowe zdjęcie' : n+(n<5 ? ' nowe zdjęcia' : ' nowych zdjęć'));
+  var f = (keys||[]).map(function(k){ return FIELD_PL[k]; }).filter(Boolean);
+  if(f.length) parts.push('uzupełnienie: '+f.join(', '));
+  return parts.join('; ');
+}
+function sendOffer(inviteId, btn){
+  var f = fb(), err = $('dy-err'); if(!f || !f.callable) return;
+  if(isDirty()){ err.textContent = 'Najpierw zapisz zmiany w wejściu — druga osoba dostanie zapisaną wersję.'; return; }
+  if(btn){ btn.disabled = true; btn.textContent = 'Wysyłam…'; }
+  err.textContent = '';
+  f.callable('offerUpdate').then(function(fn){ return fn({inviteId:inviteId}); }).then(function(res){
+    var d = res && res.data || {};
+    if(btn){ btn.textContent = 'Wysłano'; }
+    toast('Wysłano propozycję: '+offerSummary(d.photoCount, d.fieldKeys)+(d.skipped ? ' (limit zdjęć: '+d.skipped+' pominięte)' : ''));
+  }).catch(function(e){
+    console.warn('Wysłanie zmian nieudane', e);
+    if(btn){ btn.disabled = false; btn.textContent = 'Wyślij zmiany'; }
+    var code = e && e.code || '';
+    var known = ['functions/failed-precondition','functions/permission-denied','functions/not-found'];
+    err.textContent = known.indexOf(code)!==-1 && e.message ? e.message : 'Nie udało się wysłać zmian. Spróbuj później.';
+  });
+}
+function loadOffers(user){
+  var f = fb();
+  offersIn = [];
+  if(!INVITES_ON || !f || !user || !f.query) return Promise.resolve();
+  var q = f.query(f.collection(f.db,'offers'), f.where('toUid','==',user.uid), f.where('status','==','pending'));
+  return f.getDocs(q).then(function(snap){
+    var next = [];
+    snap.forEach(function(d){ var x = d.data(); x.id = d.id; next.push(x); });
+    offersIn = next;
+    notifyInvites();
+    var o = $('invite-overlay');
+    if(offersIn.length && !loadOffers._shown && (!o || o.classList.contains('hidden'))){
+      loadOffers._shown = true;
+      showOfferModal(offersIn);
+    }
+  }).catch(function(e){ console.warn('Odczyt propozycji zmian nieudany', e); });
+}
+function offerCard(off, inList){
+  var pk = peakById(off.peakId);
+  var name = pk ? pk.p.name : off.peakId;
+  return '<div class="'+(inList ? 'dl-inv' : 'iv-card')+'">'+
+    (inList ? '<div class="dl-main"><div class="dl-name">'+esc(name)+(pk ? ' <small>'+esc(pk.p.pasmo)+'</small>' : '')+'</div>'+
+        '<div class="dl-meta">od: '+esc(off.fromName || 'uczestnik')+(off.date ? ' · '+fmtDate(off.date) : '')+' · '+esc(offerSummary(off.photoCount, off.fieldKeys))+'</div></div>'
+      : '<div class="iv-who"><b>'+esc(off.fromName || 'Uczestnik')+'</b> przesyła zmiany do Waszego wspólnego wejścia:</div>'+
+        '<div class="iv-peak">'+esc(name)+(pk ? ' <small>'+esc(pk.p.pasmo)+'</small>' : '')+'</div>'+
+        '<div class="iv-meta">'+(off.date ? fmtDate(off.date)+' · ' : '')+esc(offerSummary(off.photoCount, off.fieldKeys))+'</div>'+
+        '<div class="iv-after">Dopisane zostanie tylko to, czego nie masz — Twoje zdjęcia i wypełnione pola zostają bez zmian.</div>')+
+    '<div class="'+(inList ? 'dl-inv-btns' : 'iv-btns')+'"><button type="button" class="dy-btn ghost" data-odecline="'+esc(off.id)+'">Odrzuć</button>'+
+      '<button type="button" class="dy-btn primary" data-oapply="'+esc(off.id)+'">Przyjmij</button></div>'+
+  '</div>';
+}
+function showOfferModal(list){
+  ensureDom();
+  $('iv-title').textContent = '🔄 Zmiany we wspólnym wejściu';
+  $('iv-body').innerHTML = list.map(function(x){ return offerCard(x, false); }).join('');
+  $('iv-later').textContent = 'Później';
+  $('iv-later').parentNode.hidden = false;
+  $('invite-overlay').classList.remove('hidden');
+  $('invite-overlay')._list = [];
+}
+function answerOffer(id, action, btn){
+  var user = curUser(), f = fb(); if(!user || !f || !f.callable) return;
+  var row = btn && btn.parentNode;
+  if(row) Array.prototype.forEach.call(row.querySelectorAll('button'), function(b){ b.disabled = true; });
+  if(btn) btn.textContent = action==='apply' ? 'Dodaję…' : 'Odrzucam…';
+  f.callable('answerUpdate').then(function(fn){ return fn({offerId:id, action:action}); }).then(function(res){
+    offersIn = offersIn.filter(function(x){ return x.id!==id; });
+    var d = res && res.data || {};
+    var done = function(){
+      notifyInvites();
+      if(!offersIn.length) closeInviteModal(); else if(!$('invite-overlay').classList.contains('hidden')) showOfferModal(offersIn);
+      toast(action==='apply' ? 'Zmiany dodane do Twojego wejścia ✓' : 'Propozycja odrzucona');
+    };
+    if(action==='apply') return load(user).then(function(){
+      done();
+      var pk = peakById(d.peakId);
+      if(pk && typeof focusPeak==='function') focusPeak(pk.type, pk.idx);
+    });
+    done();
+  }).catch(function(e){
+    console.warn('Odpowiedź na propozycję nieudana', e);
+    if(row) Array.prototype.forEach.call(row.querySelectorAll('button'), function(b){ b.disabled = false; });
+    if(btn) btn.textContent = action==='apply' ? 'Przyjmij' : 'Odrzuć';
+    var code = e && e.code || '';
+    var known = ['functions/failed-precondition','functions/permission-denied','functions/not-found'];
+    alert(known.indexOf(code)!==-1 && e.message ? e.message : 'Nie udało się. Spróbuj ponownie później.');
+    if(code==='functions/failed-precondition' || code==='functions/not-found'){
+      offersIn = offersIn.filter(function(x){ return x.id!==id; }); notifyInvites();
+      if(!offersIn.length) closeInviteModal();
+    }
+  });
 }
 /* przypomnienie: najwcześniej dobę po poprzednim mailu, najwyżej REMIND_MAX razy (sprawdza też serwer, remindInvite) */
 var REMIND_MAX = 2;
@@ -1169,6 +1286,14 @@ function loadSent(){
     next.sort(function(a,b){ return tsMs(a.createdAt) - tsMs(b.createdAt); });
     sent = next; renderShare();
   }).catch(function(e){ console.warn('Odczyt wysłanych zaproszeń nieudany', e); });
+  // ta kopia z przyjętego zaproszenia? (odbiorca widzi swoje przyjęte zaproszenia po toUid)
+  var q2 = f.query(invitesCol(f), f.where('toUid','==',user.uid), f.where('copyVisitId','==',vid));
+  f.getDocs(q2).then(function(snap){
+    if(cur !== tok) return;
+    var next = [];
+    snap.forEach(function(d){ var x = d.data(); x.id = d.id; if(x.status==='accepted') next.push(x); });
+    linked = next; renderShare();
+  }).catch(function(e){ console.warn('Odczyt wspólnego wejścia nieudany', e); });
 }
 function sendInvite(){
   if(!cur || !cur.visitId) return;
@@ -1239,7 +1364,7 @@ window.Diary = {
   load: load, clear: clear, popupBtn: popupBtn,
   open: open, openList: openList,
   visits: function(){ return visits; },
-  inviteCount: function(){ return incoming.length; },
+  inviteCount: function(){ return incoming.length + offersIn.length; },
   serverOn: function(){ return INVITES_ON; }   // funkcje serwera wdrożone (także własny mail weryfikacyjny)
 };
 ensureDom();
