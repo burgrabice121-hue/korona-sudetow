@@ -10,7 +10,9 @@
 
 var MAX_NOTE = 5000, MAX_COMP = 20, MAX_COMP_LEN = 60, MAX_LINK = 500, MAX_PLACE = 100;
 var MAX_KM = 1000, MAX_ASCENT = 10000;
-var MAX_PHOTOS = 6, PHOTO_MAX_PX = 1600, THUMB_MAX_PX = 320, MAX_SRC_BYTES = 30*1024*1024;
+// MAX_PHOTOS: własne zdjęcia; wejście wspólne (partners = liczba współuczestników z przyjętych zaproszeń)
+// mieści dodatkowo po MAX_PHOTOS zdjęć od każdego (ext) — jak reguła validVisit i functions/sync.js
+var MAX_PHOTOS = 6, MAX_PARTNERS = 21, PHOTO_MAX_PX = 1600, THUMB_MAX_PX = 320, MAX_SRC_BYTES = 30*1024*1024;
 var urlCache = {};     // ścieżka w Storage -> adres do pokazania
 
 /* Udostępnianie wejść uczestnikom (zaproszenia, kolekcja invites/). Plan:
@@ -89,6 +91,7 @@ function normalize(id, d){
     ascent: typeof d.ascent==='number' ? d.ascent : null,
     link: typeof d.link==='string' ? d.link : null,
     photos: normalizePhotos(d.photos),
+    partners: typeof d.partners==='number' && d.partners%1===0 ? Math.min(Math.max(d.partners, 0), MAX_PARTNERS) : 0,
     updatedAtMs: d.updatedAt && typeof d.updatedAt.toMillis==='function' ? d.updatedAt.toMillis() : 0
   };
 }
@@ -103,15 +106,24 @@ function normalizePhotos(arr){
     var r = {id: ph.id};
     if(typeof ph.lat==='number' && typeof ph.lng==='number' && Math.abs(ph.lat)<=90 && Math.abs(ph.lng)<=180){ r.lat = ph.lat; r.lng = ph.lng; }
     if(typeof ph.t==='string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(ph.t)) r.t = ph.t;
+    // zdjęcie współuczestnika (kopiuje serwer): ext = id zaproszenia łączącego wejścia
+    if((typeof ph.ext==='string' && /^[A-Za-z0-9]{1,40}$/.test(ph.ext)) || ph.ext===true) r.ext = ph.ext;
     out.push(r);
   });
-  return out.slice(0, MAX_PHOTOS);
+  return out.slice(0, MAX_PHOTOS*(1+MAX_PARTNERS));
 }
 function photoRecord(p){
   var r = {id: p.id};
   if(typeof p.lat==='number' && typeof p.lng==='number'){ r.lat = p.lat; r.lng = p.lng; }
   if(p.t) r.t = p.t;
+  if(p.ext) r.ext = p.ext;
   return r;
+}
+/* ile jeszcze własnych zdjęć można dodać w formularzu */
+function photoRoom(){
+  if(!cur) return 0;
+  var own = cur.photos.filter(function(p){ return !p.ext; }).length;
+  return Math.max(0, Math.min(MAX_PHOTOS - own, MAX_PHOTOS*(1+cur.partners) - cur.photos.length));
 }
 
 /* ── EXIF: współrzędne GPS i czas wykonania (czytane z oryginału, zapisywane osobno od pliku) ── */
@@ -443,6 +455,7 @@ function openForm(type, idx, which){
     companions: v ? v.companions.slice() : [],
     photos: v ? v.photos.map(function(ph){ return Object.assign({isNew:false}, ph); }) : [],
     removedPhotos: [],
+    partners: v ? v.partners : 0,
     loadedMs: v ? v.updatedAtMs : 0,
     busy: false
   };
@@ -500,16 +513,18 @@ function renderPhotos(){
   var h = cur.photos.map(function(p, i){
     var hasPos = typeof p.lat==='number' && typeof p.lng==='number';
     var tip = [p.t ? p.t.replace('T',' ') : '', hasPos ? p.lat.toFixed(5)+', '+p.lng.toFixed(5) : ''].filter(Boolean).join(' · ');
-    return '<div class="dy-ph" data-ph="'+esc(p.id)+'"'+(tip?' title="'+esc(tip)+'"':'')+'>'+
+    if(p.ext) tip = 'Zdjęcie współuczestnika'+(tip ? ' · '+tip : '');
+    return '<div class="dy-ph'+(p.ext?' ext':'')+'" data-ph="'+esc(p.id)+'"'+(tip?' title="'+esc(tip)+'"':'')+'>'+
       '<a target="_blank" rel="noopener"><img alt="Zdjęcie '+(i+1)+'"'+(p.isNew?' src="'+esc(p.objUrl)+'"':'')+'></a>'+
       (hasPos ? '<a class="dy-ph-pin" href="'+esc(mapLink(p.lat,p.lng))+'" target="_blank" rel="noopener" title="Pokaż miejsce zdjęcia na mapie">📍</a>' : '')+
       '<button type="button" class="dy-ph-x" data-rmph="'+i+'" aria-label="Usuń zdjęcie '+(i+1)+'">×</button></div>';
   }).join('');
-  if(cur.photos.length < MAX_PHOTOS){
+  if(photoRoom() > 0){
     h += '<button type="button" class="dy-ph add" data-addph="1" aria-label="Dodaj zdjęcia">＋<span>zdjęcie</span></button>';
   }
   box.innerHTML = h;
-  $('dy-ph-count').textContent = cur.photos.length+' / '+MAX_PHOTOS;
+  var ext = cur.photos.filter(function(p){ return p.ext; }).length;
+  $('dy-ph-count').textContent = (cur.photos.length - ext)+' / '+MAX_PHOTOS + (ext ? ' · +'+ext+' od współuczestnika' : '');
   // zapisane zdjęcia: miniatury ze Storage
   var visitId = cur.visitId;
   cur.photos.forEach(function(p, i){
@@ -525,12 +540,12 @@ function renderPhotos(){
 function addPhotoFiles(files){
   if(!cur) return;
   var err = $('dy-err');
-  var room = MAX_PHOTOS - cur.photos.length;
+  var room = photoRoom();
   var imgs = files.filter(function(f){ return /^image\//.test(f.type) || /\.(jpe?g|png|webp|gif|bmp|heic|heif)$/i.test(f.name); });
   if(!imgs.length){ if(files.length) err.textContent = 'To nie jest zdjęcie.'; return; }
-  if(room <= 0){ err.textContent = 'Maksymalnie '+MAX_PHOTOS+' zdjęć na wejście.'; return; }
+  if(room <= 0){ err.textContent = 'Maksymalnie '+MAX_PHOTOS+' własnych zdjęć na wejście.'; return; }
   var take = imgs.slice(0, room);
-  err.textContent = imgs.length > room ? 'Dodano '+room+' z '+imgs.length+' (limit '+MAX_PHOTOS+' zdjęć).' : '';
+  err.textContent = imgs.length > room ? 'Dodano '+room+' z '+imgs.length+' (limit '+MAX_PHOTOS+' własnych zdjęć).' : '';
   var tok = cur;                                   // formularz mógł się zmienić w trakcie przetwarzania
   var chain = Promise.resolve();
   take.forEach(function(file){
@@ -675,6 +690,7 @@ function save(){
     photos: cur.photos.map(photoRecord),
     updatedAt: f.serverTimestamp()
   };
+  if(cur.partners) data.partners = cur.partners;   // wspólne wejście: bez tego pola reguły ograniczą zdjęcia do 6
   var type = cur.type, idx = cur.idx, state = cur;
   var ref = cur.visitId
     ? f.doc(f.db,'users',user.uid,'visits',cur.visitId)
