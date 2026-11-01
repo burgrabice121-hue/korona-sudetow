@@ -427,18 +427,13 @@ a.zone-card:focus-visible { outline: 2px solid var(--clay); outline-offset: 2px;
 .persona-card.e { background: rgba(184,112,42,0.1); border: 1px solid rgba(184,112,42,0.25); }
 .persona-card.all { background: var(--stone); }
 .persona-tier { display: flex; align-items: center; gap: 0.45rem; font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--clay); }
-.persona-card h4 { font-family: var(--serif); font-size: 1.2rem; line-height: 1.3; color: var(--stone); margin: 0.4rem 0 0.7rem; }
+.persona-card h4 { font-family: var(--serif); font-size: 1.6rem; line-height: 1.2; color: var(--stone); margin: 0.35rem 0 0.3rem; }
 .persona-card p { font-size: 0.92rem; line-height: 1.65; color: var(--bark); margin: 0; }
 .persona-card.all h4 { color: var(--cream); }
 .persona-card.all p { color: rgba(245,240,232,0.8); }
-/* zmiana: „Na starcie” (przygaszone) → „Po ukończeniu” */
-.change-row { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase; margin: 0.7rem 0 0.2rem; }
-.change-row.before { color: rgba(74,64,53,0.6); }
-.change-row.after { color: var(--moss); }
-.change-row.after::before { content: "→ "; }
-.change-row.before + p, .change-row.before + p + p { font-style: italic; opacity: 0.75; }
-.persona-card.all .change-row.before { color: rgba(245,240,232,0.55); }
-.persona-card.all .change-row.after { color: var(--lichen); }
+/* uczucia po ukończeniu etapu */
+.persona-feel { font-family: var(--serif); font-style: italic; font-size: 0.95rem; color: var(--moss); margin-bottom: 0.7rem; }
+.persona-card.all .persona-feel { color: var(--lichen); }
 .warto-cta { margin-top: 1.4rem; }
 .zone-go { margin-top: .6rem; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--rust); }
 .zone-name {
