@@ -49,6 +49,8 @@ nav {
   color: var(--cream);
 }
 .nav-logo span { color: var(--clay); }
+.nav-links a { white-space: nowrap; }   /* menu w jednym wierszu (52 px) */
+@media (min-width: 961px) { .nav-logo { white-space: nowrap; } }   /* na telefonie logo może się złamać */
 .nav-links { display: flex; gap: 1.5rem; }   /* 1.5rem: 6 pozycji z „Aktualności” w jednej linii przy 1366 px */
 .nav-links a {
   font-family: var(--mono);
@@ -704,6 +706,19 @@ footer {
   #about, #map-section, #peaks-section { padding-left: 1.2rem; padding-right: 1.2rem; }
   #warto { padding: 3.5rem 1.2rem; }
   .persona-grid { grid-template-columns: 1fr; }
+}
+/* Węższe ekrany (też 1366 px przy powiększeniu przeglądarki 110–125%): menu nie mieści się w jednym wierszu.
+   ≤1400: „Zgłoś uwagi” i „Udostępnij” tylko jako ikony, mniejszy napis logo; ≤1250: bez napisu logo
+   (nazwa jest w nagłówku strony), ciaśniejsze odstępy. */
+@media (max-width: 1400px) {
+  .nav-logo { font-size: 11px; letter-spacing: 0.08em; }
+  #feedback-btn span, #share-btn span { display: none; }
+  #feedback-btn, #share-btn { padding: 0.3rem 0.5rem !important; }
+}
+@media (min-width: 961px) and (max-width: 1250px) {   /* poniżej 961 menu ukryte, logo wraca */
+  .nav-logo { display: none; }
+  nav { padding: 0 1.2rem; }
+  .nav-links { gap: 1rem; }
 }
 /* 801–960px (m.in. telefon poziomo): linki nawigacji spychały przycisk konta poza ekran */
 @media (max-width: 960px) {
