@@ -36,6 +36,7 @@ Konto (Google lub e-mail), zaznaczanie zdobytych szczytów, paski postępu, dzie
 - [Mapa interaktywna](https://viasudetica.eu/#map-section)
 - [Wykaz 64 szczytów](https://viasudetica.eu/#peaks-section)
 - [Mapa do zapisywania wejść](https://wielkakoronasudetow.pl/)
+- [Z badań: Góra Wszystkich Świętych zamiast Włodzickiej Góry](https://viasudetica.eu/aktualnosci/gora-wszystkich-swietych.html): dlaczego o miejscu w Diamentowej Koronie decyduje wybitność, a nie wysokość; analiza na NMT GUGiK
 
 ## Wykaz szczytów
 
@@ -80,7 +81,6 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Wysoka Kopa: 1126 m n.p.m., wybitność 240 m, izolacja 6.7 km; Sudety Zachodnie, Góry Izerskie; PL
 - Skalnik: 945 m n.p.m., wybitność 220 m, izolacja 7 km; Sudety Zachodnie, Rudawy Janowickie; PL
 - Chlum: 603 m n.p.m., wybitność 180 m, izolacja 11 km; Sudety Orlickie, Pogórze Orlickie; CZ
-- Włodzicka Góra: 755 m n.p.m., wybitność 110 m, izolacja 5.4 km; Sudety Środkowe, Obniżenie Nowej Rudy; PL
 - Zadzierna: 724 m n.p.m., wybitność 152 m, izolacja 2.7 km; Sudety Środkowe, Kotlina Kamiennogórska; PL
 - Nowa Kopa (Nová Kopa): 533 m n.p.m., wybitność 93 m, izolacja 4.9 km; Sudety Środkowe, Obniżenie Ścinawki (Kotlina Broumovska); PL
 - Kobyla: 574 m n.p.m., wybitność 174 m, izolacja 4.6 km; Sudety Kulmowe, Pogórze Opawskie; CZ
@@ -113,3 +113,4 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Triebenberg: 383 m n.p.m., wybitność 108 m, izolacja 10.1 km; Sudety Łużyckie, Pogórze Zachodniołużyckie; DE
 - Pyszczyńska Góra: 273 m n.p.m., wybitność 90 m, izolacja 10.5 km; Przedgórze Sudeckie, Równina Świdnicka; PL
 - Hůrka: 530 m n.p.m., wybitność 62 m, izolacja 10 km; Sudety Kulmowe, Pogórze Witkowskie; CZ
+- Góra Wszystkich Świętych: 649 m n.p.m., wybitność 170 m, izolacja 6.3 km; Sudety Środkowe, Obniżenie Nowej Rudy; PL
