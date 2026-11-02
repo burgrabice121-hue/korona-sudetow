@@ -887,6 +887,13 @@ function addRankingChoice(){
     langSpans('Pokazuj moje zdobycze w publicznym rankingu (można to zmienić w menu konta)',
               'Show my progress in the public ranking (you can change it in the account menu)');
   btn.insertAdjacentElement('beforebegin', l);
+  // zgoda na wiadomości informacyjne (P30): zaznaczona domyślnie (decyzja autora 2026-11-02)
+  const n = document.createElement('label');
+  n.className = 'auth-rank';
+  n.innerHTML = '<input type="checkbox" id="re-news" checked> ' +
+    langSpans('Chcę dostawać e-mailem wiadomości o zmianach w koronie i ciekawostki z badań (kilka razy w roku; można to zmienić w menu konta)',
+              'Send me e-mails about changes in the crown and research news (a few times a year; you can change it in the account menu)');
+  btn.insertAdjacentElement('beforebegin', n);
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addRankingChoice); else addRankingChoice();
 
@@ -903,6 +910,32 @@ window.toggleRanking = async function(){
     renderUserBar(user);
     alert(next ? 'Jesteś widoczny w rankingu.' : 'Jesteś ukryty w rankingu.');
   } catch(e){ console.warn('Zmiana widoczności w rankingu nieudana', e); alert('Nie udało się zapisać ustawienia. Spróbuj ponownie.'); }
+};
+/* Wiadomości informacyjne (zmiany w koronie, ciekawostki): mailprefs/{uid}.news, domyślnie włączone.
+   Rezygnacja także z linku w stopce maila (functions/news.js). Maili o koncie i zaproszeń to nie dotyczy. */
+let NEWS_ON = true;
+let NEWS_REG = null;   // wybór z formularza rejestracji, zanim zapis mailprefs dotrze do bazy
+async function loadNewsPref(user){
+  const fb = window._fb;
+  try {
+    const snap = await fb.getDoc(fb.doc(fb.db, 'mailprefs', user.uid));
+    NEWS_ON = snap.exists() ? snap.data().news !== false : (NEWS_REG !== null ? NEWS_REG : true);
+  } catch(e){ NEWS_ON = true; }
+  renderUserBar(user);
+}
+window.toggleNews = async function(){
+  const fb = window._fb, user = fb && fb.auth.currentUser;
+  if(!user) return;
+  const next = !NEWS_ON;
+  if(!confirm(next
+    ? 'Dostawać od nas e-mailem wiadomości o zmianach w koronie i ciekawostki z badań (kilka razy w roku)?'
+    : 'Zrezygnować z wiadomości o zmianach w koronie i ciekawostek? Zaproszenia od innych uczestników i maile o koncie nadal będą przychodzić.')) return;
+  try {
+    await fb.setDoc(fb.doc(fb.db, 'mailprefs', user.uid), {news: next, updatedAt: fb.serverTimestamp(), via: 'menu'});
+    NEWS_ON = next;
+    renderUserBar(user);
+    alert(next ? 'Będziesz dostawać wiadomości.' : 'Nie będziesz dostawać wiadomości.');
+  } catch(e){ console.warn('Zmiana ustawienia wiadomości nieudana', e); alert('Nie udało się zapisać ustawienia. Spróbuj ponownie.'); }
 };
 window.forgotPassword = async function(){
   const email = (document.getElementById('li-email').value || '').trim();
@@ -961,11 +994,15 @@ window.doRegister = async function(){
     const {auth, createUserWithEmailAndPassword, updateProfile} = window._fb;
     const rk = document.getElementById('re-rank');
     RANK_VISIBLE = !rk || rk.checked;
+    const nw = document.getElementById('re-news');
+    NEWS_REG = !!(nw && nw.checked);
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     if(name) await updateProfile(cred.user, {displayName: name});
     // wybór z formularza od razu w dokumencie (ranking czyta tylko dokumenty z ranking == true)
     window._fb.setDoc(window._fb.doc(window._fb.db, 'users', cred.user.uid), {ranking: RANK_VISIBLE, displayName: publicName(cred.user)}, {merge: true})
       .catch(e=>console.warn('Zapis ustawienia rankingu nieudany', e));
+    window._fb.setDoc(window._fb.doc(window._fb.db, 'mailprefs', cred.user.uid), {news: NEWS_REG, updatedAt: window._fb.serverTimestamp(), via: 'rejestracja'})
+      .catch(e=>console.warn('Zapis zgody na wiadomości nieudany', e));
     sendVerification(cred.user).catch(e=>console.warn('Mail potwierdzający nie wysłany', e));
     if(name) renderUserBar(cred.user); // onAuthStateChanged zadziałał przed updateProfile
   } catch(e) {
@@ -1146,6 +1183,7 @@ function renderUserBar(user){
         <button onclick="closeAcctMenu();window.Diary&&Diary.openList()">📖 ${langSpans('Moje wejścia','My climbs')}${inv ? ' <b class="acct-badge">'+inv+'</b>' : ''}</button>
         ${document.getElementById('ranking-overlay') ? `<button onclick="closeAcctMenu();openRanking()">🏆 Ranking</button>` : ''}
         <button onclick="closeAcctMenu();toggleRanking()" title="${RANK_VISIBLE ? 'Kliknij, aby ukryć się w rankingu' : 'Kliknij, aby pokazać się w rankingu'}">${RANK_VISIBLE ? '👁 '+langSpans('Ranking: widoczny','Ranking: visible') : '🙈 '+langSpans('Ranking: ukryty','Ranking: hidden')}</button>
+        <button onclick="closeAcctMenu();toggleNews()" title="Wiadomości e-mail o zmianach w koronie i ciekawostki">${NEWS_ON ? '✉ '+langSpans('Wiadomości: włączone','News e-mails: on') : '🔕 '+langSpans('Wiadomości: wyłączone','News e-mails: off')}</button>
         <button class="acct-reset" onclick="closeAcctMenu();resetAll()">↺ ${langSpans('Resetuj postęp','Reset progress')}</button>
         <button onclick="closeAcctMenu();doSignOut()">${langSpans('Wyloguj','Log out')}</button>
       </div></div>`;
@@ -1305,10 +1343,13 @@ renderUserBar(null); // pokaż przycisk od razu, nie czekając na (wolne lub zab
       // potwierdzenie mogło nastąpić na innym urządzeniu; świeży token przed odczytem zaproszeń
       await refreshVerified(false);
       await loadUserState(user);
+      loadNewsPref(user);
       if(window.Diary) Diary.load(user);
       if(_pendingAction){ _pendingAction(); _pendingAction = null; }
     } else {
       RANK_VISIBLE = true;
+      NEWS_ON = true;
+      NEWS_REG = null;
       renderUserBar(null);
       if(window.Diary) Diary.clear();
       // po wylogowaniu nie pokazywać postępu poprzedniego użytkownika (i nie przenosić go na kolejne konto);
