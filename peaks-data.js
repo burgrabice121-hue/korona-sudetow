@@ -36,7 +36,6 @@ const DKS = [
   { id:"wysoka-kopa", name:"Wysoka Kopa",       cz:"—",              alt:1126,prom:240, izol:6.7,  pasmo:"Góry Izerskie",                    kraj:"PL",    lat:50.8500, lng:15.4194, note:"Najwyższy szczyt Gór Izerskich" },
   { id:"skalnik", name:"Skalnik",           cz:"Skalnik",        alt:945, prom:220, izol:7,    pasmo:"Rudawy Janowickie",                kraj:"PL",    lat:50.80736,lng:15.89408,note:"Najwyższy szczyt Rudaw Janowickich" },
   { id:"chlum-pogorze-orlickie", name:"Chlum",             cz:"Chlum",          alt:603, prom:180, izol:11,   pasmo:"Pogórze Orlickie",                 kraj:"CZ",    lat:50.0947553, lng:16.3563128, note:"Najwybitniejszy szczyt Pogórza Orlickiego" },
-  { id:"wlodzicka-gora", name:"Włodzicka Góra",    cz:"—",              alt:755, prom:110, izol:5.4,  pasmo:"Obniżenie Nowej Rudy",             kraj:"PL",    lat:50.6260, lng:16.4332, note:"Dominanta Obniżenia Nowej Rudy" },
   { id:"zadzierna", name:"Zadzierna",         cz:"—",              alt:724, prom:152, izol:2.7,  pasmo:"Kotlina Kamiennogórska",           kraj:"PL",    lat:50.7221206, lng:15.9597117, note:"Najwyższy szczyt Kotliny Kamiennogórskiej" },
   { id:"nowa-kopa", name:"Nowa Kopa",         cz:"Nová Kopa",      alt:533, prom:93,  izol:4.9,  pasmo:"Obniżenie Ścinawki (Kotlina Broumovska)", kraj:"PL",    lat:50.5404, lng:16.4462, note:"Najwyższy szczyt Obniżenia Ścinawki" },
   { id:"kobyla", name:"Kobyla",            cz:"Kobyla",         alt:574, prom:174, izol:4.6,  pasmo:"Pogórze Opawskie",                 kraj:"CZ",    lat:50.1981, lng:17.6053, note:"Najwyższy i najwybitniejszy szczyt Pogórza Opawskiego" },
@@ -69,4 +68,5 @@ const DKS = [
   { id:"triebenberg", name:"Triebenberg",       cz:"Triebenberg",    alt:383, prom:108, izol:10.1, pasmo:"Pogórze Zachodniołużyckie",        kraj:"DE",    lat:51.0271161, lng:13.9233822, note:"Szczyt Pogórza Zachodniołużyckiego" },
   { id:"pyszczynska-gora", name:"Pyszczyńska Góra", cz:"—",              alt:273, prom:90,  izol:10.5, pasmo:"Równina Świdnicka",                kraj:"PL",    lat:50.9812659, lng:16.5450303, note:"Najwyższy szczyt Wzgórz Imbramowickich, izolacja ponad 10 km" },
   { id:"hurka",       name:"Hůrka",             cz:"—",              alt:530, prom:62,  izol:10,   pasmo:"Pogórze Witkowskie",               kraj:"CZ",    lat:49.85155,   lng:17.96003,   note:"Najwyższy punkt Parku Przyrody Moravice, izolacja 10 km" },
+  { id:"gora-wszystkich-swietych", name:"Góra Wszystkich Świętych", cz:"—", alt:649, prom:170, izol:6.3,  pasmo:"Obniżenie Nowej Rudy",             kraj:"PL",    lat:50.55069,   lng:16.52097,   note:"Najwybitniejsze wzniesienie Obniżenia Nowej Rudy" },
 ];

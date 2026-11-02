@@ -259,6 +259,19 @@ function migrateV11(s){
   s.schemaV11 = true;
   return s;
 }
+function migrateV12(s){
+  if(s.schemaV12) return s;
+  const oldDks = s.dks || [];
+  const newDks = [];
+  oldDks.forEach(i=>{
+    if(i===6) return;                         // Włodzicka Góra: była DKS[6], zastąpiona Górą Wszystkich Świętych (na końcu DKS)
+    else if(i>6) newDks.push(i-1);            // reszta DKS powyżej niej przesuwa się o 1 w dół
+    else newDks.push(i);
+  });
+  s.dks = newDks;
+  s.schemaV12 = true;
+  return s;
+}
 function loadState(){
   let s;
   try{
@@ -283,6 +296,7 @@ function migrateAll(s){
   s = migrateV9(s);
   s = migrateV10(s);
   s = migrateV11(s);
+  s = migrateV12(s);
   return s;
 }
 function saveState(s){
@@ -1175,6 +1189,7 @@ async function saveUserState(){
       schemaV9: STATE.schemaV9 || false,
       schemaV10: STATE.schemaV10 || false,
       schemaV11: STATE.schemaV11 || false,
+      schemaV12: STATE.schemaV12 || false,
       updatedAt: fb.serverTimestamp(),
       ranking: RANK_VISIBLE,          // widoczność w rankingu (reguły: inni czytają tylko ranking == true)
       displayName: publicName(user)   // dokument publiczny (ranking): bez adresu e-mail
@@ -1206,7 +1221,8 @@ async function loadUserState(user){
       STATE.schemaV9 = d.schemaV9 || false;
       STATE.schemaV10 = d.schemaV10 || false;
       STATE.schemaV11 = d.schemaV11 || false;
-      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10 && STATE.schemaV11;
+      STATE.schemaV12 = d.schemaV12 || false;
+      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10 && STATE.schemaV11 && STATE.schemaV12;
       STATE = migrateAll(STATE);
       saveState(STATE);
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
