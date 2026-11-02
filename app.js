@@ -687,6 +687,25 @@ window.focusPeak = function(type, idx){
 /* ═══════════════════════════════════════════
    PEAKS TABLE (filter · sort · jump to map)
 ═══════════════════════════════════════════ */
+/* Link do szczytu z zewnątrz (wpisy w aktualnosci/, maile): ?szczyt=<id z peaks-data.js>. Mapa pokazuje tylko
+   poziom tego szczytu (jak showTier), lista obok mapy przełącza się na ten poziom, widok przybliża się
+   na szczyt — bez otwierania dymka (prośba autora 2026-11-02). */
+function focusFromUrl(){
+  let id = null;
+  try { id = new URLSearchParams(location.search).get('szczyt'); } catch(e){}
+  if(!id) return;
+  let type = null, idx = -1;
+  [['ks',KS],['wks',WKS],['dks',DKS]].some(([t,arr])=>{ const i = arr.findIndex(p=>p.id===id); if(i>=0){ type=t; idx=i; } return i>=0; });
+  if(!type) return;
+  ['ks','wks','dks'].forEach(t=>{ if((t===type) !== peaksVisible[t]) window.togglePeaksLayer(t); });
+  window.switchTab(type);
+  const sec = document.getElementById('map-section');
+  if(sec) sec.scrollIntoView({block:'start'});
+  const p = (type==='ks'?KS:type==='wks'?WKS:DKS)[idx];
+  setTimeout(()=>{ map.invalidateSize(); map.flyTo([p.lat,p.lng],12,{duration:0.8}); }, 400);
+}
+if(document.readyState === 'complete') setTimeout(focusFromUrl, 300); else window.addEventListener('load', ()=>setTimeout(focusFromUrl, 300));
+
 window.jumpToPeak = function(type, idx){
   const mapSection = document.getElementById('map-section');
   if(mapSection) mapSection.scrollIntoView({behavior:'smooth', block:'start'});
