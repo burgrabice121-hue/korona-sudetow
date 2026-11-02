@@ -962,4 +962,6 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 .auth-forgot { display: block; margin: .7rem auto 0; background: none; border: none; color: var(--fog); font-family: inherit; font-size: 12px; text-decoration: underline; cursor: pointer; }
 .auth-forgot:hover { color: var(--gold); }
 .auth-forgot:disabled { opacity: .5; cursor: wait; }
+.auth-rank { display: flex; gap: .5rem; align-items: flex-start; margin: .2rem 0 .8rem; font-size: 12px; line-height: 1.4; color: var(--fog); cursor: pointer; }
+.auth-rank input { margin-top: 2px; flex-shrink: 0; }
 .auth-err.ok { color: #6EE7A0; }

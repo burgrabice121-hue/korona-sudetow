@@ -859,6 +859,37 @@ function addForgotLink(){
 }
 // okno logowania stoi w index.html za skryptem app.js — wstaw po wczytaniu całej strony
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addForgotLink); else addForgotLink();
+
+/* Widoczność w rankingu (prośba autora 2026-11-01): pole ranking w users/{uid}. Ukryty użytkownik znika z rankingu,
+   a reguły nie pozwalają innym czytać jego dokumentu (firestore.rules). Wybór przy rejestracji (pole wstawiane tu,
+   oba index.html bez zmian), później w menu konta. Domyślnie widoczny — jak dotąd. */
+let RANK_VISIBLE = true;
+function addRankingChoice(){
+  const btn = document.querySelector('#auth-reg .auth-btn');
+  if(!btn || document.getElementById('re-rank')) return;
+  const l = document.createElement('label');
+  l.className = 'auth-rank';
+  l.innerHTML = '<input type="checkbox" id="re-rank" checked> ' +
+    langSpans('Pokazuj moje zdobycze w publicznym rankingu (można to zmienić w menu konta)',
+              'Show my progress in the public ranking (you can change it in the account menu)');
+  btn.insertAdjacentElement('beforebegin', l);
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addRankingChoice); else addRankingChoice();
+
+window.toggleRanking = async function(){
+  const fb = window._fb, user = fb && fb.auth.currentUser;
+  if(!user) return;
+  const next = !RANK_VISIBLE;
+  if(!confirm(next
+    ? 'Pokazać Twoje zdobycze (imię i liczbę szczytów) w publicznym rankingu?'
+    : 'Ukryć Twoje zdobycze w rankingu? Inni nie zobaczą Twojego imienia ani liczby szczytów. Możesz to zmienić w każdej chwili.')) return;
+  try {
+    await fb.setDoc(fb.doc(fb.db, 'users', user.uid), {ranking: next}, {merge: true});
+    RANK_VISIBLE = next;
+    renderUserBar(user);
+    alert(next ? 'Jesteś widoczny w rankingu.' : 'Jesteś ukryty w rankingu.');
+  } catch(e){ console.warn('Zmiana widoczności w rankingu nieudana', e); alert('Nie udało się zapisać ustawienia. Spróbuj ponownie.'); }
+};
 window.forgotPassword = async function(){
   const email = (document.getElementById('li-email').value || '').trim();
   const en = document.getElementById('btn-en') && document.getElementById('btn-en').classList.contains('active');
@@ -914,8 +945,13 @@ window.doRegister = async function(){
   btn.disabled = true;
   try {
     const {auth, createUserWithEmailAndPassword, updateProfile} = window._fb;
+    const rk = document.getElementById('re-rank');
+    RANK_VISIBLE = !rk || rk.checked;
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     if(name) await updateProfile(cred.user, {displayName: name});
+    // wybór z formularza od razu w dokumencie (ranking czyta tylko dokumenty z ranking == true)
+    window._fb.setDoc(window._fb.doc(window._fb.db, 'users', cred.user.uid), {ranking: RANK_VISIBLE, displayName: publicName(cred.user)}, {merge: true})
+      .catch(e=>console.warn('Zapis ustawienia rankingu nieudany', e));
     sendVerification(cred.user).catch(e=>console.warn('Mail potwierdzający nie wysłany', e));
     if(name) renderUserBar(cred.user); // onAuthStateChanged zadziałał przed updateProfile
   } catch(e) {
@@ -1095,6 +1131,7 @@ function renderUserBar(user){
         ${user.emailVerified ? '' : `<button class="acct-verify" onclick="closeAcctMenu();verifyEmail()">✉ ${langSpans('Potwierdź adres e-mail','Confirm e-mail address')}</button>`}
         <button onclick="closeAcctMenu();window.Diary&&Diary.openList()">📖 ${langSpans('Moje wejścia','My climbs')}${inv ? ' <b class="acct-badge">'+inv+'</b>' : ''}</button>
         ${document.getElementById('ranking-overlay') ? `<button onclick="closeAcctMenu();openRanking()">🏆 Ranking</button>` : ''}
+        <button onclick="closeAcctMenu();toggleRanking()" title="${RANK_VISIBLE ? 'Kliknij, aby ukryć się w rankingu' : 'Kliknij, aby pokazać się w rankingu'}">${RANK_VISIBLE ? '👁 '+langSpans('Ranking: widoczny','Ranking: visible') : '🙈 '+langSpans('Ranking: ukryty','Ranking: hidden')}</button>
         <button class="acct-reset" onclick="closeAcctMenu();resetAll()">↺ ${langSpans('Resetuj postęp','Reset progress')}</button>
         <button onclick="closeAcctMenu();doSignOut()">${langSpans('Wyloguj','Log out')}</button>
       </div></div>`;
@@ -1139,6 +1176,7 @@ async function saveUserState(){
       schemaV10: STATE.schemaV10 || false,
       schemaV11: STATE.schemaV11 || false,
       updatedAt: fb.serverTimestamp(),
+      ranking: RANK_VISIBLE,          // widoczność w rankingu (reguły: inni czytają tylko ranking == true)
       displayName: publicName(user)   // dokument publiczny (ranking): bez adresu e-mail
     }, {merge: true});
   } catch(e){ console.warn('Zapis do Firebase nieudany', e); }
@@ -1151,6 +1189,8 @@ async function loadUserState(user){
     const snap = await fb.getDoc(fb.doc(fb.db, 'users', user.uid));
     if(snap.exists()){
       const d = snap.data();
+      RANK_VISIBLE = d.ranking !== false;
+      renderUserBar(user);
       STATE.ks  = d.ks  || [];
       STATE.wks = d.wks || [];
       STATE.dks = d.dks || [];
@@ -1206,7 +1246,8 @@ async function loadRanking(){
   const el = document.getElementById('rank-content');
   el.innerHTML = '<div class="rank-loading">Ładowanie...</div>';
   try {
-    const snap = await fb.getDocs(fb.collection(fb.db,'users'));
+    // tylko widoczni w rankingu (reguły nie pozwalają czytać pozostałych dokumentów)
+    const snap = await fb.getDocs(fb.query(fb.collection(fb.db,'users'), fb.where('ranking','==',true)));
     let rows = [];
     snap.forEach(d=>{
       const u = d.data();
@@ -1251,6 +1292,7 @@ renderUserBar(null); // pokaż przycisk od razu, nie czekając na (wolne lub zab
       if(window.Diary) Diary.load(user);
       if(_pendingAction){ _pendingAction(); _pendingAction = null; }
     } else {
+      RANK_VISIBLE = true;
       renderUserBar(null);
       if(window.Diary) Diary.clear();
       // po wylogowaniu nie pokazywać postępu poprzedniego użytkownika (i nie przenosić go na kolejne konto);

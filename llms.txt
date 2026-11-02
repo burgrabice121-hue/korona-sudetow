@@ -1,0 +1,115 @@
+# Wielka Korona Sudetów (viasudetica.eu)
+
+> Trzypoziomowa korona górska całych Sudetów: 64 najwybitniejsze i topograficznie samodzielne szczyty łańcucha po stronie polskiej, czeskiej i niemieckiej, wybrane według obiektywnych, mierzalnych kryteriów (wybitność i izolacja topograficzna), a nie według wysokości n.p.m. czy najwyższego szczytu w regionie. Interaktywna mapa, zapisywanie zdobytych szczytów, dziennik wejść i wspólne wejścia ze znajomymi.
+
+Autor: Wojciech Rogala. Strona: https://viasudetica.eu/ (PL/EN). Mapa do zapisywania wejść: https://wielkakoronasudetow.pl/
+
+## Poziomy
+
+- Korona Sudetów: 8 szczytów. Wybitność powyżej 500 m lub izolacja powyżej 25 km.
+- Wielka Korona Sudetów: kolejne 17 szczytów. Wybitność co najmniej 350 m lub izolacja powyżej 14 km.
+- Diamentowa Korona Sudetów: kolejne 39 szczytów. Wybitność powyżej 270 m lub izolacja co najmniej 10 km, a także najwybitniejsze szczyty pasm, pogórzy i kotlin niereprezentowanych w wyższych koronach (przy wybitności co najmniej 50 m).
+
+Poziomy są rozłączne (8 + 17 + 39 = 64). Ukończenie poziomu odblokowuje następny. Progi wyznaczono z rozkładu wybitności i izolacji wszystkich szczytów Sudetów, m.in. metodą naturalnych przełamań Jenksa.
+
+## Pojęcia
+
+- Wybitność topograficzna: wysokość szczytu ponad najniższą przełęczą oddzielającą go od wyższego wierzchołka. Przykład: Śnieżka (1603 m) ma wybitność 1197 m.
+- Izolacja topograficzna: odległość w linii prostej do najbliższego wyższego wierzchołka. Przykład: Ślęża (718 m) ma izolację 36 km.
+
+## Czym różni się od innych koron
+
+Dotychczasowe korony sudeckie opierają się na najwyższych szczytach mezoregionów, których granice wyznacza się inaczej w Polsce, Czechach i Niemczech i które zmieniają się wraz z badaniami, albo wyłącznie na wybitności. Wielka Korona Sudetów łączy wybitność i izolację, obejmuje całe Sudety ponad granicami państw i nawiązuje do Korony Sudetów i Korony Gór Polski, z bardziej zobiektywizowanymi kryteriami.
+
+## Zasięg i podział
+
+Sudety w ujęciu geomorfologicznym, ok. 300 km wzdłuż granicy polsko-czeskiej i czesko-niemieckiej, od Pogórza Zachodniołużyckiego (Hochstein) po Niski Jesionik (Słoneczna) i Pogórze Witkowskie (Hůrka, pol. Górka). Granice Sudetów wyznaczono jednolicie po wszystkich stronach granic, na podstawie rzeźby i budowy geologicznej. Podział na 8 grup górskich: Sudety Łużyckie, Sudety Zachodnie, Pogórze Zachodniosudeckie, Sudety Środkowe, Sudety Orlickie, Sudety Wschodnie, Sudety Kulmowe, Przedgórze Sudeckie.
+
+## Dla użytkownika
+
+Konto (Google lub e-mail), zaznaczanie zdobytych szczytów, paski postępu, dziennik wejść (data, trasa, zdjęcia), zaproszenia współuczestników wycieczki, ranking zdobywców. Planowany: pamiętnik z wypraw przygotowywany z pomocą AI po ukończeniu poziomu.
+
+## Strony
+
+- [Strona główna, opis projektu i kryteria](https://viasudetica.eu/): metodyka, granice Sudetów, grupy górskie, kryteria kwalifikacji
+- [Dlaczego warto](https://viasudetica.eu/#warto): korzyści i etapy (Turysta, Przewodnik, Odkrywca, Sudetczyk)
+- [Mapa interaktywna](https://viasudetica.eu/#map-section)
+- [Wykaz 64 szczytów](https://viasudetica.eu/#peaks-section)
+- [Mapa do zapisywania wejść](https://wielkakoronasudetow.pl/)
+
+## Wykaz szczytów
+
+Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, grupa górska, pasmo, kraj.
+
+### Korona Sudetów (8)
+
+- Śnieżka (Sněžka): 1603 m n.p.m., wybitność 1197 m, izolacja 289.6 km; Sudety Zachodnie, Karkonosze; PL/CZ
+- Pradziad (Praděd): 1491 m n.p.m., wybitność 983 m, izolacja 94 km; Sudety Wschodnie, Wysoki Jesionik; CZ
+- Wielka Desztna (Velká Deštná): 1115 m n.p.m., wybitność 582 m, izolacja 38 km; Sudety Orlickie, Góry Orlickie; CZ
+- Wielka Sowa: 1015 m n.p.m., wybitność 484 m, izolacja 37.4 km; Sudety Środkowe, Góry Sowie; PL
+- Ślęża (Sleza): 718 m n.p.m., wybitność 468 m, izolacja 36 km; Przedgórze Sudeckie, Masyw Ślęży; PL
+- Luž (Luž / Lausche): 793 m n.p.m., wybitność 369 m, izolacja 26 km; Sudety Łużyckie, Góry Łużyckie; CZ/DE
+- Śnieżnik (Králický Sněžník): 1425 m n.p.m., wybitność 662 m, izolacja 30.6 km; Sudety Wschodnie, Masyw Śnieżnika; PL/CZ
+- Ještěd: 1012 m n.p.m., wybitność 512 m, izolacja 18.1 km; Sudety Zachodnie, Grzbiet Jesztedzko-Kozakowski; CZ
+
+### Wielka Korona Sudetów (17)
+
+- Suchy Szczyt (Suchý vrch): 995 m n.p.m., wybitność 435 m, izolacja 8.5 km; Sudety Orlickie, Góry Orlickie; CZ
+- Studniční vrch: 992 m n.p.m., wybitność 416 m, izolacja 7.9 km; Sudety Wschodnie, Sokoli Grzbiet; CZ
+- Keprník: 1423 m n.p.m., wybitność 410 m, izolacja 12.7 km; Sudety Wschodnie, Wysoki Jesionik; CZ
+- Jeřáb: 1003 m n.p.m., wybitność 393 m, izolacja 8 km; Sudety Wschodnie, Hanušovická vrchovina; CZ
+- Waligóra: 936 m n.p.m., wybitność 351 m, izolacja 13.1 km; Sudety Środkowe, Góry Kamienne; PL
+- Szczeliniec Wielki (Velká Hejšovina): 922 m n.p.m., wybitność 272 m, izolacja 14.7 km; Sudety Środkowe, Góry Stołowe; PL
+- Hrazený: 608 m n.p.m., wybitność 168 m, izolacja 16 km; Sudety Łużyckie, Pogórze Łużyckie; CZ
+- Hochstein: 449 m n.p.m., wybitność 159 m, izolacja 15.9 km; Sudety Łużyckie, Pogórze Zachodniołużyckie; DE
+- Valtenberg: 586 m n.p.m., wybitność 196 m, izolacja 15 km; Sudety Łużyckie, Pogórze Łużyckie; DE
+- Královecký Špičák: 881 m n.p.m., wybitność 350 m, izolacja 8.8 km; Sudety Środkowe, Góry Kamienne; CZ
+- Czorneboh: 557 m n.p.m., wybitność 192 m, izolacja 15.2 km; Sudety Łużyckie, Pogórze Łużyckie; DE
+- Kottmar: 582 m n.p.m., wybitność 187 m, izolacja 16.4 km; Sudety Łużyckie, Pogórze Łużyckie; DE
+- Okole: 725 m n.p.m., wybitność 255 m, izolacja 16 km; Sudety Zachodnie, Góry Kaczawskie; PL
+- Gromnik: 393 m n.p.m., wybitność 135 m, izolacja 19.9 km; Przedgórze Sudeckie, Wzgórza Niemczańsko-Strzelińskie; PL
+- Fidlův kopec: 680 m n.p.m., wybitność 117 m, izolacja 15 km; Sudety Kulmowe, Niski Jesionik; CZ
+- Zvičina: 672 m n.p.m., wybitność 187 m, izolacja 19.3 km; Sudety Zachodnie, Podgórze Karkonoskie; CZ
+- Słoneczna (Slunečná): 802 m n.p.m., wybitność 168 m, izolacja 19.3 km; Sudety Kulmowe, Niski Jesionik; CZ
+
+### Diamentowa Korona Sudetów (39)
+
+- Szeroka Góra: 766 m n.p.m., wybitność 283 m, izolacja 8.4 km; Sudety Środkowe, Góry Bardzkie; PL
+- Góra Poprzeczna (Příčný vrch): 975 m n.p.m., wybitność 258 m, izolacja 8.2 km; Sudety Wschodnie, Góry Złotogórskie; CZ
+- Jagodna Północna: 985 m n.p.m., wybitność 247 m, izolacja 6 km; Sudety Orlickie, Góry Bystrzyckie; PL
+- Wysoka Kopa: 1126 m n.p.m., wybitność 240 m, izolacja 6.7 km; Sudety Zachodnie, Góry Izerskie; PL
+- Skalnik: 945 m n.p.m., wybitność 220 m, izolacja 7 km; Sudety Zachodnie, Rudawy Janowickie; PL
+- Chlum: 603 m n.p.m., wybitność 180 m, izolacja 11 km; Sudety Orlickie, Pogórze Orlickie; CZ
+- Włodzicka Góra: 755 m n.p.m., wybitność 110 m, izolacja 5.4 km; Sudety Środkowe, Obniżenie Nowej Rudy; PL
+- Zadzierna: 724 m n.p.m., wybitność 152 m, izolacja 2.7 km; Sudety Środkowe, Kotlina Kamiennogórska; PL
+- Nowa Kopa (Nová Kopa): 533 m n.p.m., wybitność 93 m, izolacja 4.9 km; Sudety Środkowe, Obniżenie Ścinawki (Kotlina Broumovska); PL
+- Kobyla: 574 m n.p.m., wybitność 174 m, izolacja 4.6 km; Sudety Kulmowe, Pogórze Opawskie; CZ
+- Boží hora: 527 m n.p.m., wybitność 127 m, izolacja 3.8 km; Sudety Wschodnie, Pogórze Żulowskie; CZ
+- Grodna: 504 m n.p.m., wybitność 84 m, izolacja 2.8 km; Sudety Zachodnie, Kotlina Jeleniogórska; PL
+- Ostrzyca: 501 m n.p.m., wybitność 160 m, izolacja 7.5 km; Pogórze Zachodniosudeckie, Pogórze Kaczawskie; PL
+- Na Vyhlídce: 501 m n.p.m., wybitność 69 m, izolacja 2.8 km; Sudety Wschodnie, Pogórze Burgrabickie; CZ
+- Chlum: 344 m n.p.m., wybitność 59 m, izolacja 8.3 km; Sudety Kulmowe, Pogórze Trszickie; CZ
+- Biskupia Kopa (Biskupská kupa): 890 m n.p.m., wybitność 176 m, izolacja 8 km; Sudety Kulmowe, Góry Opawskie; PL/CZ
+- Chełmiec: 851 m n.p.m., wybitność 301 m, izolacja 9.1 km; Sudety Środkowe, Góry Wałbrzyskie; PL
+- Smrek (Smrk): 1125 m n.p.m., wybitność 310 m, izolacja 7 km; Sudety Wschodnie, Góry Złote; CZ
+- Strażna (Strážná): 642 m n.p.m., wybitność 92 m, izolacja 12 km; Sudety Kulmowe, Pogórze Witkowskie; CZ
+- Landekrone (Landeskrone): 419 m n.p.m., wybitność 157 m, izolacja 12 km; Sudety Łużyckie, Kotlina Żytawska; DE
+- Rotstein: 454 m n.p.m., wybitność 150 m, izolacja 13 km; Sudety Łużyckie, Pogórze Wschodniołużyckie; DE
+- Jedlice: 354 m n.p.m., wybitność 105 m, izolacja 11.1 km; Przedgórze Sudeckie, Wzgórza Strzegomskie; PL
+- Wysoka Dąbrowa (Hohe Dubrau): 307 m n.p.m., wybitność 113 m, izolacja 12.8 km; Sudety Łużyckie, Płaskowyż Budziszyński; DE
+- Wielki Szyszak (Vysoké kolo): 1509 m n.p.m., wybitność 312 m, izolacja 9.7 km; Sudety Zachodnie, Karkonosze; PL/CZ
+- Kozákov: 745 m n.p.m., wybitność 295 m, izolacja 13.2 km; Sudety Zachodnie, Grzbiet Jesztedzko-Kozakowski; CZ
+- Niedźwiedzi Wierch (Medvědí vrch): 1216 m n.p.m., wybitność 286 m, izolacja 9.2 km; Sudety Wschodnie, Wysoki Jesionik; CZ
+- Jawornik Wielki: 872 m n.p.m., wybitność 279 m, izolacja 3.8 km; Sudety Wschodnie, Góry Złote; PL
+- Borówkowa (Borůvková hora): 900 m n.p.m., wybitność 236 m, izolacja 11.6 km; Sudety Wschodnie, Góry Złote; PL/CZ
+- Kanci vrch (Kančí vrch): 608 m n.p.m., wybitność 207 m, izolacja 7.6 km; Sudety Orlickie, Zábřežská vrchovina; CZ
+- Tabor: 683 m n.p.m., wybitność 207 m, izolacja 11.9 km; Sudety Zachodnie, Grzbiet Jesztedzko-Kozakowski; CZ
+- Cap: 786 m n.p.m., wybitność 196 m, izolacja 11.8 km; Sudety Środkowe, Góry Stołowe; CZ
+- Smrek: 1124 m n.p.m., wybitność 184 m, izolacja 11.2 km; Sudety Zachodnie, Góry Izerskie; CZ
+- Lisia Góra (Liščí hora): 613 m n.p.m., wybitność 178 m, izolacja 10.5 km; Sudety Zachodnie, Podgórze Karkonoskie; CZ
+- Grodziec: 382 m n.p.m., wybitność 130 m, izolacja 13.4 km; Pogórze Zachodniosudeckie, Pogórze Kaczawskie; PL
+- Czerwona Góra (Červená hora): 749 m n.p.m., wybitność 111 m, izolacja 10.6 km; Sudety Kulmowe, Niski Jesionik; CZ
+- Humrich: 512 m n.p.m., wybitność 124 m, izolacja 4.3 km; Pogórze Zachodniosudeckie, Pogórze Izerskie; CZ
+- Triebenberg: 383 m n.p.m., wybitność 108 m, izolacja 10.1 km; Sudety Łużyckie, Pogórze Zachodniołużyckie; DE
+- Pyszczyńska Góra: 273 m n.p.m., wybitność 90 m, izolacja 10.5 km; Przedgórze Sudeckie, Równina Świdnicka; PL
+- Hůrka: 530 m n.p.m., wybitność 62 m, izolacja 10 km; Sudety Kulmowe, Pogórze Witkowskie; CZ
