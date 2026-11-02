@@ -36,6 +36,7 @@ Konto (Google lub e-mail), zaznaczanie zdobytych szczytów, paski postępu, dzie
 - [Mapa interaktywna](https://viasudetica.eu/#map-section)
 - [Wykaz 64 szczytów](https://viasudetica.eu/#peaks-section)
 - [Mapa do zapisywania wejść](https://wielkakoronasudetow.pl/)
+- [Aktualności](https://viasudetica.eu/aktualnosci/): wpisy o zmianach na liście szczytów i wynikach badań
 - [Z badań: Góra Wszystkich Świętych zamiast Włodzickiej Góry](https://viasudetica.eu/aktualnosci/gora-wszystkich-swietych.html): dlaczego o miejscu w Diamentowej Koronie decyduje wybitność, a nie wysokość; analiza na NMT GUGiK
 
 ## Wykaz szczytów

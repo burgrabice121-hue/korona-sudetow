@@ -49,7 +49,7 @@ nav {
   color: var(--cream);
 }
 .nav-logo span { color: var(--clay); }
-.nav-links { display: flex; gap: 2rem; }
+.nav-links { display: flex; gap: 1.5rem; }   /* 1.5rem: 6 pozycji z „Aktualności” w jednej linii przy 1366 px */
 .nav-links a {
   font-family: var(--mono);
   font-size: 11px;
@@ -793,6 +793,9 @@ footer {
 .pop-sl{font-family:'Courier New',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#8B949E}
 .pop-sv{font-size:12px;font-weight:600;color:#E6EDF3}
 .pop-note{font-size:11px;color:#8B949E;font-style:italic;line-height:1.4;margin-bottom:8px}
+/* link do wpisu z badań przy szczycie (pole post w peaks-data.js) */
+.pop-post,.leaflet-container a.pop-post{display:block;font-size:12px;color:#E3A86B;text-decoration:underline;margin:-2px 0 10px}
+.peak-post{display:block;width:max-content;margin-top:1px;font-size:11px;font-weight:normal;color:var(--rust);text-decoration:underline;white-space:nowrap}
 .pop-btn{width:100%;padding:7px;border-radius:3px;border:none;font-family:'Georgia',serif;font-size:11px;font-weight:600;letter-spacing:.05em;cursor:pointer;transition:all .2s}
 .pop-btn.conquer{background:#D4A017;color:#0D1117}
 .pop-btn.conquer:hover{background:#F0C040}

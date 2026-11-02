@@ -44,7 +44,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-<link rel="stylesheet" href="styles.css?v=20261102">
+<link rel="stylesheet" href="styles.css?v=20261102d">
 
 <!-- Firebase SDK -->
 <script type="module" src="firebase-init.js?v=20261026"></script>
@@ -138,6 +138,8 @@
     <a href="#map-section" class="lang-en" style="display:none">Map</a>
     <a href="#peaks-section" class="lang-pl">Wykaz szczytów</a>
     <a href="#peaks-section" class="lang-en" style="display:none">Peak list</a>
+    <a href="aktualnosci/" class="lang-pl">Aktualności</a>
+    <a href="aktualnosci/" class="lang-en" style="display:none">News</a>
   </div>
   <div style="display:flex;align-items:center;gap:0.7rem">
     <button id="feedback-btn" title="Zgłoś uwagi / Send feedback" onclick="showFeedbackOverlay()" style="background:none;border:1px solid rgba(255,255,255,0.25);color:#E6EDF3;border-radius:6px;padding:0.3rem 0.75rem;cursor:pointer;font-size:0.82rem;display:flex;align-items:center;gap:0.4rem;transition:background 0.2s">
@@ -1685,7 +1687,7 @@
         </tr>
 <tr data-level="dks" data-idx="38" data-name="Góra Wszystkich Świętych" data-pasmo="Obniżenie Nowej Rudy" data-grupa="Sudety Środkowe" data-kraj="PL" data-alt="649" data-prom="170" data-izol="6.3" onclick="jumpToPeak('dks',38)">
           <td class="peak-rank">64</td>
-          <td class="peak-name-cell"><strong>Góra Wszystkich Świętych</strong></td>
+          <td class="peak-name-cell"><strong>Góra Wszystkich Świętych</strong> <a class="peak-post" href="https://viasudetica.eu/aktualnosci/gora-wszystkich-swietych.html" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Dlaczego ten szczyt jest w koronie"><span class="lang-pl">z badań →</span><span class="lang-en" style="display:none">research →</span></a></td>
           <td><span class="badge lvl-dks">Diamentowa</span></td>
           <td class="muted">Sudety Środkowe</td>
           <td class="muted">Obniżenie Nowej Rudy</td>
@@ -1722,8 +1724,8 @@
 </div>
 
 <script src="pasma-geojson.js?v=20261031b"></script>
-<script src="peaks-data.js?v=20261102b"></script>
-<script src="app.js?v=20261102c"></script><script src="diary.js?v=20261031g"></script>
+<script src="peaks-data.js?v=20261102d"></script>
+<script src="app.js?v=20261102d"></script><script src="diary.js?v=20261031g"></script>
 
 
 <!-- AUTH OVERLAY -->

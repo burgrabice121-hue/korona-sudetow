@@ -430,6 +430,7 @@ function buildPopup(p, type, idx){
       <div class="pop-stat"><div class="pop-sl">Kraj</div><div class="pop-sv">${p.kraj}</div></div>
     </div>
     ${p.note?`<div class="pop-note">${p.note}</div>`:''}
+    ${p.post?`<a class="pop-post" href="${p.post}" target="_blank" rel="noopener">${langSpans('Z badań: dlaczego ten szczyt →','From our research: why this summit (in Polish) →')}</a>`:''}
     ${window.Diary?Diary.popupBtn(p,type,idx,conq):''}
     ${btnHtml}
   </div>`;
