@@ -34,6 +34,12 @@ var loadedAt = 0;      // kiedy ostatnio wczytano wejścia (odświeżanie po pow
 var cur = null;        // stan formularza
 var curSig = '';       // podpis formularza do wykrywania niezapisanych zmian
 var listTab = 'all';
+/* Książka osób (P37, functions/people.js): byUid {uid: jak nazywam tę osobę}, alias {pnorm(imię): uid}.
+   Towarzysze w wejściach zostają tekstem; książka mówi, które napisy to to samo konto i jak je pokazać.
+   Konta łączy serwer przy przyjęciu zaproszenia; tu tylko odczyt, zmiana nazw, dopinanie pisowni, rozłączanie. */
+var people = {byUid:{}, alias:{}};
+var pending = null;    // imię prawie takie jak istniejące: {name, near} — czeka na „Tak / Nie, inna osoba”
+var peopleOpen = false;
 
 /* ── CSS (ładowany obok diary.js, także na drugiej domenie) ── */
 (function injectCss(){
@@ -74,6 +80,100 @@ function tierShort(type){ return type==='ks'?'Korona':type==='wks'?'Wielka':'Dia
 /* pełna nazwa: dla osób nowych na portalu (okno zaproszenia) i w podpowiedzi do skrótu */
 function tierName(type){ return type==='ks'?'Korona Sudetów':type==='wks'?'Wielka Korona Sudetów':'Diamentowa Korona Sudetów'; }
 function visitsCol(f, uid){ return f.collection(f.db,'users',uid,'visits'); }
+function peopleRef(f, uid){ return f.doc(f.db,'people',uid); }
+
+/* ── osoby: klucz porównania jak norm() w functions/people.js (zmieniać razem) ── */
+function pnorm(s){
+  return String(s==null?'':s).toLowerCase().replace(/ł/g,'l').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/\./g,' ').replace(/\s+/g,' ').trim();
+}
+function personOf(name){ var u = people.alias[pnorm(name)]; return u && people.byUid[u] ? u : null; }
+function shownName(name){
+  var u = personOf(name);
+  return u ? people.byUid[u] : (spelled[pnorm(name)] || String(name).replace(/\s+/g,' ').trim());
+}
+/* osoba bez konta: jedna pisownia w całym pamiętniku — najczęstsza, przy remisie dłuższa,
+   a potem z polskimi znakami i wielką literą („Zośka” przed „Zoska”, „Ania” przed „ania”) */
+var spelled = {};
+function indexSpellings(){
+  var cnt = {};
+  Object.keys(visits).forEach(function(id){
+    visits[id].companions.forEach(function(c){
+      var n = c.replace(/\s+/g,' ').trim(), k = pnorm(n);
+      if(!k) return;
+      (cnt[k] = cnt[k] || {})[n] = (cnt[k][n] || 0) + 1;
+    });
+  });
+  var rich = function(x){ return (x.match(/[^\x00-\x7f]/g)||[]).length*2 + (x.match(/[A-ZĄĆĘŁŃÓŚŹŻ]/g)||[]).length; };
+  spelled = {};
+  Object.keys(cnt).forEach(function(k){
+    spelled[k] = Object.keys(cnt[k]).sort(function(a, b){
+      return cnt[k][b] - cnt[k][a] || b.length - a.length || rich(b) - rich(a) || (a < b ? -1 : 1);
+    })[0];
+  });
+}
+function personKey(name){ var u = personOf(name); return u ? 'u:'+u : 'n:'+pnorm(name); }
+/* towarzysze do pokazania: pisownia z książki, każda osoba raz */
+function shownList(arr){
+  var seen = {}, out = [];
+  (arr||[]).forEach(function(c){
+    var k = personKey(c);
+    if(!pnorm(c) || seen[k]) return;
+    seen[k] = 1; out.push(shownName(c));
+  });
+  return out;
+}
+/* etykieta jak cleanLabel() w functions/people.js */
+function cleanLabel(s){ return String(s==null?'':s).replace(/[@\/:<>\\]/g,' ').replace(/\s+/g,' ').trim().slice(0, MAX_COMP_LEN); }
+/* wszystkie osoby z wejść i książki: {key, uid, name, c (liczba wejść), spell (pisownie w wejściach)} */
+function peopleEntries(){
+  var map = {};
+  Object.keys(visits).forEach(function(id){
+    var seen = {};
+    visits[id].companions.forEach(function(c){
+      if(!pnorm(c)) return;
+      var k = personKey(c);
+      var e = map[k] || (map[k] = {key:k, uid:k.indexOf('u:')===0 ? k.slice(2) : null, name:shownName(c), c:0, spell:{}});
+      e.spell[c.replace(/\s+/g,' ').trim()] = 1;
+      if(!seen[k]){ seen[k] = 1; e.c++; }
+    });
+  });
+  Object.keys(people.byUid).forEach(function(u){
+    if(!map['u:'+u]) map['u:'+u] = {key:'u:'+u, uid:u, name:people.byUid[u], c:0, spell:{}};
+  });
+  return Object.keys(map).map(function(k){ return map[k]; });
+}
+function lev1(a, b){                                // odległość edycyjna <= 1
+  if(a===b) return true;
+  var la = a.length, lb = b.length;
+  if(Math.abs(la-lb) > 1) return false;
+  var i = 0; while(i < la && i < lb && a[i]===b[i]) i++;
+  if(la===lb) return a.slice(i+1)===b.slice(i+1);
+  return la > lb ? a.slice(i+1)===b.slice(i) : a.slice(i)===b.slice(i+1);
+}
+/* osoba o prawie takim imieniu: jedna litera różnicy albo „Ania” obok „Ania K.” */
+function nearName(name){
+  var k = pnorm(name), hit = null;
+  if(k.length < 3) return null;
+  peopleEntries().some(function(e){
+    var n = pnorm(e.name);
+    if(n===k || n.length < 3) return false;
+    if(lev1(k, n) || n.indexOf(k+' ')===0 || k.indexOf(n+' ')===0){ hit = e.name; return true; }
+    return false;
+  });
+  return hit;
+}
+function loadPeople(f, user){
+  return f.getDoc(peopleRef(f, user.uid)).then(function(s){
+    var d = s.exists() ? s.data() : {};
+    people = {byUid: d.byUid && typeof d.byUid==='object' ? d.byUid : {}, alias: d.alias && typeof d.alias==='object' ? d.alias : {}};
+  }).catch(function(e){ people = {byUid:{}, alias:{}}; console.warn('Odczyt książki osób nieudany', e); });
+}
+function savePeople(){
+  var f = fb(), user = curUser();
+  if(!f || !user) return Promise.reject(new Error('no user'));
+  return f.setDoc(peopleRef(f, user.uid), {byUid:people.byUid, alias:people.alias, updatedAt:f.serverTimestamp()});
+}
 
 function normalize(id, d){
   d = d || {};
@@ -230,10 +330,11 @@ function load(user){
   var f = fb();
   if(!f || !user) return Promise.resolve();
   loadOk = false;
-  loadPromise = f.getDocs(visitsCol(f, user.uid)).then(function(snap){
-    var next = {};
+  loadPromise = Promise.all([f.getDocs(visitsCol(f, user.uid)), loadPeople(f, user)]).then(function(res){
+    var snap = res[0], next = {};
     snap.forEach(function(d){ next[d.id] = normalize(d.id, d.data()); });
     visits = next;
+    indexSpellings();
     loadOk = true;
     loadedAt = Date.now();
     refreshAll();
@@ -248,6 +349,7 @@ function load(user){
 
 function clear(){
   visits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = []; linked = []; offersIn = [];
+  people = {byUid:{}, alias:{}}; spelled = {}; pending = null; peopleOpen = false;
   // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> handleLinkInvite() otworzy zaproszenie
   if(INVITES_ON && pendingLink()) askLogin();
   closeForm(); closeList();
@@ -304,6 +406,7 @@ function ensureDom(){
           '<div class="dy-suggest" id="dy-suggest"></div></div>'+
         '<div class="dy-field c12" id="dy-share" hidden><label for="dy-share-in">Udostępnij uczestnikom (e-mail)</label>'+
           '<div class="dy-share-row"><input type="email" id="dy-share-in" maxlength="254" placeholder="adres@przyklad.pl" autocomplete="off">'+
+          '<select id="dy-share-who" title="Kto to z listy towarzyszy? Połączy tę osobę z jej kontem."></select>'+
           '<button type="button" class="dy-btn ghost" id="dy-share-go">Wyślij zaproszenie</button></div>'+
           '<div class="dy-share-hint" id="dy-share-hint"></div><div class="dy-share-list" id="dy-share-list"></div></div>'+
         '<div class="dy-field c12"><label>Zdjęcia <span class="dy-count" id="dy-ph-count"></span></label>'+
@@ -320,7 +423,7 @@ function ensureDom(){
     '<div class="dy-box dy-wide">'+
       '<div class="dy-hdr"><div class="dy-title" id="dl-title">📖 Moje wejścia</div>'+
         '<button class="dy-close" id="dl-x" title="Zamknij">✕</button></div>'+
-      '<div class="dy-body"><div id="dl-invites"></div><div class="dl-stats" id="dl-stats"></div><div class="dl-comps" id="dl-comps" hidden></div>'+
+      '<div class="dy-body"><div id="dl-invites"></div><div class="dl-stats" id="dl-stats"></div><div class="dl-comps" id="dl-comps" hidden></div><div class="dp-box" id="dl-people" hidden></div>'+
         '<div class="dl-tabs" id="dl-tabs"></div><div id="dl-rows"></div></div>'+
     '</div></div>'+
   '<div id="invite-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="iv-title">'+
@@ -343,6 +446,7 @@ function ensureDom(){
     if(ev.key==='Enter' || ev.key===','){ ev.preventDefault(); addCompanion(ci.value); ci.value=''; }
     else if(ev.key==='Backspace' && !ci.value && cur && cur.companions.length){ cur.companions.pop(); renderChips(); }
   });
+  ci.addEventListener('input', function(){ pending = null; renderSuggest(); });
   ci.addEventListener('blur', function(){ if(ci.value.trim()){ addCompanion(ci.value); ci.value=''; } });
   $('dy-comp').addEventListener('click', function(ev){
     var b = ev.target.closest('[data-rm]');
@@ -368,9 +472,18 @@ function ensureDom(){
     addPhotoFiles(files);
   });
   $('dy-date').addEventListener('change', renderSuggest);
+  // kliknięcie podpowiedzi nie zabiera fokusu polu (blur dopisałby niedokończone imię)
+  $('dy-suggest').addEventListener('mousedown', function(ev){ if(ev.target.closest('button')) ev.preventDefault(); });
   $('dy-suggest').addEventListener('click', function(ev){
+    var nb = ev.target.closest('[data-near]');
+    if(nb && pending){
+      var p = pending; pending = null;
+      addCompanion(nb.getAttribute('data-near')==='yes' ? p.near : p.name, true);
+      return;
+    }
     var b = ev.target.closest('[data-add]'); if(!b) return;
-    addCompanion(b.getAttribute('data-add'));
+    $('dy-comp-in').value = '';
+    addCompanion(b.getAttribute('data-add'), true);
   });
   $('dy-visits').addEventListener('click', function(ev){
     var b = ev.target.closest('[data-vid]'); if(!b) return;
@@ -398,6 +511,18 @@ function ensureDom(){
     var a = ev.target.closest('[data-accept]'); if(a) return acceptInvite(a.getAttribute('data-accept'), a);
     var oa = ev.target.closest('[data-oapply]'); if(oa) return answerOffer(oa.getAttribute('data-oapply'), 'apply', oa);
     var od = ev.target.closest('[data-odecline]'); if(od) return answerOffer(od.getAttribute('data-odecline'), 'decline', od);
+  });
+  $('dl-comps').addEventListener('click', function(ev){
+    if(!ev.target.closest('[data-people]')) return;
+    peopleOpen = !peopleOpen; renderList();
+  });
+  $('dl-people').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-pact]'); if(!b) return;
+    peopleAction(b.getAttribute('data-pact'), b.closest('[data-key]').getAttribute('data-key'));
+  });
+  $('dl-people').addEventListener('change', function(ev){
+    var sel = ev.target.closest('select[data-merge]'); if(!sel || !sel.value) return;
+    mergePeople(sel.closest('[data-key]').getAttribute('data-key'), sel.value);
   });
   $('dl-tabs').addEventListener('click', function(ev){
     var b = ev.target.closest('[data-tab]'); if(!b) return;
@@ -452,7 +577,7 @@ function openForm(type, idx, which){
   cur = {
     type:type, idx:idx, p:p,
     visitId: v ? v.id : null,
-    companions: v ? v.companions.slice() : [],
+    companions: v ? shownList(v.companions) : [],   // pisownia z książki osób; zapis ujednolica wejście
     photos: v ? v.photos.map(function(ph){ return Object.assign({isNew:false}, ph); }) : [],
     removedPhotos: [],
     partners: v ? v.partners : 0,
@@ -472,6 +597,7 @@ function openForm(type, idx, which){
   $('dy-link').value = v && v.link ? v.link : '';
   $('dy-note').value = v ? v.note : '';
   $('dy-comp-in').value = '';
+  pending = null;
   $('dy-err').textContent = '';
   $('dy-del').style.display = v ? '' : 'none';
   $('dy-save').disabled = false; $('dy-save').textContent = 'Zapisz';
@@ -590,11 +716,21 @@ function renderPlaces(){
   $('dy-places').innerHTML = opts;
 }
 
-function addCompanion(raw){
+/* sure: bez pytania „Czy to …?” (wybór z podpowiedzi albo odpowiedź na pytanie) */
+function addCompanion(raw, sure){
   var name = String(raw||'').replace(/\s+/g,' ').trim().slice(0, MAX_COMP_LEN);
   if(!name || !cur) return;
-  var low = name.toLowerCase();
-  if(cur.companions.some(function(c){ return c.toLowerCase()===low; })) return;
+  // znana osoba albo ta sama pisownia co w innym wejściu: jedna, ta sama nazwa
+  var key = personKey(name), known = peopleEntries().filter(function(e){ return e.key===key; })[0];
+  if(known) name = known.name;
+  if(cur.companions.some(function(c){ return personKey(c)===key; })){ pending = null; renderSuggest(); return; }
+  if(!sure && !known){
+    var near = nearName(name);
+    if(near && !cur.companions.some(function(c){ return personKey(c)===personKey(near); })){
+      pending = {name:name, near:near}; renderSuggest(); return;
+    }
+  }
+  pending = null;
   if(cur.companions.length >= MAX_COMP){ $('dy-err').textContent = 'Maksymalnie '+MAX_COMP+' osób.'; return; }
   cur.companions.push(name);
   renderChips();
@@ -607,26 +743,39 @@ function renderChips(){
   renderSuggest();
 }
 
-/* podpowiedzi: ekipa z wejść z tą samą datą, potem najczęstsi towarzysze */
+/* podpowiedzi: ekipa z wejść z tą samą datą, potem najczęstsi towarzysze; podczas pisania — pasujące osoby
+   (od początku imienia lub nazwiska, bez polskich znaków), także z książki osób */
 function renderSuggest(){
   if(!cur) return;
+  var box = $('dy-suggest');
+  if(pending){
+    box.innerHTML = '<span class="dy-near">Czy „'+esc(pending.name)+'” to <b>'+esc(pending.near)+'</b>?</span>'+
+      '<button type="button" class="dy-sg yes" data-near="yes">Tak</button>'+
+      '<button type="button" class="dy-sg" data-near="no">Nie, inna osoba</button>';
+    return;
+  }
+  var q = pnorm($('dy-comp-in').value);
   var date = $('dy-date').value;
-  var score = {};
+  var score = {}, names = {};
   Object.keys(visits).forEach(function(id){
     if(id===cur.visitId) return;
     var v = visits[id];
-    v.companions.forEach(function(c){
-      score[c] = (score[c]||0) + 1 + (date && v.date===date ? 1000 : 0);
+    shownList(v.companions).forEach(function(c){
+      var k = personKey(c);
+      names[k] = c;
+      score[k] = (score[k]||0) + 1 + (date && v.date===date ? 1000 : 0);
     });
   });
-  var have = cur.companions.map(function(c){ return c.toLowerCase(); });
-  var names = Object.keys(score).filter(function(c){ return have.indexOf(c.toLowerCase())===-1; })
-    .sort(function(a,b){ return score[b]-score[a] || a.localeCompare(b,'pl'); }).slice(0,6);
-  $('dy-suggest').innerHTML = names.length
-    ? names.map(function(c){
-        return '<button type="button" class="dy-sg" data-add="'+esc(c)+'">＋ '+esc(c)+'</button>';
-      }).join('')
-    : '';
+  Object.keys(people.byUid).forEach(function(u){ if(!names['u:'+u]){ names['u:'+u] = people.byUid[u]; score['u:'+u] = 0; } });
+  var have = {};
+  cur.companions.forEach(function(c){ have[personKey(c)] = 1; });
+  var keys = Object.keys(names).filter(function(k){
+    if(have[k]) return false;
+    return q ? (' '+pnorm(names[k])).indexOf(' '+q)!==-1 : score[k] > 0;
+  }).sort(function(a,b){ return score[b]-score[a] || names[a].localeCompare(names[b],'pl'); }).slice(0,6);
+  box.innerHTML = keys.map(function(k){
+    return '<button type="button" class="dy-sg" data-add="'+esc(names[k])+'">＋ '+esc(names[k])+'</button>';
+  }).join('');
 }
 
 function updateCount(){
@@ -650,7 +799,8 @@ function save(){
   if(!loadOk){ err.textContent = 'Wejścia nie zostały wczytane — odśwież stronę.'; return; }
 
   var ci = $('dy-comp-in');
-  if(ci.value.trim()){ addCompanion(ci.value); ci.value=''; }
+  if(pending){ addCompanion(pending.name, true); }
+  if(ci.value.trim()){ addCompanion(ci.value, true); ci.value=''; }
 
   var date = $('dy-date').value || null;
   if(date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > todayIso())){
@@ -728,6 +878,7 @@ function save(){
   }).then(function(){
     deleteFiles(user.uid, ref.id, state.removedPhotos);
     visits[ref.id] = normalize(ref.id, data);
+    indexSpellings();
     state.busy = false;
     $('dy-save').textContent = 'Zapisz';
     refreshPopup(type, idx);
@@ -838,13 +989,15 @@ function renderList(){
       if(r.v.companions.some(function(c){ return c.trim(); })) team++;
       if(!perPeak[r.p.id]) perPeak[r.p.id] = {name:r.p.name, c:0};
       perPeak[r.p.id].c++;
-      // towarzysz liczony raz na wejście; „Ania” i „ania ” to ta sama osoba (pokazujemy pierwszą pisownię)
+      // towarzysz liczony raz na wejście; „Ania” i „ania ” to ta sama osoba, a połączona z kontem —
+      // każda jej pisownia (książka osób; pokazujemy nazwę z książki, inaczej pierwszą pisownię)
       var seen = {};
       r.v.companions.forEach(function(c){
-        var key = c.trim().toLowerCase();
-        if(!key || seen[key]) return;
+        if(!pnorm(c)) return;
+        var key = personKey(c);
+        if(seen[key]) return;
         seen[key] = 1;
-        if(!perComp[key]) perComp[key] = {name:c.trim(), c:0};
+        if(!perComp[key]) perComp[key] = {name:shownName(c), c:0};
         perComp[key].c++;
       });
     }
@@ -870,7 +1023,9 @@ function renderList(){
   });
   $('dl-comps').hidden = !comps.length;
   $('dl-comps').innerHTML = comps.length ? '<span class="dl-comps-lbl">Towarzysze ('+comps.length+'):</span> '+
-    comps.map(function(x){ return '<span class="dl-comp">'+esc(x.name)+(x.c>1 ? ' <i>×'+x.c+'</i>' : '')+'</span>'; }).join('') : '';
+    comps.map(function(x){ return '<span class="dl-comp">'+esc(x.name)+(x.c>1 ? ' <i>×'+x.c+'</i>' : '')+'</span>'; }).join('')+
+    ' <button type="button" class="dy-sg" data-people="1">'+(peopleOpen ? 'Zamknij osoby' : 'Osoby: nazwy i łączenie…')+'</button>' : '';
+  renderPeople();
 
   $('dl-tabs').innerHTML = [['all','Wszystkie'],['ks',tierShort('ks')],['wks',tierShort('wks')],['dks',tierShort('dks')]].map(function(t){
     return '<button type="button" class="dl-tab'+(listTab===t[0]?' on':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>';
@@ -905,7 +1060,7 @@ function renderList(){
     }
     var note = v && v.note ? (v.note.length>120 ? v.note.slice(0,120)+'…' : v.note) : '';
     var meta = [];
-    if(v && v.companions.length) meta.push('👥 '+esc(v.companions.join(', ')));
+    if(v && v.companions.length) meta.push('👥 '+esc(shownList(v.companions).join(', ')));
     if(v && v.photos.length) meta.push('📷 '+v.photos.length);
     if(v && v.link) meta.push('🔗');
     return '<div class="dl-row" data-type="'+r.type+'" data-idx="'+r.idx+'" data-vid="'+(v?esc(v.id):'')+'" tabindex="0">'+
@@ -919,6 +1074,94 @@ function renderList(){
       '<div class="dl-date'+(v && v.date ? '' : ' none')+'">'+(v && v.date ? fmtVisitDate(v) : (v ? 'brak daty' : ''))+'</div>'+
     '</div>';
   }).join('');
+}
+
+/* ── „Osoby” w „Moje wejścia”: nazwy, łączenie pisowni, rozłączanie kont (P37) ── */
+function renderPeople(){
+  var box = $('dl-people'); if(!box) return;
+  box.hidden = !peopleOpen;
+  if(!peopleOpen){ box.innerHTML = ''; return; }
+  var all = peopleEntries().sort(function(a, b){
+    return (b.uid?1:0) - (a.uid?1:0) || b.c - a.c || a.name.localeCompare(b.name, 'pl');
+  });
+  var opts = function(e){
+    return '<option value="">Połącz z…</option>'+all.filter(function(x){ return x.key!==e.key && !(x.uid && e.uid); })
+      .map(function(x){ return '<option value="'+esc(x.key)+'">'+esc(x.name)+(x.uid ? ' (konto)' : '')+'</option>'; }).join('');
+  };
+  box.innerHTML = '<div class="dp-hint">Osoby z kontem łączą się same, gdy przyjmiecie zaproszenie do wspólnego wejścia — '+
+      'wtedy w kopiach wejść widzisz je zawsze pod Twoją nazwą. Tu zmienisz nazwę, połączysz dwie pisownie tej samej osoby albo rozłączysz konto.</div>'+
+    (all.length ? all.map(function(e){
+      var sp = Object.keys(e.spell).filter(function(x){ return x!==e.name; });
+      return '<div class="dp-row" data-key="'+esc(e.key)+'">'+
+        '<div class="dp-main"><b>'+esc(e.name)+'</b>'+(e.uid ? ' <span class="dp-acc" title="Połączone z kontem tej osoby">konto</span>' : '')+
+          (e.c ? ' <i>×'+e.c+'</i>' : '')+(sp.length ? '<div class="dp-sp">też jako: '+sp.map(esc).join(', ')+'</div>' : '')+'</div>'+
+        '<div class="dp-act"><select data-merge="1" title="Ta sama osoba co…">'+opts(e)+'</select>'+
+          '<button type="button" class="dy-inv-x dy-inv-re" data-pact="rename">Zmień nazwę</button>'+
+          (e.uid ? '<button type="button" class="dy-inv-x" data-pact="unlink" title="Odłącz od konta (wejścia zostają bez zmian)">Rozłącz</button>' : '')+'</div>'+
+      '</div>';
+    }).join('') : '<div class="dl-empty">Nie masz jeszcze wpisanych towarzyszy.</div>');
+}
+function peopleBusy(on){
+  Array.prototype.forEach.call($('dl-people').querySelectorAll('button,select'), function(b){ b.disabled = on; });
+}
+function entryByKey(key){ return peopleEntries().filter(function(e){ return e.key===key; })[0] || null; }
+/* imię w wejściach: każda pisownia osoby fromKey → toName (bez duplikatów w wejściu) */
+function rewriteVisits(fromKey, toName){
+  var f = fb(), user = curUser();
+  var ids = Object.keys(visits).filter(function(id){ return visits[id].companions.some(function(c){ return personKey(c)===fromKey; }); });
+  return ids.reduce(function(chain, id){
+    return chain.then(function(){
+      var out = [], seen = {};
+      visits[id].companions.forEach(function(c){
+        var n = personKey(c)===fromKey ? toName : c, k = personKey(n);
+        if(seen[k]) return;
+        seen[k] = 1; out.push(n);
+      });
+      return f.updateDoc(f.doc(f.db,'users',user.uid,'visits',id), {companions:out.slice(0, MAX_COMP), updatedAt:f.serverTimestamp()});
+    });
+  }, Promise.resolve()).then(function(){ return load(user); });
+}
+function peopleDone(p, msg){
+  peopleBusy(true);
+  return p.then(function(){ renderList(); refreshAll(); toast(msg); }).catch(function(e){
+    console.warn('Osoby: zmiana nieudana', e);
+    alert('Nie udało się zapisać zmiany. Odśwież stronę i spróbuj ponownie.');
+    load(curUser());
+  });
+}
+function peopleAction(act, key){
+  var e = entryByKey(key); if(!e) return;
+  if(act==='rename'){
+    var n = prompt('Nowa nazwa dla „'+e.name+'”:', e.name);
+    n = cleanLabel(n);
+    if(!n || n===e.name) return;
+    if(e.uid){
+      people.byUid[e.uid] = n;
+      if(!people.alias[pnorm(n)]) people.alias[pnorm(n)] = e.uid;
+      return peopleDone(savePeople(), 'Zmieniono nazwę ✓');
+    }
+    return peopleDone(rewriteVisits(key, n), 'Zmieniono nazwę w wejściach ✓');
+  }
+  if(act==='unlink' && e.uid){
+    if(!confirm('Odłączyć „'+e.name+'” od konta? Wejścia zostają bez zmian, ale kolejne kopie z zaproszeń mogą przynieść inną pisownię.')) return;
+    delete people.byUid[e.uid];
+    Object.keys(people.alias).forEach(function(k){ if(people.alias[k]===e.uid) delete people.alias[k]; });
+    return peopleDone(savePeople(), 'Rozłączono');
+  }
+}
+function mergePeople(key, targetKey){
+  var e = entryByKey(key), t = entryByKey(targetKey);
+  if(!e || !t) return;
+  if(e.uid && t.uid){ alert('To dwa różne konta — nie da się ich połączyć.'); renderPeople(); return; }
+  if(!confirm('Połączyć „'+e.name+'” z „'+t.name+'”? We wszystkich wejściach będzie widoczna jedna osoba.')){ renderPeople(); return; }
+  var acc = e.uid || t.uid;
+  if(acc){
+    // osoba z kontem: druga pisownia dopięta jako alias (wejścia bez zmian, pokazujemy nazwę z książki)
+    var other = e.uid ? t : e;
+    Object.keys(other.spell).concat([other.name]).forEach(function(sp){ if(pnorm(sp)) people.alias[pnorm(sp)] = acc; });
+    return peopleDone(savePeople(), 'Połączono ✓');
+  }
+  return peopleDone(rewriteVisits(key, t.name), 'Połączono ✓');
 }
 
 /* ── zaproszenia: udostępnianie wejścia uczestnikom ── */
@@ -1155,6 +1398,7 @@ function renderShare(){
   if(shared) hint += (hint ? ' ' : '') + '„Wyślij zmiany” proponuje drugiej osobie Twoje nowe zdjęcia i dane, których ona nie ma — '+
     'nic jej nie nadpisuje, a ona sama decyduje, czy je przyjąć. Najpierw zapisz wejście.';
   $('dy-share-in').disabled = $('dy-share-go').disabled = !can;
+  renderWho(can);
   $('dy-share-hint').textContent = hint;
   $('dy-share-list').innerHTML = sent.map(function(inv){
     var st = statusOf(inv);
@@ -1170,6 +1414,22 @@ function renderShare(){
       '<span class="dy-inv-st accepted">przyjęte</span>'+
       '<button type="button" class="dy-inv-x dy-inv-re" data-offer="'+esc(inv.id)+'" title="'+OFFER_TIP+'">Wyślij zmiany</button></div>';
   }).join('');
+}
+/* „Kto to?” przy zaproszeniu: towarzysz tego wejścia, którego zapraszam (toName → książka osób po przyjęciu).
+   Gdy tylko jeden towarzysz nie jest jeszcze połączony z kontem ani zaproszony, wybrany od razu. */
+function renderWho(can){
+  var sel = $('dy-share-who'); if(!sel || !cur) return;
+  var comps = cur.companions.slice();
+  var invited = {};
+  sent.forEach(function(x){ var st = statusOf(x); if(x.toName && st!=='cancelled' && st!=='expired') invited[pnorm(x.toName)] = 1; });
+  var free = comps.filter(function(c){ return !personOf(c) && !invited[pnorm(c)]; });
+  var keep = sel.value && comps.indexOf(sel.value)!==-1 ? sel.value : (free.length===1 ? free[0] : '');
+  sel.innerHTML = '<option value="">Kto to? (z towarzyszy)</option>'+comps.map(function(c){
+    return '<option value="'+esc(c)+'">'+esc(c)+'</option>';
+  }).join('');
+  sel.value = keep;
+  sel.hidden = !comps.length;
+  sel.disabled = !can;
 }
 var OFFER_TIP = 'Zaproponuj drugiej osobie swoje nowe zdjęcia i dane, których nie ma (nic nie nadpisuje; ona decyduje, czy przyjąć)';
 
@@ -1343,6 +1603,8 @@ function sendInvite(){
     status: 'pending',
     createdAt: f.serverTimestamp()
   };
+  var who = cleanLabel($('dy-share-who').value);
+  if(who) data.toName = who;
   var ref = f.doc(invitesCol(f)), tok = cur;
   $('dy-share-go').disabled = true; err.textContent = '';
   f.setDoc(ref, data).then(function(){

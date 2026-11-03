@@ -175,3 +175,21 @@
 .iv-tier{margin:2px 0 4px}
 .iv-tier .dl-badge{display:inline-block;padding:2px 8px;white-space:nowrap}
 .dl-tabs{flex-wrap:wrap}
+/* P37: książka osób — „Kto to?” przy zaproszeniu, pytanie o podobne imię, okno „Osoby” */
+.dy-share-row:has(#dy-share-who:not([hidden])){flex-wrap:wrap}
+.dy-share-row:has(#dy-share-who:not([hidden])) #dy-share-in{flex:1 1 220px}
+#dy-share-who{flex:1 1 150px;min-width:0;padding:6px 6px;background:#0D1117;border:1px solid var(--border,#30363D);border-radius:4px;color:#F5F0E8;font-size:12px;font-family:'Georgia',serif;color-scheme:dark}
+#dy-share-who[hidden]{display:none}
+#dy-share-who:disabled{opacity:.45;cursor:not-allowed}
+.dy-near{font-size:12px;color:#C9D1D9;margin-right:2px;align-self:center}
+.dy-near b{color:#F0C040;font-weight:700}
+.dy-sg.yes{border-style:solid;border-color:var(--gold,#D4A017);color:#F0C040}
+.dp-box{border:1px solid var(--border,#30363D);border-radius:6px;padding:.6rem .8rem;margin:-.3rem 0 .9rem;background:rgba(255,255,255,.03)}
+.dp-box[hidden]{display:none}
+.dp-hint{font-size:12px;color:#9AA4B2;line-height:1.45;margin-bottom:.5rem}
+.dp-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px;padding:5px 0;border-top:1px solid rgba(255,255,255,.07);font-size:13px;color:#F5F0E8}
+.dp-main i{font-style:normal;color:#F0C040;font-size:12px}
+.dp-acc{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#0D1117;background:#8BC48A;border-radius:8px;padding:1px 6px;vertical-align:middle}
+.dp-sp{font-size:11px;color:#9AA4B2}
+.dp-act{display:flex;align-items:center;gap:10px}
+.dp-act select{max-width:150px;padding:3px 4px;background:#0D1117;border:1px solid var(--border,#30363D);border-radius:4px;color:#C9D1D9;font-size:11px;font-family:inherit;color-scheme:dark}
