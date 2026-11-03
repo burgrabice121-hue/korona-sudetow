@@ -75,6 +75,10 @@ h3 { font-size:1.15rem; margin:2rem 0 0.5rem; color:var(--bark); }
 .edu { background:var(--parchment); border-radius:8px; padding:0.2rem 1.4rem 1.2rem; margin:2rem 0; }
 .edu figure { background:var(--snow); }
 .tablewrap { overflow-x:auto; }
+.legend { list-style:none; padding:0; margin:0.7rem 0 0; display:flex; flex-wrap:wrap; gap:0.25rem 1.1rem; }
+.legend li { font-size:13px; line-height:1.5; color:var(--bark); }
+.legend i { display:inline-block; width:20px; height:3px; vertical-align:middle; margin-right:6px; }
+.legend i.bracket { width:3px; height:12px; background:#A0522D; margin:0 14px 0 9px; }
 .qa { border-left:3px solid var(--lichen); padding:0.2rem 0 0.2rem 1rem; margin:1.2rem 0; }
 .qa .q { font-style:italic; color:var(--moss); }
 .cta { display:inline-block; background:var(--bark); color:var(--snow); text-decoration:none; padding:0.8rem 1.4rem; border-radius:5px; margin-top:1rem; }
@@ -84,6 +88,7 @@ h3 { font-size:1.15rem; margin:2rem 0 0.5rem; color:var(--bark); }
   h1 { font-size:1.7rem; }
   .swap { grid-template-columns:1fr; }
   .edu { padding:0.2rem 1rem 1rem; }
+  .edu figure { padding:0.7rem; margin:1.4rem -0.4rem; }
   table { font-size:13px; }
   th, td { padding:0.4rem 0.35rem; }
   .swap .arrow { transform:rotate(90deg); justify-self:center; }
@@ -196,26 +201,23 @@ h3 { font-size:1.15rem; margin:2rem 0 0.5rem; color:var(--bark); }
   </table></div>
   <p>Im gęstsza siatka, tym wyższe szczyty. Dlaczego? Wierzchołek to punkt, a kwadrat siatki to powierzchnia. W siatce ok. 20 m jeden kwadrat ma ok. 300 m², tyle co cały płaski czubek tych wzgórz (w pasie pół metra pod wierzchołkiem ok. 300 m² na Górze Świętej Anny i 140 m² na Górze Wszystkich Świętych). Do kwadratu wpada więc także kawałek zbocza, a jego wysokość to coś w rodzaju średniej. Do tego siatka prawie nigdy nie jest ułożona tak, żeby środek kwadratu trafił dokładnie w wierzchołek. Gruba siatka „ścina” szczyty, tak jak zdjęcie w niskiej rozdzielczości rozmywa drobne szczegóły.</p>
   <figure>
-    <svg viewBox="0 0 640 240" role="img" aria-label="Schemat: przekrój wierzchołka i jego zapis w siatce grubej i drobnej. Gruba siatka obniża szczyt, drobna prawie nie.">
+    <svg viewBox="20 30 600 170" role="img" aria-label="Schemat: przekrój wierzchołka i jego zapis w siatce grubej i drobnej. Gruba siatka obniża szczyt, drobna prawie nie.">
       <g font-family="Georgia, serif" font-size="16" fill="#2C2A25">
         <path d="M40 137.6 L180 137.6 L180 53.8 L320 53.8 L320 55.0 L460 55.0 L460 140.6 L600 140.6" fill="none" stroke="#C47A45" stroke-width="2.5"/>
         <path d="M40 187.5 L68 187.5 L68 162.7 L96 162.7 L96 135.3 L124 135.3 L124 111.4 L152 111.4 L152 91.0 L180 91.0 L180 74.0 L208 74.0 L208 60.4 L236 60.4 L236 50.3 L264 50.3 L264 43.7 L292 43.7 L292 40.5 L320 40.5 L320 40.7 L348 40.7 L348 44.4 L376 44.4 L376 51.5 L404 51.5 L404 62.1 L432 62.1 L432 76.2 L460 76.2 L460 93.7 L488 93.7 L488 114.6 L516 114.6 L516 139.0 L544 139.0 L544 166.9 L572 166.9 L572 189.0 L600 189.0" fill="none" stroke="#5C6B3A" stroke-width="1.8"/>
         <path d="M40 190.0 L48 190.0 L56 190.0 L64 181.9 L72 173.1 L80 164.6 L88 156.4 L96 148.4 L104 140.8 L112 133.4 L120 126.2 L128 119.4 L136 112.9 L144 106.6 L152 100.6 L160 94.9 L168 89.5 L176 84.4 L184 79.5 L192 74.9 L200 70.6 L208 66.6 L216 62.9 L224 59.4 L232 56.3 L240 53.4 L248 50.8 L256 48.5 L264 46.4 L272 44.7 L280 43.2 L288 42.0 L296 41.1 L304 40.4 L312 40.1 L320 40.0 L328 40.2 L336 40.7 L344 41.5 L352 42.5 L360 43.9 L368 45.5 L376 47.4 L384 49.6 L392 52.0 L400 54.8 L408 57.8 L416 61.1 L424 64.7 L432 68.6 L440 72.7 L448 77.2 L456 81.9 L464 86.9 L472 92.2 L480 97.7 L488 103.6 L496 109.7 L504 116.1 L512 122.8 L520 129.8 L528 137.0 L536 144.6 L544 152.4 L552 160.5 L560 168.8 L568 177.5 L576 186.4 L584 190.0 L592 190.0 L600 190.0" fill="none" stroke="#4A4035" stroke-width="2.5"/>
-        <circle cx="318" cy="40" r="4" fill="#4A4035"/><text x="318" y="24" text-anchor="middle">prawdziwy wierzchołek</text>
-        <line x1="470" y1="40" x2="470" y2="55" stroke="#A0522D"/><line x1="464" y1="40" x2="476" y2="40" stroke="#A0522D"/><line x1="464" y1="55" x2="476" y2="55" stroke="#A0522D"/>
-        <text x="490" y="62" fill="#A0522D">tyle „ścina”</text><text x="490" y="80" fill="#A0522D">gruba siatka</text>
-        <line x1="40" y1="214" x2="64" y2="214" stroke="#4A4035" stroke-width="2.5"/><text x="70" y="219">teren</text>
-        <line x1="140" y1="214" x2="164" y2="214" stroke="#C47A45" stroke-width="2.5"/><text x="170" y="219">siatka gruba (ok. 20 m)</text>
-        <line x1="370" y1="214" x2="394" y2="214" stroke="#5C6B3A" stroke-width="1.8"/><text x="400" y="219">siatka drobna (1 m)</text>
+        <circle cx="318" cy="40" r="5" fill="#4A4035"/>
+        <line x1="470" y1="40" x2="470" y2="55" stroke="#A0522D" stroke-width="2"/><line x1="464" y1="40" x2="476" y2="40" stroke="#A0522D" stroke-width="2"/><line x1="464" y1="55" x2="476" y2="55" stroke="#A0522D" stroke-width="2"/>
       </g>
     </svg>
+    <ul class="legend"><li><i style="background:#4A4035"></i>teren, kropka: prawdziwy wierzchołek</li><li><i style="background:#C47A45"></i>siatka gruba (ok. 20 m)</li><li><i style="background:#5C6B3A"></i>siatka drobna (1 m)</li><li><i class="bracket"></i>tyle „ścina” szczyt gruba siatka</li></ul>
     <figcaption>Schemat (bez skali): każdy „schodek” to jeden kwadrat siatki z jedną wysokością. Gruba siatka zaniża szczyt, drobna prawie dokładnie go odtwarza.</figcaption>
   </figure>
   <p>Różnica między szczytami (ok. 2 m) i wybitność zmieniają się znacznie mniej niż same wysokości, bo wygładzenie działa podobnie na oba wierzchołki i na przełęcz. Wybitność Góry Świętej Anny wyszła 137,7 m w siatce ok. 20 m i 138,2 m w siatce ok. 4 m. Wniosek: żeby porównać, który szczyt jest wyższy, wystarczy wziąć oba z <em>tego samego</em> źródła. Żeby podać wysokość bezwzględną, trzeba sięgnąć po najgęstszą siatkę.</p>
 
   <h3>Model terenu, OpenStreetMap i mapa turystyczna</h3>
   <div class="tablewrap"><table>
-    <tr><th>Źródło</th><th class="num">Wszystkich Świętych</th><th class="num">Świętej Anny</th><th class="num">różnica</th></tr>
+    <tr><th>Źródło</th><th class="num">Wsz. Świętych</th><th class="num">Św. Anny</th><th class="num">różnica</th></tr>
     <tr><td>NMT GUGiK, siatka 1 m</td><td class="num">649,11 m</td><td class="num">647,07 m</td><td class="num">2,04 m</td></tr>
     <tr><td>OpenStreetMap (<code>ele</code>)</td><td class="num">647,8 m</td><td class="num">647,2 m</td><td class="num">0,6 m</td></tr>
     <tr><td>mapy.com</td><td class="num">647 m</td><td class="num">647 m</td><td class="num">0 m</td></tr>
