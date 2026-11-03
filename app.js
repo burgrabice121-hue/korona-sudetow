@@ -917,6 +917,24 @@ function addRankingChoice(){
 }
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addRankingChoice); else addRankingChoice();
 
+/* Menu ☰ na wąskich ekranach (prośba autora 2026-11-03): poniżej 961 px .nav-links jest ukryte (nie mieści się
+   w pasku), więc przycisk przed logo rozwija te same linki pod paskiem. Wstawiany tu — oba index.html bez zmian. */
+function addNavBurger(){
+  const nav = document.querySelector('nav'), links = nav && nav.querySelector('.nav-links');
+  if(!links || document.getElementById('nav-burger')) return;
+  const b = document.createElement('button');
+  b.id = 'nav-burger'; b.type = 'button';
+  b.setAttribute('aria-label', 'Menu'); b.setAttribute('aria-expanded', 'false');
+  b.textContent = '☰';
+  nav.insertBefore(b, nav.firstChild);
+  const set = open => { nav.classList.toggle('menu-open', open); b.setAttribute('aria-expanded', String(open)); b.textContent = open ? '✕' : '☰'; };
+  b.addEventListener('click', e => { e.stopPropagation(); set(!nav.classList.contains('menu-open')); });
+  links.addEventListener('click', e => { if(e.target.closest('a')) set(false); });
+  document.addEventListener('click', e => { if(nav.classList.contains('menu-open') && !nav.contains(e.target)) set(false); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape') set(false); });
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addNavBurger); else addNavBurger();
+
 window.toggleRanking = async function(){
   const fb = window._fb, user = fb && fb.auth.currentUser;
   if(!user) return;
