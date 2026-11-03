@@ -87,6 +87,13 @@
 .dl-comps-lbl{color:#9AA4B2;margin-right:2px}
 .dl-comp{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:1px 8px}
 .dl-comp i{font-style:normal;color:#F0C040}
+button.dl-comp{font:inherit;color:inherit;cursor:pointer}
+button.dl-comp:hover{border-color:rgba(240,192,64,.5)}
+.dl-comp.on{background:var(--gold,#D4A017);border-color:var(--gold,#D4A017);color:#0D1117}
+.dl-comp.on i{color:#0D1117}
+.dl-with{flex-basis:100%;margin-top:.4rem;padding:6px 10px;border-left:3px solid var(--gold,#D4A017);background:rgba(240,192,64,.07);border-radius:4px;line-height:1.5}
+.dl-with b{color:#F0C040}
+.dl-with .dy-sg{margin-left:4px}
 .dl-tabs{display:flex;gap:8px;margin-bottom:.6rem}
 .dl-tab{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:4px 12px;border-radius:20px;border:1px solid var(--border,#30363D);background:transparent;color:#C9D1D9;cursor:pointer}
 .dl-tab.on{background:var(--gold,#D4A017);border-color:var(--gold,#D4A017);color:#0D1117}

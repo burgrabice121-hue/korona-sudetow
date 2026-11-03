@@ -40,6 +40,7 @@ var listTab = 'all';
 var people = {byUid:{}, alias:{}};
 var pending = null;    // imię prawie takie jak istniejące: {name, near} — czeka na „Tak / Nie, inna osoba”
 var peopleOpen = false;
+var compFilter = null;   // personKey towarzysza wybranego w „Moje wejścia”: lista pokazuje tylko wspólne wejścia
 
 /* ── CSS (ładowany obok diary.js, także na drugiej domenie) ── */
 (function injectCss(){
@@ -58,6 +59,11 @@ function esc(s){
   return String(s==null?'':s).replace(/[&<>"']/g, function(c){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
   });
+}
+/* polska liczba mnoga: 1 szczyt, 2–4 szczyty, 5 szczytów (12–14 też „szczytów”) */
+function plural(n, one, few, many){
+  var d = n % 10, t = n % 100;
+  return n===1 ? one : (d>=2 && d<=4 && (t<12 || t>14)) ? few : many;
 }
 function fmtDate(iso){
   var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');
@@ -349,7 +355,7 @@ function load(user){
 
 function clear(){
   visits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = []; linked = []; offersIn = [];
-  people = {byUid:{}, alias:{}}; spelled = {}; pending = null; peopleOpen = false;
+  people = {byUid:{}, alias:{}}; spelled = {}; pending = null; peopleOpen = false; compFilter = null;
   // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> handleLinkInvite() otworzy zaproszenie
   if(INVITES_ON && pendingLink()) askLogin();
   closeForm(); closeList();
@@ -513,6 +519,13 @@ function ensureDom(){
     var od = ev.target.closest('[data-odecline]'); if(od) return answerOffer(od.getAttribute('data-odecline'), 'decline', od);
   });
   $('dl-comps').addEventListener('click', function(ev){
+    var c = ev.target.closest('[data-ck]');
+    if(c){
+      var k = c.getAttribute('data-ck');
+      compFilter = compFilter===k ? null : k; renderList();
+      if(compFilter){ var w = $('dl-with'); if(w) w.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+      return;
+    }
     if(!ev.target.closest('[data-people]')) return;
     peopleOpen = !peopleOpen; renderList();
   });
@@ -997,8 +1010,9 @@ function renderList(){
         var key = personKey(c);
         if(seen[key]) return;
         seen[key] = 1;
-        if(!perComp[key]) perComp[key] = {name:shownName(c), c:0};
+        if(!perComp[key]) perComp[key] = {key:key, name:shownName(c), c:0, peaks:{}};
         perComp[key].c++;
+        perComp[key].peaks[r.p.id] = r.p.name;
       });
     }
   });
@@ -1021,17 +1035,34 @@ function renderList(){
   var comps = Object.keys(perComp).map(function(k){ return perComp[k]; }).sort(function(a, b){
     return b.c - a.c || a.name.localeCompare(b.name, 'pl');
   });
+  // kliknięty towarzysz: wspólnie zdobyte szczyty i lista zawężona do wspólnych wejść
+  var sel = compFilter && perComp[compFilter];
+  if(!sel) compFilter = null;
+  var withLine = '';
+  if(sel){
+    var pk = Object.keys(sel.peaks).map(function(id){ return sel.peaks[id]; }).sort(function(a, b){ return a.localeCompare(b, 'pl'); });
+    // imienia nie odmieniamy („z Wojtek”), więc imię na początku, bez przyimka
+    withLine = '<div class="dl-with" id="dl-with"><b>'+esc(sel.name)+'</b> — wspólnie '+sel.c+' '+plural(sel.c, 'wejście', 'wejścia', 'wejść')+
+      ', '+pk.length+' '+plural(pk.length, 'szczyt', 'szczyty', 'szczytów')+': '+pk.map(esc).join(', ')+
+      ' <button type="button" class="dy-sg" data-ck="'+esc(sel.key)+'">✕ pokaż wszystkie wejścia</button></div>';
+  }
   $('dl-comps').hidden = !comps.length;
   $('dl-comps').innerHTML = comps.length ? '<span class="dl-comps-lbl">Towarzysze ('+comps.length+'):</span> '+
-    comps.map(function(x){ return '<span class="dl-comp">'+esc(x.name)+(x.c>1 ? ' <i>×'+x.c+'</i>' : '')+'</span>'; }).join('')+
-    ' <button type="button" class="dy-sg" data-people="1">'+(peopleOpen ? 'Zamknij osoby' : 'Osoby: nazwy i łączenie…')+'</button>' : '';
+    comps.map(function(x){
+      return '<button type="button" class="dl-comp'+(x.key===compFilter ? ' on' : '')+'" data-ck="'+esc(x.key)+'"'+
+        ' title="Pokaż wspólne wejścia" aria-pressed="'+(x.key===compFilter)+'">'+esc(x.name)+(x.c>1 ? ' <i>×'+x.c+'</i>' : '')+'</button>';
+    }).join('')+
+    ' <button type="button" class="dy-sg" data-people="1">'+(peopleOpen ? 'Zamknij osoby' : 'Osoby: nazwy i łączenie…')+'</button>'+withLine : '';
   renderPeople();
 
   $('dl-tabs').innerHTML = [['all','Wszystkie'],['ks',tierShort('ks')],['wks',tierShort('wks')],['dks',tierShort('dks')]].map(function(t){
     return '<button type="button" class="dl-tab'+(listTab===t[0]?' on':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>';
   }).join('');
 
-  var rows = all.filter(function(r){ return listTab==='all' || r.type===listTab; });
+  var rows = all.filter(function(r){
+    if(compFilter && !(r.v && r.v.companions.some(function(c){ return personKey(c)===compFilter; }))) return false;
+    return listTab==='all' || r.type===listTab;
+  });
   rows.sort(function(a,b){
     var da = a.v && a.v.date, db = b.v && b.v.date;
     if(da && db) return da<db ? 1 : da>db ? -1 : 0;   // najnowsze na górze
@@ -1042,7 +1073,7 @@ function renderList(){
   });
 
   if(!rows.length){
-    $('dl-rows').innerHTML = '<div class="dl-empty">'+(all.length
+    $('dl-rows').innerHTML = '<div class="dl-empty">'+(compFilter ? 'Brak wspólnych wejść w tej koronie.' : all.length
       ? 'Brak zdobytych szczytów w tej koronie.'
       : 'Nie zdobyłeś jeszcze żadnego szczytu. Oznacz szczyt jako zdobyty na mapie — wtedy możesz dodać do niego wejście.')+'</div>';
     return;
