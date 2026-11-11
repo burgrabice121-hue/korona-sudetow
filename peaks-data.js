@@ -24,14 +24,14 @@ const WKS = [
   { id:"kottmar", name:"Kottmar",            cz:"Kottmar",          alt:582,  prom:187,  izol:16.4, pasmo:"Pogórze Łużyckie",            strefa:"Zachodnie", kraj:"DE",    lat:51.01011, lng:14.65642,  note:"Bazaltowy stożek, wybitna dominanta okolic Zittau" },
   { id:"okole", name:"Okole",              cz:"—",                alt:725,  prom:255,  izol:16,   pasmo:"Góry Kaczawskie",             strefa:"Zachodnie", kraj:"PL",    lat:50.9807356,  lng:15.8179414,  note:"Najwybitniejszy szczyt Gór Kaczawskich" },
   { id:"gromnik", name:"Gromnik",            cz:"—",                alt:393,  prom:135,  izol:19.9, pasmo:"Wzgórza Niemczańsko-Strzelińskie", strefa:"Środkowe", kraj:"PL",    lat:50.7023425, lng:17.1101153, note:"Szczyt Wzgórz Niemczańsko-Strzelińskich" },
-  { id:"fidluv-kopec", name:"Fidlův kopec",       cz:"Fidlův kopec",     alt:680,  prom:117,  izol:15,   pasmo:"Niski Jesionik",              strefa:"Wschodnie", kraj:"CZ",    lat:49.6204417, lng:17.5054925, note:"Szczyt Niskiego Jesionika" },
+  { id:"fidluv-kopec", name:"Fidlův kopec",       cz:"Fidlův kopec",     alt:680,  prom:117,  izol:14.7, pasmo:"Niski Jesionik",              strefa:"Wschodnie", kraj:"CZ",    lat:49.6204417, lng:17.5054925, note:"Szczyt Niskiego Jesionika" },
   { id:"zvicina", name:"Zvičina",            cz:"Zvičina",          alt:672,  prom:187,  izol:19.3, pasmo:"Podgórze Karkonoskie",        strefa:"Zachodnie", kraj:"CZ",    lat:50.4548267, lng:15.6954847, note:"Szczyt Podgórza Karkonoskiego" },
   { id:"sloneczna", name:"Słoneczna",       cz:"Slunečná",         alt:802,  prom:168,  izol:19.3, pasmo:"Niski Jesionik",    strefa:"Wschodnie", kraj:"CZ",    lat:49.8394,  lng:17.4293,  note:"Najwyższy szczyt Nízkého Jeseníku" },
 ];
 
 const DKS = [
   { id:"szeroka-gora", name:"Szeroka Góra",      cz:"—",              alt:766, prom:283, izol:8.4,  pasmo:"Góry Bardzkie",                    kraj:"PL",    lat:50.4537, lng:16.7585, note:"Najwyższy i najwybitniejszy szczyt Gór Bardzkich" },
-  { id:"gora-poprzeczna", name:"Góra Poprzeczna",   cz:"Příčný vrch",    alt:975, prom:258, izol:8.2,  pasmo:"Góry Złotogórskie",                kraj:"CZ",    lat:50.2200, lng:17.3839, note:"Najwyższy szczyt Gór Złotogórskich" },
+  { id:"gora-poprzeczna", name:"Góra Poprzeczna",   cz:"Příčný vrch",    alt:975, prom:258, izol:6.2,  pasmo:"Góry Złotogórskie",                kraj:"CZ",    lat:50.2200, lng:17.3839, note:"Najwyższy szczyt Gór Złotogórskich" },
   { id:"jagodna-polnocna", name:"Jagodna Północna",  cz:"—",              alt:985, prom:247, izol:6,    pasmo:"Góry Bystrzyckie",                 kraj:"PL",    lat:50.2609, lng:16.5608, note:"Kulminacja Gór Bystrzyckich" },
   { id:"wysoka-kopa", name:"Wysoka Kopa",       cz:"—",              alt:1126,prom:240, izol:6.7,  pasmo:"Góry Izerskie",                    kraj:"PL",    lat:50.8500, lng:15.4194, note:"Najwyższy szczyt Gór Izerskich" },
   { id:"skalnik", name:"Skalnik",           cz:"Skalnik",        alt:945, prom:220, izol:7,    pasmo:"Rudawy Janowickie",                kraj:"PL",    lat:50.80736,lng:15.89408,note:"Najwyższy szczyt Rudaw Janowickich" },

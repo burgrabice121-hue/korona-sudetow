@@ -70,14 +70,14 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Kottmar: 582 m n.p.m., wybitność 187 m, izolacja 16.4 km; Sudety Łużyckie, Pogórze Łużyckie; DE
 - Okole: 725 m n.p.m., wybitność 255 m, izolacja 16 km; Sudety Zachodnie, Góry Kaczawskie; PL
 - Gromnik: 393 m n.p.m., wybitność 135 m, izolacja 19.9 km; Przedgórze Sudeckie, Wzgórza Niemczańsko-Strzelińskie; PL
-- Fidlův kopec: 680 m n.p.m., wybitność 117 m, izolacja 15 km; Sudety Kulmowe, Niski Jesionik; CZ
+- Fidlův kopec: 680 m n.p.m., wybitność 117 m, izolacja 14.7 km; Sudety Kulmowe, Niski Jesionik; CZ
 - Zvičina: 672 m n.p.m., wybitność 187 m, izolacja 19.3 km; Sudety Zachodnie, Podgórze Karkonoskie; CZ
 - Słoneczna (Slunečná): 802 m n.p.m., wybitność 168 m, izolacja 19.3 km; Sudety Kulmowe, Niski Jesionik; CZ
 
 ### Diamentowa Korona Sudetów (39)
 
 - Szeroka Góra: 766 m n.p.m., wybitność 283 m, izolacja 8.4 km; Sudety Środkowe, Góry Bardzkie; PL
-- Góra Poprzeczna (Příčný vrch): 975 m n.p.m., wybitność 258 m, izolacja 8.2 km; Sudety Wschodnie, Góry Złotogórskie; CZ
+- Góra Poprzeczna (Příčný vrch): 975 m n.p.m., wybitność 258 m, izolacja 6.2 km; Sudety Wschodnie, Góry Złotogórskie; CZ
 - Jagodna Północna: 985 m n.p.m., wybitność 247 m, izolacja 6 km; Sudety Orlickie, Góry Bystrzyckie; PL
 - Wysoka Kopa: 1126 m n.p.m., wybitność 240 m, izolacja 6.7 km; Sudety Zachodnie, Góry Izerskie; PL
 - Skalnik: 945 m n.p.m., wybitność 220 m, izolacja 7 km; Sudety Zachodnie, Rudawy Janowickie; PL
