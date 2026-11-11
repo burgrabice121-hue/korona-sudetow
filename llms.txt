@@ -6,7 +6,7 @@ Autor: Wojciech Rogala. Strona: https://viasudetica.eu/ (PL/EN). Mapa do zapisyw
 
 ## Poziomy
 
-- Korona Sudetów: 8 szczytów. Wybitność powyżej 500 m lub izolacja powyżej 25 km.
+- Korona Sudetów: 8 szczytów. Wybitność powyżej 500 m lub izolacja powyżej 21 km.
 - Wielka Korona Sudetów: kolejne 17 szczytów. Wybitność co najmniej 350 m lub izolacja powyżej 14 km.
 - Diamentowa Korona Sudetów: kolejne 39 szczytów. Wybitność powyżej 270 m lub izolacja co najmniej 10 km, a także najwybitniejsze szczyty pasm, pogórzy i kotlin niereprezentowanych w wyższych koronach (przy wybitności co najmniej 50 m).
 
@@ -47,7 +47,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 
 - Śnieżka (Sněžka): 1603 m n.p.m., wybitność 1197 m, izolacja 289.6 km; Sudety Zachodnie, Karkonosze; PL/CZ
 - Pradziad (Praděd): 1491 m n.p.m., wybitność 983 m, izolacja 94 km; Sudety Wschodnie, Wysoki Jesionik; CZ
-- Wielka Desztna (Velká Deštná): 1115 m n.p.m., wybitność 582 m, izolacja 38 km; Sudety Orlickie, Góry Orlickie; CZ
+- Wielka Desztna (Velká Deštná): 1116 m n.p.m., wybitność 587 m, izolacja 29.5 km; Sudety Orlickie, Góry Orlickie; CZ
 - Wielka Sowa: 1015 m n.p.m., wybitność 484 m, izolacja 37.4 km; Sudety Środkowe, Góry Sowie; PL
 - Ślęża (Sleza): 718 m n.p.m., wybitność 468 m, izolacja 23 km; Przedgórze Sudeckie, Masyw Ślęży; PL
 - Luž (Luž / Lausche): 793 m n.p.m., wybitność 369 m, izolacja 26 km; Sudety Łużyckie, Góry Łużyckie; CZ/DE

@@ -1,7 +1,7 @@
 const KS = [
   { id:"sniezka", name:"Śnieżka",         cz:"Sněžka",           alt:1603, prom:1197, izol:289.6,pasmo:"Karkonosze",        strefa:"Zachodnie", kraj:"PL/CZ", lat:50.7360,  lng:15.7399,  note:"Najwybitniejszy szczyt Sudetów, Polski i Czech" },
   { id:"pradziad", name:"Pradziad",        cz:"Praděd",           alt:1491, prom:983,  izol:94,   pasmo:"Wysoki Jesionik",   strefa:"Wschodnie", kraj:"CZ",    lat:50.0830764,  lng:17.2309767,  note:"Najwyższy szczyt Moraw" },
-  { id:"wielka-desztna", name:"Wielka Desztna",  cz:"Velká Deštná",     alt:1115, prom:582,  izol:38,   pasmo:"Góry Orlickie",     strefa:"Środkowe",  kraj:"CZ",    lat:50.30500, lng:16.39908, note:"Najwyższy szczyt Gór Orlickich" },
+  { id:"wielka-desztna", name:"Wielka Desztna",  cz:"Velká Deštná",     alt:1116, prom:587,  izol:29.5, pasmo:"Góry Orlickie",     strefa:"Środkowe",  kraj:"CZ",    lat:50.30161, lng:16.39784, note:"Najwyższy szczyt Gór Orlickich" },
   { id:"wielka-sowa", name:"Wielka Sowa",     cz:"—",                alt:1015, prom:484,  izol:37.4, pasmo:"Góry Sowie",        strefa:"Środkowe",  kraj:"PL",    lat:50.6802031, lng:16.4855275, note:"Najwyższy szczyt Gór Sowich" },
   { id:"sleza", name:"Ślęża",           cz:"Sleza",            alt:718,  prom:468,  izol:23,   pasmo:"Masyw Ślęży",       strefa:"Środkowe",  kraj:"PL",    lat:50.86502, lng:16.70882, note:"Najwyższy szczyt Przedgórza Sudeckiego" },
   { id:"luz", name:"Luž",             cz:"Luž / Lausche",    alt:793,  prom:369,  izol:26,   pasmo:"Góry Łużyckie",     strefa:"Zachodnie", kraj:"CZ/DE", lat:50.8489,  lng:14.6469,  note:"Stożek wulkaniczny, najwyższy Gór Łużyckich" },
@@ -10,7 +10,7 @@ const KS = [
 ];
 
 const WKS = [
-  { id:"suchy-szczyt", name:"Suchy Szczyt",       cz:"Suchý vrch",       alt:995,  prom:435,  izol:8.5,  pasmo:"Góry Orlickie",               strefa:"Środkowe",  kraj:"CZ",    lat:50.0523,  lng:16.6887,  note:"Fortyfikacje czechosłowackie z lat 30." },
+  { id:"suchy-szczyt", name:"Suchy Szczyt",       cz:"Suchý vrch",       alt:995,  prom:435,  izol:8.5,  pasmo:"Góry Orlickie",               strefa:"Środkowe",  kraj:"CZ",    lat:50.05081, lng:16.69378, note:"Fortyfikacje czechosłowackie z lat 30." },
   { id:"studnicni-vrch", name:"Studniční vrch",     cz:"Studniční vrch",   alt:992,  prom:416,  izol:7.9,  pasmo:"Sokoli Grzbiet",              strefa:"Wschodnie", kraj:"CZ",    lat:50.2580,  lng:17.1666,  note:"Najwyższy szczyt Sokolego Grzbietu" },
   { id:"keprnik", name:"Keprník",            cz:"Keprník",          alt:1423, prom:410,  izol:12.7, pasmo:"Wysoki Jesionik",             strefa:"Wschodnie", kraj:"CZ",    lat:50.1714,  lng:17.1167,  note:"Druga najwybitniejsza góra Wysokiego Jesionika" },
   { id:"jerab", name:"Jeřáb",              cz:"Jeřáb",            alt:1003, prom:393,  izol:8,    pasmo:"Hanušovická vrchovina",       strefa:"Wschodnie", kraj:"CZ",    lat:50.0567842,  lng:16.8129564,  note:"Jedyna tysięcznica Hanušovickiej Vrchoviny" },
