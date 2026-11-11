@@ -90,7 +90,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Ostrzyca: 501 m n.p.m., wybitność 160 m, izolacja 7.5 km; Pogórze Zachodniosudeckie, Pogórze Kaczawskie; PL
 - Na Vyhlídce: 501 m n.p.m., wybitność 69 m, izolacja 2.8 km; Sudety Wschodnie, Pogórze Burgrabickie; CZ
 - Chlum: 344 m n.p.m., wybitność 59 m, izolacja 8.3 km; Sudety Kulmowe, Pogórze Trszickie; CZ
-- Biskupia Kopa (Biskupská kupa): 890 m n.p.m., wybitność 176 m, izolacja 8 km; Sudety Kulmowe, Góry Opawskie; PL/CZ
+- Biskupia Kopa (Biskupská kupa): 890 m n.p.m., wybitność 176 m, izolacja 5.3 km; Sudety Kulmowe, Góry Opawskie; PL/CZ
 - Chełmiec: 851 m n.p.m., wybitność 301 m, izolacja 9.1 km; Sudety Środkowe, Góry Wałbrzyskie; PL
 - Smrek (Smrk): 1125 m n.p.m., wybitność 310 m, izolacja 7 km; Sudety Wschodnie, Góry Złote; CZ
 - Strażna (Strážná): 642 m n.p.m., wybitność 92 m, izolacja 12 km; Sudety Kulmowe, Pogórze Witkowskie; CZ
