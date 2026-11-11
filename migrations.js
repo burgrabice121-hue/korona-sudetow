@@ -275,6 +275,27 @@ function migrateV14(s){
   s.schemaV14 = true;
   return s;
 }
+/* Królewiecki Szpiczak: WKS[8] -> koniec DKS (nowy DKS[39]) (v1.15). Wybitność
+   wg NMT 340 m (przełęcz 541,1 m) < 350 m, izolacja 8,8 km, więc nie spełnia
+   kryterium WKS. Zdobycie przechodzi do DKS; indeksy WKS powyżej 8
+   przesuwają się o 1 w dół (jak w migrateV13). */
+function migrateV15(s){
+  if(s.schemaV15) return s;
+  const oldWks = s.wks || [];
+  const newWks = [];
+  let had = false;
+  oldWks.forEach(i=>{
+    if(i===8) had = true;                     // Královecký Špičák: był WKS[8]
+    else if(i>8) newWks.push(i-1);            // reszta WKS powyżej niego przesuwa się o 1 w dół
+    else newWks.push(i);
+  });
+  s.wks = newWks;
+  const dks = s.dks || [];
+  if(had && !dks.includes(39)) dks.push(39);  // Královecký Špičák: teraz DKS[39]
+  s.dks = dks;
+  s.schemaV15 = true;
+  return s;
+}
 /* Wszystkie migracje po kolei. Nowa migracja (migrateVN) trafia TYLKO tutaj;
    korzystają z tego loadState, loadUserState i clearProgress (app.js) oraz panel (admin/admin.js). */
 function migrateAll(s){
@@ -291,5 +312,6 @@ function migrateAll(s){
   s = migrateV12(s);
   s = migrateV13(s);
   s = migrateV14(s);
+  s = migrateV15(s);
   return s;
 }

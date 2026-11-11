@@ -61,7 +61,7 @@ let currentTab = 'ks';
 let ksMarkers = [], wksMarkers = [], dksMarkers = [];
 let openPopupIdx = null, openPopupType = null;
 /* kolejne korony (P43): stałe i stan okien — opis przy checkLevels() */
-const DKS_OPEN_AT = 14;   // Diamentowa otwiera się przy 14 z 16 szczytów Wielkiej: celowo częściowy próg („rdzeń Wielkiej”)
+const DKS_OPEN_AT = 14;   // Diamentowa otwiera się przy 14 z 15 szczytów Wielkiej: celowo częściowy próg („rdzeń Wielkiej”)
 const TIER_DATA = {ks:KS, wks:WKS, dks:DKS};
 const TIER_NAMES = {   // [mianownik, biernik, EN]
   ks:  ['Korona Sudetów', 'Koronę Sudetów', 'Crown of the Sudetes'],
@@ -338,8 +338,8 @@ function updateUI(){
   document.getElementById('wks-done').textContent = wksDone;
   document.getElementById('dks-done').textContent = dksDone;
   document.getElementById('ks-bar').style.width   = (ksDone/8*100)+'%';
-  document.getElementById('wks-bar').style.width  = (wksDone/16*100)+'%';
-  document.getElementById('dks-bar').style.width  = (dksDone/39*100)+'%';
+  document.getElementById('wks-bar').style.width  = (wksDone/15*100)+'%';
+  document.getElementById('dks-bar').style.width  = (dksDone/40*100)+'%';
 
   // otwarcie kolejnych koron i ukończenia (P43); okna tylko po zaznaczeniu szczytu (levelTrigger)
   const ev = checkLevels(levelTrigger);
@@ -1160,6 +1160,7 @@ async function saveUserState(){
       schemaV12: STATE.schemaV12 || false,
       schemaV13: STATE.schemaV13 || false,
       schemaV14: STATE.schemaV14 || false,
+      schemaV15: STATE.schemaV15 || false,
       updatedAt: fb.serverTimestamp(),
       ranking: RANK_VISIBLE,          // widoczność w rankingu (reguły: inni czytają tylko ranking == true)
       displayName: publicName(user)   // dokument publiczny (ranking): bez adresu e-mail
@@ -1196,7 +1197,8 @@ async function loadUserState(user){
       STATE.schemaV12 = d.schemaV12 || false;
       STATE.schemaV13 = d.schemaV13 || false;
       STATE.schemaV14 = d.schemaV14 || false;
-      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10 && STATE.schemaV11 && STATE.schemaV12 && STATE.schemaV13 && STATE.schemaV14;
+      STATE.schemaV15 = d.schemaV15 || false;
+      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10 && STATE.schemaV11 && STATE.schemaV12 && STATE.schemaV13 && STATE.schemaV14 && STATE.schemaV15;
       STATE = migrateAll(STATE);
       saveState(STATE);
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
@@ -1248,8 +1250,8 @@ async function loadRanking(){
     let rows = [];
     snap.forEach(d=>{
       const u = rankView(d.data());
-      if(_rankTab==='wk'  && (u.wks||[]).length<16) return;
-      if(_rankTab==='dk'  && (u.dks||[]).length<39) return;
+      if(_rankTab==='wk'  && (u.wks||[]).length<15) return;
+      if(_rankTab==='dk'  && (u.dks||[]).length<40) return;
       rows.push(u);
     });
     rows.sort((a,b)=>{
@@ -1266,8 +1268,8 @@ async function loadRanking(){
       <td class="rank-medal">${medals[i]||i+1}</td>
       <td><div class="rank-name">${escHtml(u.displayName && String(u.displayName).indexOf('@')===-1 ? u.displayName : 'Anonimowy')}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
-      <td>${(u.wks||[]).length}/16 ${(u.wks||[]).length===16?'<span class="rank-crown wk">👑</span>':''}</td>
-      <td>${(u.dks||[]).length}/39 ${(u.dks||[]).length===39?'<span class="rank-crown dk">💎</span>':''}</td>
+      <td>${(u.wks||[]).length}/15 ${(u.wks||[]).length===15?'<span class="rank-crown wk">👑</span>':''}</td>
+      <td>${(u.dks||[]).length}/40 ${(u.dks||[]).length===40?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
 }
