@@ -1,6 +1,6 @@
 const KS = [
   { id:"sniezka", name:"Śnieżka",         cz:"Sněžka",           alt:1603, prom:1197, izol:289.6,pasmo:"Karkonosze",        strefa:"Zachodnie", kraj:"PL/CZ", lat:50.7360,  lng:15.7399,  note:"Najwybitniejszy szczyt Sudetów, Polski i Czech" },
-  { id:"pradziad", name:"Pradziad",        cz:"Praděd",           alt:1491, prom:983,  izol:94,   pasmo:"Wysoki Jesionik",   strefa:"Wschodnie", kraj:"CZ",    lat:50.0830764,  lng:17.2309767,  note:"Najwyższy szczyt Moraw" },
+  { id:"pradziad", name:"Pradziad",        cz:"Praděd",           alt:1491, prom:983,  izol:128,  pasmo:"Wysoki Jesionik",   strefa:"Wschodnie", kraj:"CZ",    lat:50.0830764,  lng:17.2309767,  note:"Najwyższy szczyt Moraw" },
   { id:"wielka-desztna", name:"Wielka Desztna",  cz:"Velká Deštná",     alt:1116, prom:587,  izol:29.5, pasmo:"Góry Orlickie",     strefa:"Środkowe",  kraj:"CZ",    lat:50.30161, lng:16.39784, note:"Najwyższy szczyt Gór Orlickich" },
   { id:"wielka-sowa", name:"Wielka Sowa",     cz:"—",                alt:1015, prom:484,  izol:37.4, pasmo:"Góry Sowie",        strefa:"Środkowe",  kraj:"PL",    lat:50.6802031, lng:16.4855275, note:"Najwyższy szczyt Gór Sowich" },
   { id:"sleza", name:"Ślęża",           cz:"Sleza",            alt:718,  prom:468,  izol:23,   pasmo:"Masyw Ślęży",       strefa:"Środkowe",  kraj:"PL",    lat:50.86502, lng:16.70882, note:"Najwyższy szczyt Przedgórza Sudeckiego" },

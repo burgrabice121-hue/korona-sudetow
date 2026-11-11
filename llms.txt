@@ -46,7 +46,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 ### Korona Sudetów (8)
 
 - Śnieżka (Sněžka): 1603 m n.p.m., wybitność 1197 m, izolacja 289.6 km; Sudety Zachodnie, Karkonosze; PL/CZ
-- Pradziad (Praděd): 1491 m n.p.m., wybitność 983 m, izolacja 94 km; Sudety Wschodnie, Wysoki Jesionik; CZ
+- Pradziad (Praděd): 1491 m n.p.m., wybitność 983 m, izolacja 128 km; Sudety Wschodnie, Wysoki Jesionik; CZ
 - Wielka Desztna (Velká Deštná): 1116 m n.p.m., wybitność 587 m, izolacja 29.5 km; Sudety Orlickie, Góry Orlickie; CZ
 - Wielka Sowa: 1015 m n.p.m., wybitność 484 m, izolacja 37.4 km; Sudety Środkowe, Góry Sowie; PL
 - Ślęża (Sleza): 718 m n.p.m., wybitność 468 m, izolacja 23 km; Przedgórze Sudeckie, Masyw Ślęży; PL
