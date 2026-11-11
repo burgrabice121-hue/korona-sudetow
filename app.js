@@ -272,6 +272,26 @@ function migrateV12(s){
   s.schemaV12 = true;
   return s;
 }
+/* Valtenberg: WKS[8] -> koniec DKS (nowy DKS[39]) (v1.13). Izolacja wg NMT
+   12,3 km (do Tanečnicy) < 14 km, więc nie spełnia kryterium WKS. Zdobycie
+   przechodzi do DKS; indeksy WKS powyżej 8 przesuwają się o 1 w dół. */
+function migrateV13(s){
+  if(s.schemaV13) return s;
+  const oldWks = s.wks || [];
+  const newWks = [];
+  let had = false;
+  oldWks.forEach(i=>{
+    if(i===8) had = true;                     // Valtenberg: był WKS[8]
+    else if(i>8) newWks.push(i-1);            // reszta WKS powyżej niego przesuwa się o 1 w dół
+    else newWks.push(i);
+  });
+  s.wks = newWks;
+  const dks = s.dks || [];
+  if(had && !dks.includes(39)) dks.push(39);  // Valtenberg: teraz DKS[39]
+  s.dks = dks;
+  s.schemaV13 = true;
+  return s;
+}
 function loadState(){
   let s;
   try{
@@ -297,6 +317,7 @@ function migrateAll(s){
   s = migrateV10(s);
   s = migrateV11(s);
   s = migrateV12(s);
+  s = migrateV13(s);
   return s;
 }
 function saveState(s){
@@ -308,7 +329,7 @@ let currentTab = 'ks';
 let ksMarkers = [], wksMarkers = [], dksMarkers = [];
 let openPopupIdx = null, openPopupType = null;
 /* kolejne korony (P43): stałe i stan okien — opis przy checkLevels() */
-const DKS_OPEN_AT = 14;   // Diamentowa otwiera się przy 14 z 17 szczytów Wielkiej: celowo częściowy próg („rdzeń Wielkiej”)
+const DKS_OPEN_AT = 14;   // Diamentowa otwiera się przy 14 z 16 szczytów Wielkiej: celowo częściowy próg („rdzeń Wielkiej”)
 const TIER_DATA = {ks:KS, wks:WKS, dks:DKS};
 const TIER_NAMES = {   // [mianownik, biernik, EN]
   ks:  ['Korona Sudetów', 'Koronę Sudetów', 'Crown of the Sudetes'],
@@ -585,8 +606,8 @@ function updateUI(){
   document.getElementById('wks-done').textContent = wksDone;
   document.getElementById('dks-done').textContent = dksDone;
   document.getElementById('ks-bar').style.width   = (ksDone/8*100)+'%';
-  document.getElementById('wks-bar').style.width  = (wksDone/17*100)+'%';
-  document.getElementById('dks-bar').style.width  = (dksDone/39*100)+'%';
+  document.getElementById('wks-bar').style.width  = (wksDone/16*100)+'%';
+  document.getElementById('dks-bar').style.width  = (dksDone/40*100)+'%';
 
   // otwarcie kolejnych koron i ukończenia (P43); okna tylko po zaznaczeniu szczytu (levelTrigger)
   const ev = checkLevels(levelTrigger);
@@ -1405,6 +1426,7 @@ async function saveUserState(){
       schemaV10: STATE.schemaV10 || false,
       schemaV11: STATE.schemaV11 || false,
       schemaV12: STATE.schemaV12 || false,
+      schemaV13: STATE.schemaV13 || false,
       updatedAt: fb.serverTimestamp(),
       ranking: RANK_VISIBLE,          // widoczność w rankingu (reguły: inni czytają tylko ranking == true)
       displayName: publicName(user)   // dokument publiczny (ranking): bez adresu e-mail
@@ -1439,7 +1461,8 @@ async function loadUserState(user){
       STATE.schemaV10 = d.schemaV10 || false;
       STATE.schemaV11 = d.schemaV11 || false;
       STATE.schemaV12 = d.schemaV12 || false;
-      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10 && STATE.schemaV11 && STATE.schemaV12;
+      STATE.schemaV13 = d.schemaV13 || false;
+      const wasAlreadyMigrated = STATE.schemaV2 && STATE.schemaV3 && STATE.schemaV4 && STATE.schemaV5 && STATE.schemaV6 && STATE.schemaV7 && STATE.schemaV8 && STATE.schemaV9 && STATE.schemaV10 && STATE.schemaV11 && STATE.schemaV12 && STATE.schemaV13;
       STATE = migrateAll(STATE);
       saveState(STATE);
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
@@ -1482,8 +1505,8 @@ async function loadRanking(){
     let rows = [];
     snap.forEach(d=>{
       const u = d.data();
-      if(_rankTab==='wk'  && (u.wks||[]).length<17) return;
-      if(_rankTab==='dk'  && (u.dks||[]).length<39) return;
+      if(_rankTab==='wk'  && (u.wks||[]).length<16) return;
+      if(_rankTab==='dk'  && (u.dks||[]).length<40) return;
       rows.push(u);
     });
     rows.sort((a,b)=>{
@@ -1500,8 +1523,8 @@ async function loadRanking(){
       <td class="rank-medal">${medals[i]||i+1}</td>
       <td><div class="rank-name">${escHtml(u.displayName && String(u.displayName).indexOf('@')===-1 ? u.displayName : 'Anonimowy')}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
-      <td>${(u.wks||[]).length}/17 ${(u.wks||[]).length===17?'<span class="rank-crown wk">👑</span>':''}</td>
-      <td>${(u.dks||[]).length}/39 ${(u.dks||[]).length===39?'<span class="rank-crown dk">💎</span>':''}</td>
+      <td>${(u.wks||[]).length}/16 ${(u.wks||[]).length===16?'<span class="rank-crown wk">👑</span>':''}</td>
+      <td>${(u.dks||[]).length}/40 ${(u.dks||[]).length===40?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
 }
