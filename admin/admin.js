@@ -218,9 +218,13 @@ function drawUser(uid, d){
   var editPeaks = doc && doc.schemaOk;
   out += section('Zdobyte szczyty', (doc ? (editPeaks
       ? '<p class="ad-muted">Kliknij szczyt, aby go zaznaczyć lub odznaczyć. Jeśli użytkownik ma teraz otwartą stronę, poproś go o odświeżenie — inaczej jego przeglądarka może nadpisać zmianę.</p>'
-      : '<p class="ad-warn">Dane w starym schemacie: poprawki szczytów będą możliwe, gdy użytkownik otworzy stronę zalogowany.</p>') : '')+
+      : '<p class="ad-warn">Dane w starym schemacie: numery szczytów odnoszą się do dawnych list, więc panel nie pokazuje nazw (byłyby przesunięte). '+
+        'Strona przeliczy je sama, gdy użytkownik otworzy ją zalogowany; wtedy będą też możliwe poprawki.</p>') : '')+
     (doc ? TIERS.map(function(t){
     var have = doc[t[0]] || [], unlocked = t[0]==='ks' || doc['unlocked_'+t[0]];
+    if(!editPeaks) return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+have.length+' zapisanych'+
+      (unlocked ? '' : ' · nieodblokowana')+'</span></h4>'+
+      '<p class="ad-muted">Numery w starym schemacie: '+(have.length ? have.join(', ') : '—')+'</p></div>';
     return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+have.length+'/'+t[2].length+
       (unlocked ? '' : ' · nieodblokowana')+'</span>'+
       (t[0]!=='ks' && editPeaks ? ' '+btn('setUnlock', unlocked ? 'Zablokuj koronę' : 'Odblokuj koronę', ' data-tier="'+t[0]+'" data-on="'+(unlocked?'0':'1')+'"', 'small') : '')+
