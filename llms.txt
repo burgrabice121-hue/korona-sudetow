@@ -15,7 +15,7 @@ Poziomy są rozłączne (8 + 17 + 39 = 64). Ukończenie poziomu odblokowuje nast
 ## Pojęcia
 
 - Wybitność topograficzna: wysokość szczytu ponad najniższą przełęczą oddzielającą go od wyższego wierzchołka. Przykład: Śnieżka (1603 m) ma wybitność 1197 m.
-- Izolacja topograficzna: odległość w linii prostej do najbliższego wyższego wierzchołka. Przykład: Ślęża (718 m) ma izolację 36 km.
+- Izolacja topograficzna: odległość w linii prostej do najbliższego wyższego wierzchołka. Przykład: Ślęża (718 m) ma izolację 23 km.
 
 ## Czym różni się od innych koron
 
@@ -49,7 +49,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Pradziad (Praděd): 1491 m n.p.m., wybitność 983 m, izolacja 94 km; Sudety Wschodnie, Wysoki Jesionik; CZ
 - Wielka Desztna (Velká Deštná): 1115 m n.p.m., wybitność 582 m, izolacja 38 km; Sudety Orlickie, Góry Orlickie; CZ
 - Wielka Sowa: 1015 m n.p.m., wybitność 484 m, izolacja 37.4 km; Sudety Środkowe, Góry Sowie; PL
-- Ślęża (Sleza): 718 m n.p.m., wybitność 468 m, izolacja 36 km; Przedgórze Sudeckie, Masyw Ślęży; PL
+- Ślęża (Sleza): 718 m n.p.m., wybitność 468 m, izolacja 23 km; Przedgórze Sudeckie, Masyw Ślęży; PL
 - Luž (Luž / Lausche): 793 m n.p.m., wybitność 369 m, izolacja 26 km; Sudety Łużyckie, Góry Łużyckie; CZ/DE
 - Śnieżnik (Králický Sněžník): 1425 m n.p.m., wybitność 662 m, izolacja 30.6 km; Sudety Wschodnie, Masyw Śnieżnika; PL/CZ
 - Ještěd: 1012 m n.p.m., wybitność 512 m, izolacja 18.1 km; Sudety Zachodnie, Grzbiet Jesztedzko-Kozakowski; CZ
