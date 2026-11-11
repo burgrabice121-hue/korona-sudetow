@@ -81,7 +81,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Skalnik: 945 m n.p.m., wybitność 220 m, izolacja 7 km; Sudety Zachodnie, Rudawy Janowickie; PL
 - Chlum: 603 m n.p.m., wybitność 180 m, izolacja 11 km; Sudety Orlickie, Pogórze Orlickie; CZ
 - Zadzierna: 724 m n.p.m., wybitność 152 m, izolacja 2.7 km; Sudety Środkowe, Kotlina Kamiennogórska; PL
-- Nowa Kopa (Nová Kopa): 533 m n.p.m., wybitność 93 m, izolacja 4.9 km; Sudety Środkowe, Obniżenie Ścinawki (Kotlina Broumovska); PL
+- Nowa Kopa (Nová Kopa): 555 m n.p.m., wybitność 119 m, izolacja 5 km; Sudety Środkowe, Obniżenie Ścinawki (Kotlina Broumovska); PL
 - Kobyla: 574 m n.p.m., wybitność 174 m, izolacja 4.6 km; Sudety Kulmowe, Pogórze Opawskie; CZ
 - Boží hora: 527 m n.p.m., wybitność 127 m, izolacja 3.8 km; Sudety Wschodnie, Pogórze Żulowskie; CZ
 - Grodna: 504 m n.p.m., wybitność 84 m, izolacja 2.8 km; Sudety Zachodnie, Kotlina Jeleniogórska; PL
@@ -102,7 +102,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Borówkowa (Borůvková hora): 900 m n.p.m., wybitność 236 m, izolacja 11.6 km; Sudety Wschodnie, Góry Złote; PL/CZ
 - Kanci vrch (Kančí vrch): 608 m n.p.m., wybitność 207 m, izolacja 7.6 km; Sudety Orlickie, Zábřežská vrchovina; CZ
 - Tabor: 683 m n.p.m., wybitność 207 m, izolacja 11.9 km; Sudety Zachodnie, Grzbiet Jesztedzko-Kozakowski; CZ
-- Cap: 786 m n.p.m., wybitność 196 m, izolacja 11.8 km; Sudety Środkowe, Góry Stołowe; CZ
+- Cap: 786 m n.p.m., wybitność 231 m, izolacja 11.8 km; Sudety Środkowe, Góry Stołowe; CZ
 - Smrek: 1124 m n.p.m., wybitność 184 m, izolacja 11.2 km; Sudety Zachodnie, Góry Izerskie; CZ
 - Lisia Góra (Liščí hora): 613 m n.p.m., wybitność 178 m, izolacja 10.5 km; Sudety Zachodnie, Podgórze Karkonoskie; CZ
 - Grodziec: 382 m n.p.m., wybitność 130 m, izolacja 13.4 km; Pogórze Zachodniosudeckie, Pogórze Kaczawskie; PL
