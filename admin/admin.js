@@ -216,17 +216,29 @@ function drawUser(uid, d){
   ]));
 
   var editPeaks = doc && doc.schemaOk;
+  /* P45: stary schemat → podgląd po przeliczeniu kopii tą samą migracją co strona (../migrations.js).
+     Bez flag z serwera (functions sprzed P45) albo bez migrations.js — tylko surowe numery. */
+  var view = null;
+  if(doc && !doc.schemaOk && Array.isArray(doc.flags) && typeof migrateAll === 'function'){
+    var copy = {ks: doc.ks.slice(), wks: doc.wks.slice(), dks: doc.dks.slice()};
+    doc.flags.forEach(function(f){ copy[f] = true; });
+    try { view = migrateAll(copy); } catch(e){ view = null; }
+  }
   out += section('Zdobyte szczyty', (doc ? (editPeaks
       ? '<p class="ad-muted">Kliknij szczyt, aby go zaznaczyć lub odznaczyć. Jeśli użytkownik ma teraz otwartą stronę, poproś go o odświeżenie — inaczej jego przeglądarka może nadpisać zmianę.</p>'
+      : view
+      ? '<p class="ad-warn">Dane w starym schemacie: nazwy poniżej to podgląd po przeliczeniu (ta sama migracja co na stronie). '+
+        'W bazie zmienią się, gdy użytkownik otworzy stronę zalogowany; dopiero wtedy będą możliwe poprawki.</p>'
       : '<p class="ad-warn">Dane w starym schemacie: numery szczytów odnoszą się do dawnych list, więc panel nie pokazuje nazw (byłyby przesunięte). '+
         'Strona przeliczy je sama, gdy użytkownik otworzy ją zalogowany; wtedy będą też możliwe poprawki.</p>') : '')+
     (doc ? TIERS.map(function(t){
-    var have = doc[t[0]] || [], unlocked = t[0]==='ks' || doc['unlocked_'+t[0]];
-    if(!editPeaks) return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+have.length+' zapisanych'+
-      (unlocked ? '' : ' · nieodblokowana')+'</span></h4>'+
-      '<p class="ad-muted">Numery w starym schemacie: '+(have.length ? have.join(', ') : '—')+'</p></div>';
+    var raw = doc[t[0]] || [], unlocked = t[0]==='ks' || doc['unlocked_'+t[0]];
+    var rawLine = '<p class="ad-muted small">Numery w bazie (stary schemat): '+(raw.length ? raw.join(', ') : '—')+'</p>';
+    if(!editPeaks && !view) return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+raw.length+' zapisanych'+
+      (unlocked ? '' : ' · nieodblokowana')+'</span></h4>'+rawLine+'</div>';
+    var have = view ? (view[t[0]] || []) : raw;
     return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+have.length+'/'+t[2].length+
-      (unlocked ? '' : ' · nieodblokowana')+'</span>'+
+      (unlocked ? '' : ' · nieodblokowana')+(view ? ' · podgląd po przeliczeniu' : '')+'</span>'+
       (t[0]!=='ks' && editPeaks ? ' '+btn('setUnlock', unlocked ? 'Zablokuj koronę' : 'Odblokuj koronę', ' data-tier="'+t[0]+'" data-on="'+(unlocked?'0':'1')+'"', 'small') : '')+
       '</h4><div class="ad-peaks">'+t[2].map(function(p, i){
         var on = have.indexOf(i)!==-1;
@@ -235,6 +247,7 @@ function drawUser(uid, d){
           : '<span class="ad-peak'+(on?' on':'')+'" title="'+esc(p.pasmo||'')+'">'+esc(p.name)+'</span>';
       }).join('')+'</div>'+
       (have.some(function(i){ return i>=t[2].length; }) ? '<p class="ad-warn">Numery spoza listy: '+have.filter(function(i){ return i>=t[2].length; }).join(', ')+'</p>' : '')+
+      (view ? rawLine : '')+
     '</div>';
   }).join('') : '<p class="ad-muted">Brak dokumentu postępu.</p>'));
 
