@@ -14,7 +14,7 @@
 #diary-overlay.hidden,#diary-list-overlay.hidden,#invite-overlay.hidden{display:none}
 #invite-overlay{z-index:8300}
 #diary-overlay{z-index:8200}
-.dy-box{background:var(--panel,#1C2330);border:1px solid var(--border,#30363D);border-radius:10px;width:640px;max-width:100%;max-height:calc(100vh - 16px);display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.5);color:#E6EDF3}
+.dy-box{background:var(--panel,#1C2330);border:1px solid var(--border,#30363D);border-radius:10px;width:640px;max-width:100%;max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.5);color:#E6EDF3}
 .dy-box.dy-wide{width:720px}
 .dy-hdr{padding:.6rem 1rem .5rem;border-bottom:1px solid var(--border,#30363D);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .dy-title{font-family:'Georgia',serif;font-size:1.1rem;font-weight:700;color:var(--gold,#D4A017);line-height:1.2}
