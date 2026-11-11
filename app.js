@@ -1227,6 +1227,15 @@ window.rankTab = function(tab){
   loadRanking();
 };
 
+/* P46: konto, które nie otwierało strony od zmiany list, ma w bazie numery w starym schemacie.
+   Ranking liczy na kopii po tej samej migracji co strona (migrations.js); dokument w bazie bez zmian. */
+function rankView(u){
+  const c = {ks:(u.ks||[]).slice(), wks:(u.wks||[]).slice(), dks:(u.dks||[]).slice()};
+  Object.keys(u).forEach(k=>{ if(/^schemaV\d+$/.test(k) && u[k]===true) c[k] = true; });
+  try { migrateAll(c); } catch(e){ return u; }
+  return Object.assign({}, u, {ks:c.ks, wks:c.wks, dks:c.dks});
+}
+
 async function loadRanking(){
   const fb = window._fb;
   const el = document.getElementById('rank-content');
@@ -1236,7 +1245,7 @@ async function loadRanking(){
     const snap = await fb.getDocs(fb.query(fb.collection(fb.db,'users'), fb.where('ranking','==',true)));
     let rows = [];
     snap.forEach(d=>{
-      const u = d.data();
+      const u = rankView(d.data());
       if(_rankTab==='wk'  && (u.wks||[]).length<16) return;
       if(_rankTab==='dk'  && (u.dks||[]).length<40) return;
       rows.push(u);

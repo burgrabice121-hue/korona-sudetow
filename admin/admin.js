@@ -113,7 +113,21 @@ function sorted(rows){
 function showUsers(refresh){
   if(overview && !refresh) return drawUsers();
   main(nav('')+'<p class="ad-muted">Pobieram listę użytkowników…</p>');
-  api('overview').then(function(d){ overview = d; drawUsers(); }).catch(function(e){ main(nav('')+errBox(e)); });
+  api('overview').then(function(d){ overview = fixOld(d); drawUsers(); }).catch(function(e){ main(nav('')+errBox(e)); });
+}
+/* P47: konta w starym schemacie (r.old z serwera) — liczby po przeliczeniu kopii tą samą migracją co strona;
+   r.oldSchema = gwiazdka w tabeli. Bez r.old (functions sprzed P47) liczby jak z serwera. */
+function fixOld(d){
+  if(typeof migrateAll !== 'function') return d;
+  (d.rows||[]).forEach(function(r){
+    if(!r.old) return;
+    var c = {ks: r.old.ks.slice(), wks: r.old.wks.slice(), dks: r.old.dks.slice()};
+    (r.old.flags||[]).forEach(function(f){ c[f] = true; });
+    try { migrateAll(c); } catch(e){ return; }
+    r.ks = c.ks.length; r.wks = c.wks.length; r.dks = c.dks.length; r.oldSchema = true;
+  });
+  if(d.stats) d.stats.withPeaks = (d.rows||[]).filter(function(r){ return r.ks + r.wks + r.dks > 0; }).length;
+  return d;
 }
 function drawUsers(){
   var s = overview.stats, inv = s.invites || {};
@@ -136,7 +150,8 @@ function drawUsers(){
 }
 function drawTable(){
   var rows = sorted(overview.rows.filter(passes));
-  $('ad-table').innerHTML = '<p class="ad-muted">Pokazano '+rows.length+' z '+overview.rows.length+'.</p>'+
+  $('ad-table').innerHTML = '<p class="ad-muted">Pokazano '+rows.length+' z '+overview.rows.length+'.'+
+      (rows.some(function(r){ return r.oldSchema; }) ? ' * — stary schemat danych: liczby szczytów po przeliczeniu (podgląd).' : '')+'</p>'+
     '<div class="ad-scroll"><table class="ad-table"><thead><tr>'+COLS.map(function(c){
       return '<th data-sort="'+c[0]+'" class="'+(sortKey===c[0]?'on':'')+'">'+c[1]+(sortKey===c[0]?(sortDir>0?' ▲':' ▼'):'')+'</th>';
     }).join('')+'</tr></thead><tbody>'+rows.map(function(r){
@@ -144,7 +159,8 @@ function drawTable(){
         '<td>'+esc(r.name||'—')+'</td><td>'+esc(r.email||'—')+'</td>'+
         '<td>'+fmtDay(r.created)+'</td><td>'+fmtDay(r.lastActive)+'</td>'+
         '<td>'+(r.verified?'✓':'<span class="ad-warn">✗</span>')+'</td>'+
-        '<td class="n">'+r.ks+'/'+KS.length+'</td><td class="n">'+r.wks+'/'+WKS.length+'</td><td class="n">'+r.dks+'/'+DKS.length+'</td>'+
+        '<td class="n">'+r.ks+'/'+KS.length+'</td><td class="n">'+r.wks+'/'+WKS.length+'</td><td class="n">'+r.dks+'/'+DKS.length+
+          (r.oldSchema ? ' <span class="ad-muted" title="Stary schemat danych: liczby po przeliczeniu (podgląd); baza zmieni się, gdy użytkownik otworzy stronę">*</span>' : '')+'</td>'+
         '<td class="n">'+r.visits+'</td><td>'+(r.ranking?'widoczny':'<span class="ad-muted">ukryty</span>')+'</td>'+
         '<td>'+(r.news?'tak':'<span class="ad-muted">nie</span>')+'</td></tr>';
     }).join('')+'</tbody></table></div>';
