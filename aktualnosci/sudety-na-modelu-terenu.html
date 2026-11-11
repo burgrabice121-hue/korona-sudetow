@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cały łańcuch Sudetów na modelu terenu: nowe kryteria i zmiany w koronie</title>
+<meta name="description" content="Przeliczyliśmy wybitność i izolację szczytów całych Sudetów na modelach terenu GUGiK i ČÚZK. Valtenberg i Královecký Špičák przeszły do Diamentowej Korony, Strażna wypadła z listy; korona liczy 63 szczyty.">
+<meta name="author" content="Wojciech Rogala">
+<link rel="canonical" href="https://viasudetica.eu/aktualnosci/sudety-na-modelu-terenu.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Wielka Korona Sudetów">
+<meta property="og:title" content="Cały łańcuch Sudetów na modelu terenu">
+<meta property="og:description" content="Nowe pomiary wybitności i izolacji: 8/15/40 = 63 szczyty. Co się zmieniło i dlaczego.">
+<meta property="og:url" content="https://viasudetica.eu/aktualnosci/sudety-na-modelu-terenu.html">
+<meta property="og:image" content="https://viasudetica.eu/hero.jpg">
+<meta property="og:locale" content="pl_PL">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Cały łańcuch Sudetów na modelu terenu: nowe kryteria i zmiany w koronie",
+  "datePublished": "2026-11-11",
+  "inLanguage": "pl",
+  "author": {"@type": "Person", "name": "Wojciech Rogala"},
+  "publisher": {"@type": "Organization", "name": "Wielka Korona Sudetów", "url": "https://viasudetica.eu/"},
+  "mainEntityOfPage": "https://viasudetica.eu/aktualnosci/sudety-na-modelu-terenu.html"
+}
+</script>
+<style>
+:root {
+  --stone:#2C2A25; --bark:#4A4035; --moss:#5C6B3A; --lichen:#8A9E5A;
+  --cream:#F5F0E8; --parchment:#EDE6D6; --fog:#D4CCBA; --rust:#A0522D;
+  --clay:#C47A45; --snow:#FAFAF7; --muted:#6b6459;
+  --serif:Georgia, serif; --mono:'Courier New', monospace;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--cream); color:var(--stone); font-family:var(--serif); }
+a { color:var(--rust); }
+.top { background:var(--stone); padding:0.9rem 1.2rem; }
+.top a { color:var(--parchment); text-decoration:none; font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+article { max-width:760px; margin:0 auto; padding:3rem 1.2rem 4rem; }
+.label { font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--clay); }
+h1 { font-size:2.2rem; line-height:1.2; margin:0.6rem 0 0.8rem; }
+h1 em { color:var(--rust); }
+.meta { font-family:var(--mono); font-size:12px; color:var(--muted); margin-bottom:2rem; }
+.lead { font-size:1.15rem; line-height:1.75; color:var(--bark); }
+h2 { font-size:1.45rem; margin:2.6rem 0 0.8rem; }
+p, li { font-size:16px; line-height:1.8; }
+.swap { display:grid; grid-template-columns:1fr auto 1fr; gap:1rem; align-items:stretch; margin:1.6rem 0; }
+.swap .card { background:var(--snow); border-radius:8px; padding:1.1rem 1.2rem; border-left:3px solid var(--fog); }
+.swap .card.new { border-left-color:var(--clay); }
+.swap .arrow { align-self:center; font-size:1.6rem; color:var(--clay); }
+.card .tag { font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.card .name { font-size:1.3rem; margin:0.3rem 0 0.5rem; }
+.card .old .name { color:var(--muted); }
+.card dl { display:grid; grid-template-columns:auto 1fr; gap:0.15rem 0.8rem; margin:0; font-size:14px; }
+.card dt { color:var(--muted); }
+.card dd { margin:0; }
+.fact { background:var(--stone); color:var(--snow); border-radius:8px; padding:1.4rem 1.5rem; margin:2rem 0; }
+.fact .label { color:var(--clay); }
+.fact p { margin:0.5rem 0 0; color:var(--parchment); }
+.fact strong { color:var(--snow); }
+figure { margin:1.8rem 0; background:var(--snow); border-radius:8px; padding:1.2rem; }
+figure svg { width:100%; height:auto; display:block; }
+figcaption { font-size:13px; line-height:1.6; color:var(--muted); margin-top:0.6rem; }
+table { width:100%; border-collapse:collapse; font-size:14px; margin:1rem 0; }
+th, td { text-align:left; padding:0.45rem 0.6rem; border-bottom:1px solid var(--fog); }
+th { font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:400; }
+td.num { text-align:right; font-variant-numeric:tabular-nums; }
+tr.win td { font-weight:bold; }
+tr.was td { color:var(--muted); font-style:italic; }
+h3 { font-size:1.15rem; margin:2rem 0 0.5rem; color:var(--bark); }
+.edu { background:var(--parchment); border-radius:8px; padding:0.2rem 1.4rem 1.2rem; margin:2rem 0; }
+.edu figure { background:var(--snow); }
+.tablewrap { overflow-x:auto; }
+.legend { list-style:none; padding:0; margin:0.7rem 0 0; display:flex; flex-wrap:wrap; gap:0.25rem 1.1rem; }
+.legend li { font-size:13px; line-height:1.5; color:var(--bark); }
+.legend i { display:inline-block; width:20px; height:3px; vertical-align:middle; margin-right:6px; }
+.legend i.bracket { width:3px; height:12px; background:#A0522D; margin:0 14px 0 9px; }
+.charts { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.4rem 0; }
+.chart { display:flex; flex-direction:column; gap:0.35rem; background:var(--snow); border-radius:8px; border-left:3px solid var(--clay); padding:1rem 1.2rem; text-decoration:none; color:var(--bark); font-size:14px; line-height:1.6; }
+.chart:hover { background:#fff; }
+.chart strong { font-size:1.1rem; color:var(--stone); }
+.chart .tag { font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
+.chart .more { color:var(--rust); }
+.note { color:var(--muted); font-size:13px; }
+.qa { border-left:3px solid var(--lichen); padding:0.2rem 0 0.2rem 1rem; margin:1.2rem 0; }
+.qa .q { font-style:italic; color:var(--moss); }
+.cta { display:inline-block; background:var(--bark); color:var(--snow); text-decoration:none; padding:0.8rem 1.4rem; border-radius:5px; margin-top:1rem; }
+.sources { font-size:13px; color:var(--muted); }
+.sources li { font-size:13px; line-height:1.6; }
+@media (max-width:640px) {
+  h1 { font-size:1.7rem; }
+  .swap { grid-template-columns:1fr; }
+  .charts { grid-template-columns:1fr; }
+  .edu { padding:0.2rem 1rem 1rem; }
+  .edu figure { padding:0.7rem; margin:1.4rem -0.4rem; }
+  table { font-size:13px; }
+  th, td { padding:0.4rem 0.35rem; }
+  .swap .arrow { transform:rotate(90deg); justify-self:center; }
+}
+</style>
+</head>
+<body>
+<div class="top"><a href="https://viasudetica.eu/">← Wielka Korona Sudetów</a> <span style="color:#6b6459">·</span> <a href="./">Aktualności</a></div>
+<article>
+  <div class="label">Z badań · Lista szczytów</div>
+  <h1>Cały łańcuch Sudetów <em>na modelu terenu</em></h1>
+  <div class="meta">11 listopada 2026 · Wojciech Rogala</div>
+
+  <p class="lead">Przeliczyliśmy wybitność i izolację szczytów całych Sudetów na numerycznych modelach terenu z lotniczego skanowania laserowego. Dla części szczytów wyniki wyraźnie różnią się od wartości podawanych w źródłach oraz od naszych wcześniejszych ustaleń metodą ręcznej analizy map. Trzy szczyty zmieniły przez to miejsce na liście, a korona liczy teraz 63 szczyty.</p>
+
+  <div class="swap">
+    <div class="card old">
+      <div class="tag">Było</div>
+      <div class="name">64 szczyty</div>
+      <dl><dt>Korona</dt><dd>8</dd><dt>Wielka Korona</dt><dd>17</dd><dt>Diamentowa</dt><dd>39</dd></dl>
+    </div>
+    <div class="arrow">→</div>
+    <div class="card new">
+      <div class="tag">Jest</div>
+      <div class="name">63 szczyty</div>
+      <dl><dt>Korona</dt><dd>8</dd><dt>Wielka Korona</dt><dd>15</dd><dt>Diamentowa</dt><dd>40</dd></dl>
+    </div>
+  </div>
+
+  <h2>Co zbadaliśmy</h2>
+  <ul>
+    <li><strong>Dane:</strong> numeryczne modele terenu z lotniczego skanowania laserowego, polski NMT z GUGiK i czeski DMR 5G z ČÚZK. To modele samego gruntu, bez drzew i budynków.</li>
+    <li><strong>Zakres:</strong> izolację policzyliśmy dla 243 wierzchołków, a wybitność dla 265. To wszystkie wzniesienia o wybitności co najmniej 100 m i wszystkie szczyty z listy.</li>
+    <li><strong>Dokładność:</strong> wierzchołki odczytaliśmy z siatki ok. 1 m, przełęcze z siatki ok. 11 × 19 m.</li>
+  </ul>
+  <p>To prawdopodobnie pierwsze tak kompleksowe badanie Sudetów oparte na modelu terenu pod kątem izolacji i wybitności sudeckich szczytów. Jak liczy się wybitność i dlaczego model terenu jest tu lepszy od map i od modeli satelitarnych, opisaliśmy na przykładzie <a href="gora-wszystkich-swietych.html">Góry Wszystkich Świętych</a>.</p>
+
+  <h2>Kryteria</h2>
+  <p>W oparciu o nowe dane o <strong>wybitności</strong> (o ile szczyt wznosi się ponad najniższą przełęcz, przez którą trzeba zejść, żeby dojść do wyższego wierzchołka) i <strong>izolacji</strong> (odległość do najbliższego wyższego szczytu) zweryfikowaliśmy kryteria kwalifikacji szczytów. Nadal o miejscu szczytu decydują dwie liczby: wybitność i izolacja. Wystarczy spełnić jedno z kryteriów.</p>
+  <div class="tablewrap"><table>
+    <tr><th>Poziom</th><th>Wybitność</th><th>lub izolacja</th></tr>
+    <tr><td>Korona</td><td>powyżej 500 m</td><td>powyżej 21 km <span class="note">(wcześniej 25 km)</span></td></tr>
+    <tr><td>Wielka Korona</td><td>co najmniej 350 m</td><td>powyżej 14 km</td></tr>
+    <tr><td>Diamentowa Korona</td><td>powyżej 270 m</td><td>co najmniej 10 km</td></tr>
+  </table></div>
+  <p>Do Diamentowej Korony wchodzą też najwybitniejsze szczyty pasm, pogórzy i kotlin, których nie ma na wyższych poziomach.</p>
+  <p>Progi nie są wzięte z powietrza. Sprawdziliśmy je metodą naturalnych przełamań Jenksa, która szuka w danych miejsc, gdzie wartości same układają się w grupy. Dopasowanie podziału (GVF) wynosi ok. 0,95, gdzie 1 oznaczałoby podział idealny. Oba wykresy można obejrzeć i samemu sprawdzić, gdzie leży każdy szczyt:</p>
+  <div class="charts">
+    <a class="chart" href="../izolacja.html">
+      <span class="tag">Wykres</span>
+      <strong>Izolacja szczytów Sudetów</strong>
+      <span>Wszystkie szczyty od największej izolacji, z kohortami Jenksa i granicami 21, 14, 10 i 7 km.</span>
+      <span class="more">Otwórz wykres →</span>
+    </a>
+    <a class="chart" href="../wybitnosc.html">
+      <span class="tag">Wykres</span>
+      <strong>Wybitność szczytów Sudetów</strong>
+      <span>Szczyty od największej wybitności, z kohortami Jenksa. Można przełączyć na granice 500, 350, 270 i 200 m.</span>
+      <span class="more">Otwórz wykres →</span>
+    </a>
+  </div>
+
+  <h2>Zmiany na liście</h2>
+  <div class="qa">
+    <p class="q"><a href="../?szczyt=valtenberg">Valtenberg</a>: z Wielkiej Korony do Diamentowej</p>
+    <p>Izolacja Valtenberga wynosi 12,3 km, a nie 15 km. Tyle dzieli go od Tanečnicy (599 m), która jest od niego wyższa. To poniżej progu Wielkiej Korony (14 km), ale powyżej progu Diamentowej (10 km).</p>
+  </div>
+  <div class="qa">
+    <p class="q"><a href="../?szczyt=kralovecky-spicak">Královecký Špičák</a>: z Wielkiej Korony do Diamentowej</p>
+    <p>Wybitność Královeckiego Špičáka wynosi 340 m (przełęcz kluczowa 541 m), czyli mniej niż 350 m potrzebne do Wielkiej Korony. Z zapasem mieści się w Diamentowej (próg 270 m).</p>
+  </div>
+  <div class="qa">
+    <p class="q">Strażna: usunięta z listy</p>
+    <p>Sąsiedni Křížový vrch okazał się wyższy o 0,4 m (641,9 m wobec 641,5 m, to samo pokazuje OpenStreetMap). Strażna nie jest więc najwyższym punktem swojego grzbietu i ma tylko 25 m wybitności (zamiast 92 m) i 2,6 km izolacji (zamiast 12 km). Pogórze Witkowskie nadal reprezentuje w koronie <a href="../?szczyt=hurka">Hůrka</a>.</p>
+  </div>
+
+  <div class="fact">
+    <div class="label">Ciekawostka</div>
+    <p><strong>40 centymetrów zdecydowało o miejscu w koronie.</strong> Tyle Strażna ustępuje sąsiedniemu Křížovemu vrchowi. Na drugim końcu skali jest Pradziad: najbliższy wyższy od niego szczyt to Śnieżka, aż 128 km dalej, a nie 94 km, jak podawaliśmy wcześniej.</p>
+  </div>
+
+  <h2>Co to oznacza dla zdobywców</h2>
+  <ul>
+    <li>Zdobycia Valtenberga i Královeckiego Špičáka przeszły automatycznie do Diamentowej Korony. Nie musisz nic robić.</li>
+    <li>Zdobycie Strażnej nie liczy się już do korony, bo szczytu nie ma na liście.</li>
+  </ul>
+
+  <h2>Czego nie bierzemy z modelu</h2>
+  <ul>
+    <li><strong>Obniżenia terenu zrobione przez człowieka.</strong> Wykop kolejowy albo drogowy obniża przełęcz, a wtedy model terenu pokazuje większą wybitność, niż miałaby góra bez ingerencji człowieka. To samo dotyczy kamieniołomów. Dlatego <a href="../?szczyt=snieznik">Śnieżnik</a> (wykop kolejowy na Ramzovskim sedle), <a href="../?szczyt=jested">Ještěd</a> (wykop autostrady) i <a href="../?szczyt=humrich">Humrich</a> (wykop drogi) zachowały wybitność z map.</li>
+    <li><strong>Budowle na szczycie.</strong> Na Grodźcu model terenu zawyża wierzchołek przez zamek, więc wysokość szczytu wzięliśmy z mapy.</li>
+    <li><strong>Saksonia.</strong> Dla Saksonii nie ma otwartego modelu gruntu, więc szczyty niemieckie mają wybitność z map topograficznych. Nasze obliczenia potwierdzają ją z dokładnością do kilku metrów.</li>
+  </ul>
+
+  <h2>Co jeszcze sprawdzamy</h2>
+  <p>Badanie nie jest zamknięte. W dwóch parach szczytów, Szczeliniec Wielki i Skalniak oraz Okole i Folwarczna, model terenu i mapy różnią się co do tego, który szczyt jest wyższy. Każda kolejna zmiana na liście dostanie tu osobny wpis.</p>
+
+  <a class="cta" href="../#map-section">Zobacz szczyty na mapie →</a>
+
+  <h2>Źródła</h2>
+  <ul class="sources">
+    <li>Numeryczny model terenu, GUGiK (siatka 1 m, PL-KRON86-NH), dane PZGiK udostępniane bezpłatnie.</li>
+    <li>DMR 5G, ČÚZK, dane otwarte.</li>
+    <li>Mapy topograficzne Saksonii (wybitność szczytów niemieckich).</li>
+    <li>Nazwy i kontrola wysokości wierzchołków: © współtwórcy OpenStreetMap, ODbL.</li>
+    <li>Podział na kohorty: metoda naturalnych przełamań Jenksa (wykresy <a href="../izolacja.html">izolacji</a> i <a href="../wybitnosc.html">wybitności</a>).</li>
+  </ul>
+</article>
+</body>
+</html>

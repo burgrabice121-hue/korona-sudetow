@@ -37,6 +37,7 @@ Konto (Google lub e-mail), zaznaczanie zdobytych szczytów, paski postępu, dzie
 - [Wykaz 63 szczytów](https://viasudetica.eu/#peaks-section)
 - [Mapa do zapisywania wejść](https://wielkakoronasudetow.pl/)
 - [Aktualności](https://viasudetica.eu/aktualnosci/): wpisy o zmianach na liście szczytów i wynikach badań
+- [Z badań: cały łańcuch Sudetów na modelu terenu](https://viasudetica.eu/aktualnosci/sudety-na-modelu-terenu.html): wybitność i izolacja przeliczone na NMT GUGiK i ČÚZK, nowe progi kryteriów (Jenks), zmiany 2026-11-11 (Valtenberg i Královecký Špičák do Diamentowej, Strażna usunięta; 8/15/40 = 63)
 - [Z badań: Góra Wszystkich Świętych zamiast Włodzickiej Góry](https://viasudetica.eu/aktualnosci/gora-wszystkich-swietych.html): dlaczego o miejscu w Diamentowej Koronie decyduje wybitność, a nie wysokość; analiza na NMT GUGiK
 
 ## Wykaz szczytów
@@ -69,7 +70,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Okole: 725 m n.p.m., wybitność 255 m, izolacja 16 km; Sudety Zachodnie, Góry Kaczawskie; PL
 - Gromnik: 393 m n.p.m., wybitność 135 m, izolacja 19.9 km; Przedgórze Sudeckie, Wzgórza Niemczańsko-Strzelińskie; PL
 - Fidlův kopec: 680 m n.p.m., wybitność 117 m, izolacja 14.7 km; Sudety Kulmowe, Niski Jesionik; CZ
-- Zvičina: 672 m n.p.m., wybitność 187 m, izolacja 19.3 km; Sudety Zachodnie, Podgórze Karkonoskie; CZ
+- Zvičina: 672 m n.p.m., wybitność 193 m, izolacja 19.3 km; Sudety Zachodnie, Podgórze Karkonoskie; CZ
 - Słoneczna (Slunečná): 802 m n.p.m., wybitność 168 m, izolacja 19.3 km; Sudety Kulmowe, Niski Jesionik; CZ
 
 ### Diamentowa Korona Sudetów (40)

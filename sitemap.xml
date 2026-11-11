@@ -7,6 +7,24 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://viasudetica.eu/aktualnosci/</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://viasudetica.eu/aktualnosci/sudety-na-modelu-terenu.html</loc>
+    <lastmod>2026-11-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://viasudetica.eu/aktualnosci/gora-wszystkich-swietych.html</loc>
+    <lastmod>2026-11-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://viasudetica.eu/izolacja.html</loc>
     <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>

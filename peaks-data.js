@@ -23,7 +23,7 @@ const WKS = [
   { id:"okole", name:"Okole",              cz:"—",                alt:725,  prom:255,  izol:16,   pasmo:"Góry Kaczawskie",             strefa:"Zachodnie", kraj:"PL",    lat:50.9807356,  lng:15.8179414,  note:"Najwybitniejszy szczyt Gór Kaczawskich" },
   { id:"gromnik", name:"Gromnik",            cz:"—",                alt:393,  prom:135,  izol:19.9, pasmo:"Wzgórza Niemczańsko-Strzelińskie", strefa:"Środkowe", kraj:"PL",    lat:50.7023425, lng:17.1101153, note:"Szczyt Wzgórz Niemczańsko-Strzelińskich" },
   { id:"fidluv-kopec", name:"Fidlův kopec",       cz:"Fidlův kopec",     alt:680,  prom:117,  izol:14.7, pasmo:"Niski Jesionik",              strefa:"Wschodnie", kraj:"CZ",    lat:49.6204417, lng:17.5054925, note:"Szczyt Niskiego Jesionika" },
-  { id:"zvicina", name:"Zvičina",            cz:"Zvičina",          alt:672,  prom:187,  izol:19.3, pasmo:"Podgórze Karkonoskie",        strefa:"Zachodnie", kraj:"CZ",    lat:50.4548267, lng:15.6954847, note:"Szczyt Podgórza Karkonoskiego" },
+  { id:"zvicina", name:"Zvičina",            cz:"Zvičina",          alt:672,  prom:193,  izol:19.3, pasmo:"Podgórze Karkonoskie",        strefa:"Zachodnie", kraj:"CZ",    lat:50.4548267, lng:15.6954847, note:"Szczyt Podgórza Karkonoskiego" },
   { id:"sloneczna", name:"Słoneczna",       cz:"Slunečná",         alt:802,  prom:168,  izol:19.3, pasmo:"Niski Jesionik",    strefa:"Wschodnie", kraj:"CZ",    lat:49.8394,  lng:17.4293,  note:"Najwyższy szczyt Nízkého Jeseníku" },
 ];
 
