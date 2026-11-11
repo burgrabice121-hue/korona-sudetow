@@ -60,7 +60,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Studniční vrch: 992 m n.p.m., wybitność 416 m, izolacja 7.9 km; Sudety Wschodnie, Sokoli Grzbiet; CZ
 - Keprník: 1423 m n.p.m., wybitność 410 m, izolacja 12.7 km; Sudety Wschodnie, Wysoki Jesionik; CZ
 - Jeřáb: 1003 m n.p.m., wybitność 393 m, izolacja 8 km; Sudety Wschodnie, Hanušovická vrchovina; CZ
-- Waligóra: 936 m n.p.m., wybitność 351 m, izolacja 13.1 km; Sudety Środkowe, Góry Kamienne; PL
+- Waligóra: 936 m n.p.m., wybitność 367 m, izolacja 13.1 km; Sudety Środkowe, Góry Kamienne; PL
 - Szczeliniec Wielki (Velká Hejšovina): 922 m n.p.m., wybitność 272 m, izolacja 14.7 km; Sudety Środkowe, Góry Stołowe; PL
 - Hrazený: 608 m n.p.m., wybitność 168 m, izolacja 16 km; Sudety Łużyckie, Pogórze Łużyckie; CZ
 - Hochstein: 449 m n.p.m., wybitność 159 m, izolacja 15.9 km; Sudety Łużyckie, Pogórze Zachodniołużyckie; DE
@@ -93,9 +93,9 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Smrek (Smrk): 1125 m n.p.m., wybitność 310 m, izolacja 7 km; Sudety Wschodnie, Góry Złote; CZ
 - Landekrone (Landeskrone): 419 m n.p.m., wybitność 157 m, izolacja 12 km; Sudety Łużyckie, Kotlina Żytawska; DE
 - Rotstein: 454 m n.p.m., wybitność 150 m, izolacja 13 km; Sudety Łużyckie, Pogórze Wschodniołużyckie; DE
-- Jedlice: 354 m n.p.m., wybitność 105 m, izolacja 11.1 km; Przedgórze Sudeckie, Wzgórza Strzegomskie; PL
+- Jedlice: 354 m n.p.m., wybitność 121 m, izolacja 11.1 km; Przedgórze Sudeckie, Wzgórza Strzegomskie; PL
 - Wysoka Dąbrowa (Hohe Dubrau): 307 m n.p.m., wybitność 113 m, izolacja 12.8 km; Sudety Łużyckie, Płaskowyż Budziszyński; DE
-- Wielki Szyszak (Vysoké kolo): 1509 m n.p.m., wybitność 312 m, izolacja 9.7 km; Sudety Zachodnie, Karkonosze; PL/CZ
+- Wielki Szyszak (Vysoké kolo): 1509 m n.p.m., wybitność 332 m, izolacja 9.7 km; Sudety Zachodnie, Karkonosze; PL/CZ
 - Kozákov: 745 m n.p.m., wybitność 295 m, izolacja 13.2 km; Sudety Zachodnie, Grzbiet Jesztedzko-Kozakowski; CZ
 - Niedźwiedzi Wierch (Medvědí vrch): 1216 m n.p.m., wybitność 286 m, izolacja 9.2 km; Sudety Wschodnie, Wysoki Jesionik; CZ
 - Jawornik Wielki: 872 m n.p.m., wybitność 279 m, izolacja 3.8 km; Sudety Wschodnie, Góry Złote; PL
