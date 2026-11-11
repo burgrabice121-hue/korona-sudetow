@@ -316,6 +316,7 @@ function showFeedback(){
         return '<article class="ad-fb'+(f.done?' done':'')+'"><header>'+fmtTime(f.created)+' · '+
           (f.userId ? '<a href="#u/'+encodeURIComponent(f.userId)+'">'+esc(f.name||f.userId)+'</a>' : esc(f.name||'niezalogowany'))+
           (f.email ? ' · '+esc(f.email) : '')+
+          (f.post ? ' · wpis: <a href="../aktualnosci/'+encodeURIComponent(f.post)+'.html" target="_blank" rel="noopener">'+esc(f.post)+'</a>' : '')+
           ' <button type="button" class="ad-btn" data-fb="'+esc(f.id)+'" data-done="'+(f.done?'0':'1')+'">'+(f.done?'Przywróć':'Załatwione')+'</button>'+
           (f.done ? ' <span class="ad-muted">załatwione '+fmtDay(f.doneAt)+'</span>' : '')+
         '</header><p>'+esc(f.message).replace(/\n/g,'<br>')+'</p></article>';

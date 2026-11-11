@@ -84,6 +84,15 @@ h3 { font-size:1.15rem; margin:2rem 0 0.5rem; color:var(--bark); }
 .chart .tag { font-family:var(--mono); font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); }
 .chart .more { color:var(--rust); }
 .note { color:var(--muted); font-size:13px; }
+.talk { background:var(--parchment); border-radius:8px; padding:0.2rem 1.4rem 1.3rem; margin:2.4rem 0 1rem; }
+.talk h2 { margin-top:1.4rem; }
+.talk label { display:block; font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin:0.9rem 0 0.3rem; }
+.talk textarea, .talk input { width:100%; font:inherit; font-size:15px; padding:0.6rem 0.7rem; border:1px solid var(--fog); border-radius:5px; background:var(--snow); color:var(--stone); }
+.talk textarea { min-height:7rem; resize:vertical; }
+.talk button { margin-top:0.9rem; background:var(--bark); color:var(--snow); border:0; border-radius:5px; padding:0.7rem 1.3rem; font:inherit; font-size:15px; cursor:pointer; }
+.talk button:disabled { opacity:.6; cursor:default; }
+.talk .status { margin-top:0.7rem; font-size:14px; color:var(--moss); }
+.talk .status.err { color:var(--rust); }
 .qa { border-left:3px solid var(--lichen); padding:0.2rem 0 0.2rem 1rem; margin:1.2rem 0; }
 .qa .q { font-style:italic; color:var(--moss); }
 .cta { display:inline-block; background:var(--bark); color:var(--snow); text-decoration:none; padding:0.8rem 1.4rem; border-radius:5px; margin-top:1rem; }
@@ -192,6 +201,21 @@ h3 { font-size:1.15rem; margin:2rem 0 0.5rem; color:var(--bark); }
   <h2>Co jeszcze sprawdzamy</h2>
   <p>Badanie nie jest zamknięte. W dwóch parach szczytów, Szczeliniec Wielki i Skalniak oraz Okole i Folwarczna, model terenu i mapy różnią się co do tego, który szczyt jest wyższy. Każda kolejna zmiana na liście dostanie tu osobny wpis.</p>
 
+  <!-- Ramka „Twoje zdanie”: treść Promocja, działanie (zapis do feedback z polem post) Interfejs; skrypt odkrywa ramkę, gdy formularz jest gotowy -->
+  <section class="talk" id="twoje-zdanie" data-post="sudety-na-modelu-terenu" hidden>
+    <h2>Twoje zdanie</h2>
+    <p>Czy kryteria kwalifikacji szczytów są dla Ciebie jasne? Co w nich jest zrozumiałe, a co trzeba lepiej wyjaśnić? Może masz pomysł, jak je ulepszyć albo czytelniej pokazać? Napisz, każda uwaga pomoże nam je dopracować.</p>
+    <form id="talk-form">
+      <label for="talk-msg">Wiadomość</label>
+      <textarea id="talk-msg" maxlength="3000" required></textarea>
+      <label for="talk-email">E-mail (opcjonalnie, jeśli chcesz odpowiedź)</label>
+      <input type="email" id="talk-email" autocomplete="email" maxlength="200">
+      <button type="submit" id="talk-send">Wyślij</button>
+      <div class="status" id="talk-status" role="status"></div>
+    </form>
+    <p class="note">Wiadomość trafi bezpośrednio do autora. Najciekawsze pytania i sugestie opiszemy w kolejnych wpisach. Adresu e-mail nie publikujemy.</p>
+  </section>
+
   <a class="cta" href="../#map-section">Zobacz szczyty na mapie →</a>
 
   <h2>Źródła</h2>
@@ -203,5 +227,6 @@ h3 { font-size:1.15rem; margin:2rem 0 0.5rem; color:var(--bark); }
     <li>Podział na kohorty: metoda naturalnych przełamań Jenksa (wykresy <a href="../izolacja.html">izolacji</a> i <a href="../wybitnosc.html">wybitności</a>).</li>
   </ul>
 </article>
+<script src="rozmowa.js?v=20261111" defer></script>
 </body>
 </html>
