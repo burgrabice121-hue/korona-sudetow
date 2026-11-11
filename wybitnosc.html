@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Wybitność szczytów Sudetów policzona na numerycznym modelu terenu GUGiK i ČÚZK, z podziałem na kohorty metodą Jenksa i progami Korony, Wielkiej Korony i Diamentowej Korony Sudetów.">
+<meta name="author" content="Wojciech Rogala">
+<link rel="canonical" href="https://viasudetica.eu/wybitnosc.html">
+<style>html{-webkit-text-size-adjust:100%}body{margin:0;font-size:14px}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}</style>
+<title>Wybitność szczytów Sudetów · Wielka Korona Sudetów</title>
+<style>
+/* Układ: jedna kolumna — nagłówek, pasek sterowania, wykres rangowy (wybitność, skala log.), tabela kohort, tabela szczytów */
+:root {
+  --bg:#f6f3ec; --panel:#fffdf8; --ink:#2c2a25; --ink2:#5d564b; --muted:#857c6e; --rule:#ddd5c4;
+  --ks:#9c4a22; --wks:#c9782f; --dks:#8f8a6f; --none:#b9b2a3;
+  --brk:#2f5d50; --thr:#9c4a22;
+  --serif:Georgia,"Times New Roman",serif; --mono:"Courier New",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg:#1b1a17; --panel:#24221e; --ink:#efeae0; --ink2:#c8c0b2; --muted:#9a9285; --rule:#3a372f;
+  --ks:#e0855a; --wks:#e6a861; --dks:#b5ae90; --none:#6d675c; --brk:#7cc3ad; --thr:#e0855a; color-scheme:dark } }
+:root[data-theme="dark"] {
+  --bg:#1b1a17; --panel:#24221e; --ink:#efeae0; --ink2:#c8c0b2; --muted:#9a9285; --rule:#3a372f;
+  --ks:#e0855a; --wks:#e6a861; --dks:#b5ae90; --none:#6d675c; --brk:#7cc3ad; --thr:#e0855a; color-scheme:dark }
+body { background:var(--bg); color:var(--ink); font-family:var(--serif); }
+.wrap { max-width:1080px; margin:0 auto; padding-block:28px 48px; padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px)); display:grid; gap:20px; }
+.eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+h1 { font-size:1.9rem; line-height:1.2; margin:.3rem 0 .5rem; text-wrap:balance; font-weight:normal; }
+p { line-height:1.65; max-width:68ch; margin:0; color:var(--ink2); }
+.controls { display:flex; flex-wrap:wrap; gap:14px 22px; align-items:center; background:var(--panel); border:1px solid var(--rule); border-radius:6px; padding:12px 14px; }
+.ctl { display:flex; gap:8px; align-items:center; font-family:var(--mono); font-size:12px; color:var(--ink2); }
+.seg { display:inline-flex; border:1px solid var(--rule); border-radius:4px; overflow:hidden; }
+.seg button { font:inherit; background:transparent; color:var(--ink2); border:0; padding:5px 9px; cursor:pointer; }
+.seg button + button { border-left:1px solid var(--rule); }
+.seg button[aria-pressed="true"] { background:var(--ink); color:var(--bg); }
+button:focus-visible, input:focus-visible { outline:2px solid var(--brk); outline-offset:2px; }
+input[type=range] { accent-color:var(--brk); width:110px; }
+.wrap > * { min-width:0; }
+[hidden] { display:none !important; }
+.chartbox { background:var(--panel); border:1px solid var(--rule); border-radius:6px; padding:12px 8px 6px; position:relative; }
+.chartscroll { overflow-x:auto; }
+svg { display:block; }
+.legend { display:flex; flex-wrap:wrap; gap:6px 16px; font-family:var(--mono); font-size:11.5px; color:var(--ink2); padding:4px 10px 8px; }
+.legend span { display:inline-flex; align-items:center; gap:6px; }
+.sw { width:10px; height:10px; border-radius:50%; display:inline-block; }
+.ln { width:18px; height:0; border-top:2px solid var(--brk); display:inline-block; }
+.ln.d { border-top:1.5px dashed var(--thr); }
+#tip { position:absolute; pointer-events:none; background:var(--ink); color:var(--bg); font-family:var(--mono); font-size:12px; line-height:1.5; padding:7px 9px; border-radius:4px; max-width:270px; opacity:0; transition:opacity .1s; }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+.stat { background:var(--panel); border:1px solid var(--rule); border-radius:6px; padding:10px 12px; }
+.stat b { display:block; font-size:1.35rem; font-weight:normal; font-variant-numeric:tabular-nums; }
+.stat small { font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; }
+h2 { font-size:1.25rem; font-weight:normal; margin:.4rem 0 0; }
+.tbl { overflow-x:auto; background:var(--panel); border:1px solid var(--rule); border-radius:6px; }
+table { border-collapse:collapse; width:100%; font-size:13.5px; }
+th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--rule); vertical-align:top; }
+th { font-family:var(--mono); font-weight:normal; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); }
+td.n { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.chip { font-family:var(--mono); font-size:10.5px; padding:1px 6px; border-radius:3px; border:1px solid var(--rule); white-space:nowrap; }
+.chip.KS { border-color:var(--ks); color:var(--ks); } .chip.WKS { border-color:var(--wks); color:var(--wks); } .chip.DKS { border-color:var(--dks); color:var(--dks); }
+.note { font-size:13px; color:var(--muted); line-height:1.6; max-width:80ch; }
+details summary { cursor:pointer; font-family:var(--mono); font-size:12px; color:var(--ink2); padding:6px 0; }
+@media (max-width:560px) { h1 { font-size:1.5rem; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow"><a href="./" style="color:inherit">← Wielka Korona Sudetów</a> · analiza kryteriów</div>
+    <h1>Wybitność szczytów Sudetów i kohorty metodą Jenksa</h1>
+    <p>Wybitność to wysokość szczytu nad najwyższą przełęczą, przez którą trzeba zejść, żeby dojść do wyższego szczytu. Wartości policzono na numerycznych modelach terenu GUGiK i ČÚZK w siatce ok. 11 × 19 m (przełęcze), a wysokości wierzchołków doprecyzowano w siatce ok. 1 m. Obliczenia objęły wszystkie wierzchołki Sudetów o wybitności co najmniej 100 m oraz wszystkie szczyty z listy. Domyślnie granice klas wyznacza metoda Jenksa (6 klas); można zmienić liczbę klas albo przełączyć na granice ustalone (500, 350, 270 i 200 m) i wpisać własne. Linie przerywane to progi koron: 500 m (Korona), 350 m (Wielka Korona), 270 m (Diamentowa).</p>
+  </header>
+
+  <div class="controls" role="group" aria-label="Ustawienia podziału">
+    <div class="ctl">Granice <span class="seg" id="mode"><button aria-pressed="false" data-v="manual">ustalone</button><button aria-pressed="true" data-v="jenks">Jenks</button></span>
+      <input id="manual" type="text" value="500; 350; 270; 200" aria-label="Granice klas w m, rozdzielone średnikami" style="font:inherit;width:110px;padding:4px 6px;border:1px solid var(--rule);border-radius:4px;background:var(--bg);color:var(--ink)"></div>
+    <div class="ctl" id="kctl"><label for="k">Klasy</label><input id="k" type="range" min="2" max="7" value="6"><output id="kout">6</output></div>
+    <div class="ctl">Skala podziału <span class="seg" id="scale"><button aria-pressed="true" data-v="log">logarytmiczna</button><button aria-pressed="false" data-v="lin">liniowa</button></span></div>
+    <div class="ctl">Populacja <span class="seg" id="pop"><button aria-pressed="true" data-v="all">wszystkie ≥ 150 m</button><button aria-pressed="false" data-v="list">tylko lista</button></span></div>
+    <div class="ctl">Pradziad <span class="seg" id="pr"><button aria-pressed="true" data-v="off">pomiń</button><button aria-pressed="false" data-v="on">uwzględnij</button></span></div>
+    <div class="ctl">Wysokości <span class="seg" id="var"><button aria-pressed="true" data-v="a">NMT</button><button aria-pressed="false" data-v="b">z map</button></span></div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="chartbox">
+    <div class="legend" aria-hidden="true">
+      <span><i class="sw" style="background:var(--ks)"></i>Korona</span>
+      <span><i class="sw" style="background:var(--wks)"></i>Wielka Korona</span>
+      <span><i class="sw" style="background:var(--dks)"></i>Diamentowa</span>
+      <span><i class="sw" style="background:transparent;border:1.5px solid var(--none)"></i>poza listą</span>
+      <span><i class="ln"></i>granica klasy</span>
+      <span><i class="ln d"></i>próg korony (500 / 350 / 270 m)</span>
+    </div>
+    <div class="chartscroll"><svg id="chart" role="img" aria-label="Wybitność szczytów uszeregowana malejąco, skala logarytmiczna, z granicami klas Jenksa"></svg></div>
+    <div id="tip" role="status"></div>
+  </div>
+
+  <p class="note" id="gvf-note"><strong>Dopasowanie (GVF)</strong>, czyli <em>goodness of variance fit</em>, mówi, jak dobrze podział na klasy opisuje dane: GVF = 1 − SDCM / SDAM. SDAM to suma kwadratów odchyleń wszystkich wartości od średniej całego zbioru, a SDCM to suma kwadratów odchyleń każdej wartości od średniej jej własnej klasy. Wartość 1 oznacza klasy całkowicie jednorodne, 0 oznacza podział, który niczego nie porządkuje. Podział z GVF powyżej ok. 0,8 uznaje się za dobry, powyżej 0,9 za bardzo dobry. Metoda Jenksa przy danej liczbie klas wybiera granice o największym GVF. Ponieważ GVF rośnie z liczbą klas, porównuje się tylko podziały o tej samej liczbie klas. Liczymy je na logarytmie wybitności, bo rozkład jest silnie skośny: kilka szczytów ma 500–1000 m, a większość 150–250 m. Dla populacji domyślnej optymalny podział Jenksa na 6 klas daje GVF <span id="gvf-jenks6">–</span>. Granice ustalone 500 / 350 / 270 / 200 m (5 klas) dają GVF <span id="gvf-manual">–</span>, a optymalny podział Jenksa na 5 klas <span id="gvf-jenks">–</span>.</p>
+
+  <h2>Kohorty</h2>
+  <div class="tbl"><table id="classes"><thead><tr><th>Klasa</th><th class="n">Wybitność</th><th class="n">Szczytów</th><th>Szczyty</th></tr></thead><tbody></tbody></table></div>
+
+  <p class="note">Śnieżka jest pominięta zawsze: jest najwyższa w Sudetach, więc jej przełęcz kluczowa leży daleko poza obszarem analizy (wybitność 1197 m według bazy). Pradziad (983 m) jest domyślnie pominięty: jego wybitność jest dużo większa od pozostałych i sam tworzy osobną klasę, co przesuwa granice reszty. Można go włączyć przełącznikiem. Wariant „z map” przyjmuje Szczeliniec Wielki (922 m) wyższy od Skalniaka (915 m) i Okole (725 m) wyższe od Folwarcznej. Model terenu daje odwrotnie (Skalniak 919,6 m; Folwarczna 722,84 m wobec 722,79 m), więc większa wybitność przechodzi na drugi szczyt pary. Strażna (642 m) ma według modelu tylko 25 m wybitności, bo sąsiedni wierzchołek 2,6 km dalej jest wyższy o 0,4 m. Dla Saksonii nie ma otwartego modelu gruntu, więc szczyty niemieckie liczono na modelu powierzchni Copernicus, który obejmuje korony drzew i zawyża zalesione wierzchołki nawet o 15 m. Dlatego szczyty niemieckie z listy mają na wykresie wybitność z bazy. Obliczenia z wierzchołkiem z bazy i przełęczą z modelu ją potwierdzają w granicach kilku metrów (najwięcej: Hochstein 149 wobec 159 m, Rotstein 144 wobec 150 m); tylko przełęcz Valtenberga leży w Czechach, w zasięgu modelu gruntu ČÚZK (391,1 m), co daje 195 m wobec 196 m w bazie. Wierzchołki niemieckie spoza listy mają wartości z modelu powierzchni bez poprawki. Kolumna „W bazie” to wartość z listy szczytów na stronie.</p>
+
+  <details>
+    <summary>Wszystkie szczyty w tabeli</summary>
+    <div class="tbl"><table id="all"><thead><tr><th>Szczyt</th><th>Korona</th><th>Pasmo</th><th class="n">Wys. [m]</th><th class="n">Przełęcz [m]</th><th class="n">Wybitność [m]</th><th class="n">W bazie [m]</th><th>Źródło</th></tr></thead><tbody></tbody></table></div>
+  </details>
+</div>
+<script>
+const DATA = [{"n":"Śnieżka","t":"KS","h":1603,"prom":1197,"pasmo":"Karkonosze","src":"baza (przełęcz kluczowa poza obszarem analizy)"},{"n":"Pradziad","t":"KS","h":1492,"prom":982.8,"pasmo":"Wysoki Jesionik","col":509.3,"src":"NMT; przełęcz z przesiewu 36 x 62 m","db":983},{"n":"Śnieżnik","t":"KS","h":1426,"prom":669.1,"pasmo":"Masyw Śnieżnika","col":757.3,"src":"NMT","db":662},{"n":"Wielka Desztna","t":"KS","h":1116,"prom":587.1,"pasmo":"Góry Orlickie","col":528.7,"src":"NMT","db":587},{"n":"Ještěd","t":"KS","h":1012,"prom":517.4,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":494.3,"src":"NMT","db":512},{"n":"Wielka Sowa","t":"KS","h":1016,"prom":488.4,"pasmo":"Góry Sowie","col":527.2,"src":"NMT; przełęcz z przesiewu 36 x 62 m","db":484},{"n":"Ślęża","t":"KS","h":717,"prom":466.8,"pasmo":"Masyw Ślęży","col":250.4,"src":"NMT","db":468},{"n":"Suchy Szczyt","t":"WKS","h":996,"prom":435.1,"pasmo":"Góry Orlickie","col":560.4,"src":"NMT","db":435},{"n":"Studniční vrch","t":"WKS","h":992,"prom":415.1,"pasmo":"Sokoli Grzbiet","col":576.4,"src":"NMT","db":416},{"n":"Keprník","t":"WKS","h":1423,"prom":412.3,"pasmo":"Wysoki Jesionik","col":1010.4,"src":"NMT","db":410},{"n":"Jeřáb","t":"WKS","h":1003,"prom":396.1,"pasmo":"Hanušovická vrchovina","col":607.1,"src":"NMT","db":393},{"n":"Luž","t":"KS","h":793,"prom":369.2,"pasmo":"Góry Łużyckie","col":423.9,"src":"NMT; przełęcz kluczowa z przesiewu 36 x 62 m (423,9 m)","db":369},{"n":"Waligóra","t":"WKS","h":934,"prom":367.2,"pasmo":"Góry Kamienne","col":566.9,"src":"NMT","db":367},{"n":"Královecký Špičák","t":"DKS","h":880,"prom":339.4,"pasmo":"Góry Kamienne","col":541.1,"src":"NMT","db":340},{"n":"Wielki Szyszak","t":"DKS","h":1509,"prom":331.5,"pasmo":"Karkonosze","col":1177.3,"src":"NMT","db":332},{"n":"Smrek","t":"DKS","h":1127,"prom":310.8,"pasmo":"Góry Złote","col":816.0,"src":"NMT","db":310},{"n":"Chełmiec","t":"DKS","h":850,"prom":301.7,"pasmo":"Góry Wałbrzyskie","col":548.4,"src":"NMT","db":301},{"n":"Szeroka Góra","t":"DKS","h":766,"prom":292.7,"pasmo":"Góry Bardzkie","col":473.4,"src":"NMT","db":283},{"n":"Kozákov","t":"DKS","h":745,"prom":290.6,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":454.2,"src":"NMT","db":295},{"n":"Niedźwiedzi Wierch","t":"DKS","h":1216,"prom":285.8,"pasmo":"Wysoki Jesionik","col":930.2,"src":"NMT","db":286},{"n":"Jawornik Wielki","t":"DKS","h":872,"prom":280.3,"pasmo":"Góry Złote","col":591.7,"src":"NMT","db":279},{"n":"Skalniak","t":"","h":920,"prom":257.4,"pasmo":"Góry Stołowe","col":662.2,"src":"NMT","prom_b":130.0},{"n":"Jezevčí vrch","t":"","h":666,"prom":256.5,"pasmo":"Góry Łużyckie","col":409.2,"src":"NMT"},{"n":"Góra Poprzeczna","t":"DKS","h":975,"prom":256.3,"pasmo":"Góry Złotogórskie","col":718.5,"src":"NMT","db":258},{"n":"Lesista Wielka","t":"","h":858,"prom":255.0,"pasmo":"Góry Kamienne","col":602.8,"src":"NMT"},{"n":"Folwarczna","t":"","h":723,"prom":252.5,"pasmo":"Góry Kaczawskie","col":470.4,"src":"NMT","prom_b":186.2},{"n":"Jagodna Północna","t":"DKS","h":985,"prom":249.9,"pasmo":"Góry Bystrzyckie","col":735.2,"src":"NMT","db":247},{"n":"Ucháč","t":"","h":1010,"prom":244.3,"pasmo":"Wysoki Jesionik","col":765.4,"src":"NMT"},{"n":"Špičák","t":"","h":723,"prom":241.5,"pasmo":"Góry Izerskie","col":481.4,"src":"NMT"},{"n":"Wysoka Kopa","t":"DKS","h":1127,"prom":240.3,"pasmo":"Góry Izerskie","col":887.0,"src":"NMT","db":240},{"n":"Černá studnice","t":"","h":870,"prom":239.9,"pasmo":"Góry Izerskie","col":630.2,"src":"NMT"},{"n":"Jizera","t":"","h":1122,"prom":237.6,"pasmo":"Góry Izerskie","col":884.2,"src":"NMT"},{"n":"Borówkowa","t":"DKS","h":900,"prom":235.8,"pasmo":"Góry Złote","col":664.1,"src":"NMT","db":236},{"n":"Cap","t":"DKS","h":786,"prom":230.6,"pasmo":"Góry Stołowe","col":554.9,"src":"NMT","db":231},{"n":"Hochwald/Hvozd","t":"","h":749,"prom":226.9,"pasmo":"Góry Łużyckie","col":522.3,"src":"NMT"},{"n":"Borowa","t":"","h":853,"prom":221.5,"pasmo":"Góry Wałbrzyskie","col":631.9,"src":"NMT"},{"n":"Jedlová","t":"","h":775,"prom":219.2,"pasmo":"Góry Łużyckie","col":556.2,"src":"NMT"},{"n":"Skalnik","t":"DKS","h":944,"prom":219.1,"pasmo":"Rudawy Janowickie","col":725.1,"src":"NMT","db":220},{"n":"Černá hora","t":"","h":1300,"prom":216.5,"pasmo":"Karkonosze","col":1083.4,"src":"NMT"},{"n":"Stożek Wielki","t":"","h":840,"prom":215.1,"pasmo":"Góry Kamienne","col":625.1,"src":"NMT"},{"n":"Jelení loučky","t":"","h":1205,"prom":212.4,"pasmo":"Wysoki Jesionik","col":992.9,"src":"NMT"},{"n":"Vápenný","t":"","h":790,"prom":212.2,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":578.2,"src":"NMT"},{"n":"Černá stráň","t":"","h":1237,"prom":209.7,"pasmo":"Wysoki Jesionik","col":1027.2,"src":"NMT"},{"n":"Trójgarb","t":"","h":779,"prom":209.1,"pasmo":"Góry Wałbrzyskie","col":569.6,"src":"NMT"},{"n":"Klíč","t":"","h":760,"prom":207.6,"pasmo":"Góry Łużyckie","col":552.3,"src":"NMT"},{"n":"Kanci vrch","t":"DKS","h":608,"prom":207.0,"pasmo":"Zábřežská vrchovina","col":400.5,"src":"NMT","db":207},{"n":"Tabor","t":"DKS","h":683,"prom":205.2,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":477.4,"src":"NMT","db":207},{"n":"Kamienica","t":"","h":973,"prom":202.7,"pasmo":"Góry Izerskie","col":769.9,"src":"NMT"},{"n":"Sępia Góra","t":"","h":582,"prom":201.6,"pasmo":"Masyw Ślęży","col":380.8,"src":"NMT"},{"n":"Poręba","t":"","h":676,"prom":201.2,"pasmo":"Góry Kaczawskie","col":474.9,"src":"NMT"},{"n":"Czerniec","t":"","h":892,"prom":201.1,"pasmo":"Góry Bystrzyckie","col":690.9,"src":"NMT"},{"n":"Studenec","t":"","h":737,"prom":201.0,"pasmo":"Góry Łużyckie","col":535.7,"src":"NMT"},{"n":"Bílá skála","t":"","h":968,"prom":197.5,"pasmo":"Karkonosze","col":770.6,"src":"NMT"},{"n":"Valtenberg","t":"DKS","h":586,"prom":196,"pasmo":"Pogórze Łużyckie","col":391.1,"src":"baza (DE: brak NMT; obliczenia: wierzchołek z bazy − przełęcz 391.1 m = 194.9 m, przełęcz z NMT ČÚZK)","db":196},{"n":"Zelený vrch","t":"","h":586,"prom":195.9,"pasmo":"Góry Łużyckie","col":389.8,"src":"NMT"},{"n":"Zvičina","t":"WKS","h":672,"prom":193.6,"pasmo":"Podgórze Karkonoskie","col":478.4,"src":"NMT","db":187},{"n":"Czorneboh","t":"WKS","h":557,"prom":192,"pasmo":"Pogórze Łużyckie","col":367.3,"src":"baza (DE: brak NMT; obliczenia: wierzchołek z bazy − przełęcz 367.3 m = 189.7 m, przełęcz z modelu powierzchni)","db":192},{"n":"Krąglak","t":"","h":692,"prom":187.6,"pasmo":"Góry Wałbrzyskie","col":504.8,"src":"NMT"},{"n":"Žaltman","t":"","h":741,"prom":187.3,"pasmo":"Góry Kamienne","col":553.7,"src":"NMT"},{"n":"Kottmar","t":"WKS","h":582,"prom":187,"pasmo":"Pogórze Łużyckie","col":392.8,"src":"baza (DE: brak NMT; obliczenia: wierzchołek z bazy − przełęcz 392.8 m = 189.2 m, przełęcz z modelu powierzchni)","db":187},{"n":"Szczytna","t":"","h":462,"prom":186.8,"pasmo":"Masyw Ślęży","col":275.3,"src":"NMT"},{"n":"Okole","t":"WKS","h":723,"prom":186.2,"pasmo":"Góry Kaczawskie","col":536.6,"src":"NMT","prom_b":254.6,"db":255},{"n":"Zadní Žalý","t":"","h":1036,"prom":185.4,"pasmo":"Karkonosze","col":850.5,"src":"NMT"},{"n":"Smrek","t":"DKS","h":1124,"prom":184.1,"pasmo":"Góry Izerskie","col":940.2,"src":"NMT","db":184},{"n":"Biskupia Kopa","t":"DKS","h":890,"prom":182.7,"pasmo":"Góry Opawskie","col":706.9,"src":"NMT","db":176},{"n":"Bradlo","t":"","h":599,"prom":182.0,"pasmo":"Hanušovická vrchovina","col":417.0,"src":"NMT"},{"n":"Chlum","t":"DKS","h":603,"prom":181.9,"pasmo":"Pogórze Orlickie","col":421.1,"src":"NMT","db":180},{"n":"Lisia Góra","t":"DKS","h":612,"prom":180.6,"pasmo":"Podgórze Karkonoskie","col":431.4,"src":"NMT","db":178},{"n":"Špičák","t":"","h":811,"prom":179.2,"pasmo":"Góry Izerskie","col":631.6,"src":"NMT"},{"n":"Vysoká hora","t":"","h":1031,"prom":178.0,"pasmo":"Wysoki Jesionik","col":853.3,"src":"NMT"},{"n":"Hušák","t":"","h":626,"prom":177.4,"pasmo":"Pogórze Orlickie","col":448.8,"src":"NMT"},{"n":"Krzyżna Góra","t":"","h":647,"prom":175.6,"pasmo":"Rudawy Janowickie","col":471.9,"src":"NMT"},{"n":"Kamenný vrch","t":"","h":964,"prom":175.4,"pasmo":"Hanušovická vrchovina","col":788.6,"src":"NMT"},{"n":"Dvorský les","t":"","h":1035,"prom":175.2,"pasmo":"Karkonosze","col":859.7,"src":"NMT"},{"n":"Kobyla","t":"DKS","h":574,"prom":175.2,"pasmo":"Pogórze Opawskie","col":398.8,"src":"NMT","db":174},{"n":"Končina","t":"","h":888,"prom":173.7,"pasmo":"Góry Opawskie","col":714.2,"src":"NMT"},{"n":"Dubina","t":"","h":553,"prom":171.0,"pasmo":"Pogórze Orlickie","col":382.0,"src":"NMT"},{"n":"Großer Picho","t":"","h":508,"prom":170.6,"pasmo":"Pogórze Łużyckie","col":337.7,"src":"NMT"},{"n":"wierzchołek 876 m","t":"","h":876,"prom":170.3,"pasmo":"Góry Opawskie","col":705.3,"src":"NMT"},{"n":"Słoneczna","t":"WKS","h":802,"prom":170.2,"pasmo":"Niski Jesionik","col":631.7,"src":"NMT; przełęcz z przesiewu 36 x 62 m","db":168},{"n":"Góra Wszystkich Świętych","t":"DKS","h":649,"prom":169.8,"pasmo":"Obniżenie Nowej Rudy","col":479.3,"src":"NMT","db":170},{"n":"Dlouhé stráně","t":"","h":1354,"prom":169.6,"pasmo":"Wysoki Jesionik","col":1184.2,"src":"NMT"},{"n":"Luční hora","t":"","h":1556,"prom":168.2,"pasmo":"Karkonosze","col":1387.3,"src":"NMT"},{"n":"Lubrza","t":"","h":670,"prom":167.6,"pasmo":"Góry Kaczawskie","col":502.6,"src":"NMT"},{"n":"Bukowa Kopa","t":"","h":851,"prom":167.0,"pasmo":"Góry Złote","col":684.2,"src":"NMT"},{"n":"Velký Buk","t":"","h":736,"prom":166.9,"pasmo":"Góry Łużyckie","col":568.8,"src":"NMT"},{"n":"Špičák","t":"","h":544,"prom":165.5,"pasmo":"Pogórze Łużyckie","col":378.4,"src":"NMT"},{"n":"Święta Góra","t":"","h":699,"prom":165.2,"pasmo":"Góry Kamienne","col":534.1,"src":"NMT"},{"n":"Dlouhá hora","t":"","h":748,"prom":165.1,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":582.4,"src":"NMT"},{"n":"Háj","t":"","h":632,"prom":164.2,"pasmo":"Hanušovická vrchovina","col":468.1,"src":"NMT"},{"n":"Turzec","t":"","h":685,"prom":162.6,"pasmo":"Góry Kaczawskie","col":522.4,"src":"NMT"},{"n":"Petrovský vrch","t":"","h":780,"prom":162.2,"pasmo":"Hanušovická vrchovina","col":617.9,"src":"NMT"},{"n":"Hrazený","t":"WKS","h":608,"prom":161.5,"pasmo":"Pogórze Łużyckie","col":446.7,"src":"NMT","db":168},{"n":"Wilkowiec","t":"","h":597,"prom":160.4,"pasmo":"Obniżenie Nowej Rudy","col":436.1,"src":"NMT"},{"n":"Kalenica","t":"","h":964,"prom":160.3,"pasmo":"Góry Sowie","col":803.8,"src":"NMT"},{"n":"Hochstein","t":"WKS","h":449,"prom":159,"pasmo":"Pogórze Zachodniołużyckie","col":299.7,"src":"baza (DE: brak NMT; obliczenia: wierzchołek z bazy − przełęcz 299.7 m = 149.3 m, przełęcz z modelu powierzchni)","db":159},{"n":"Ostrzyca","t":"DKS","h":500,"prom":158.6,"pasmo":"Pogórze Kaczawskie","col":341.7,"src":"NMT","db":160},{"n":"Żeleźniak","t":"","h":663,"prom":158.5,"pasmo":"Góry Kaczawskie","col":504.6,"src":"NMT"},{"n":"Kämpferberge","t":"","h":424,"prom":158.3,"pasmo":"Pogórze Wschodniołużyckie","col":265.3,"src":"model powierzchni (DE)"},{"n":"Landekrone","t":"DKS","h":419,"prom":157,"pasmo":"Kotlina Żytawska","col":262.8,"src":"baza (DE: brak NMT; obliczenia: wierzchołek z bazy − przełęcz 262.8 m = 156.2 m, przełęcz z modelu powierzchni)","db":157},{"n":"Sonnenhübel","t":"","h":486,"prom":155.8,"pasmo":"Pogórze Wschodniołużyckie","col":330.4,"src":"model powierzchni (DE)"},{"n":"Javor","t":"","h":693,"prom":155.8,"pasmo":"Góry Łużyckie","col":537.2,"src":"NMT"},{"n":"Czarna Góra","t":"","h":1205,"prom":155.3,"pasmo":"Masyw Śnieżnika","col":1049.8,"src":"NMT"},{"n":"Dzikowiec","t":"","h":836,"prom":155.0,"pasmo":"Góry Kamienne","col":681.5,"src":"NMT"},{"n":"wierzchołek 470 m","t":"","h":470,"prom":154.0,"pasmo":"Kotlina Żytawska","col":316.3,"src":"NMT"},{"n":"wierzchołek 713 m","t":"","h":713,"prom":153.7,"pasmo":"Niski Jesionik","col":559.6,"src":"NMT"},{"n":"Raškovská bouda","t":"","h":801,"prom":153.4,"pasmo":"Hanušovická vrchovina","col":647.7,"src":"NMT"},{"n":"Velká Tisová","t":"","h":693,"prom":153.1,"pasmo":"Góry Łużyckie","col":539.5,"src":"NMT"},{"n":"Zadzierna","t":"DKS","h":724,"prom":152.9,"pasmo":"Kotlina Kamiennogórska","col":571.0,"src":"NMT","db":152},{"n":"Bílé skály","t":"","h":923,"prom":151.7,"pasmo":"Góry Złotogórskie","col":770.9,"src":"NMT"},{"n":"Rotstein","t":"DKS","h":454,"prom":150,"pasmo":"Pogórze Wschodniołużyckie","col":310.0,"src":"baza (DE: brak NMT; obliczenia: wierzchołek z bazy − przełęcz 310.0 m = 144.0 m, przełęcz z modelu powierzchni)","db":150},{"n":"Žárový vrch","t":"","h":1101,"prom":149.7,"pasmo":"Wysoki Jesionik","col":951.0,"src":"NMT"},{"n":"Cisowa","t":"","h":597,"prom":148.4,"pasmo":"Góry Kaczawskie","col":448.9,"src":"NMT"},{"n":"Rudná hora","t":"","h":917,"prom":148.4,"pasmo":"Wysoki Jesionik","col":768.1,"src":"NMT"},{"n":"Vysoká hole","t":"","h":1465,"prom":147.8,"pasmo":"Wysoki Jesionik","col":1317.0,"src":"NMT"},{"n":"Wielka Kopa","t":"","h":870,"prom":147.5,"pasmo":"Rudawy Janowickie","col":722.9,"src":"NMT"},{"n":"Stráž","t":"","h":630,"prom":147.0,"pasmo":"Podgórze Karkonoskie","col":483.3,"src":"NMT"},{"n":"Kumburk","t":"","h":638,"prom":144.9,"pasmo":"Podgórze Karkonoskie","col":492.8,"src":"NMT"},{"n":"Łomnicka Równia","t":"","h":898,"prom":144.8,"pasmo":"Góry Bystrzyckie","col":753.5,"src":"NMT"},{"n":"Buková hora","t":"","h":958,"prom":144.7,"pasmo":"Góry Orlickie","col":813.8,"src":"NMT"},{"n":"Dzicza Góra","t":"","h":884,"prom":144.3,"pasmo":"Rudawy Janowickie","col":739.5,"src":"NMT"},{"n":"Łysocina / Lysečinská hora","t":"","h":1190,"prom":143.7,"pasmo":"Karkonosze","col":1045.8,"src":"NMT"},{"n":"Bílý kámen","t":"","h":589,"prom":143.3,"pasmo":"Hanušovická vrchovina","col":445.5,"src":"NMT"},{"n":"Ostaš","t":"","h":701,"prom":142.9,"pasmo":"Góry Stołowe","col":558.0,"src":"NMT"},{"n":"Studený","t":"","h":721,"prom":142.7,"pasmo":"Góry Orlickie","col":578.7,"src":"NMT"},{"n":"wierzchołek 619 m","t":"","h":619,"prom":142.5,"pasmo":"Obniżenie Nowej Rudy","col":476.3,"src":"NMT"},{"n":"Teufelskanzel","t":"","h":483,"prom":142.2,"pasmo":"Pogórze Łużyckie","col":341.2,"src":"NMT"},{"n":"Gapy","t":"","h":484,"prom":140.7,"pasmo":"Góry Kaczawskie","col":343.4,"src":"NMT"},{"n":"Hůrka","t":"","h":558,"prom":140.7,"pasmo":"Pogórze Orlickie","col":417.0,"src":"NMT"},{"n":"Sklený vrch","t":"","h":609,"prom":140.3,"pasmo":"Hanušovická vrchovina","col":468.8,"src":"NMT"},{"n":"Pěnkavčí vrch","t":"","h":792,"prom":140.1,"pasmo":"Góry Łużyckie","col":652.1,"src":"NMT"},{"n":"Rychnovský vrch","t":"","h":541,"prom":140.1,"pasmo":"Pogórze Orlickie","col":400.8,"src":"NMT"},{"n":"Černý vrch","t":"","h":1027,"prom":139.4,"pasmo":"Góry Izerskie","col":887.4,"src":"NMT"},{"n":"Vlčí hora","t":"","h":588,"prom":139.1,"pasmo":"Pogórze Łużyckie","col":449.0,"src":"NMT"},{"n":"Grodziec","t":"","h":803,"prom":139.0,"pasmo":"Góry Orlickie","col":663.8,"src":"NMT"},{"n":"wierzchołek 764 m","t":"","h":764,"prom":139.0,"pasmo":"Hanušovická vrchovina","col":625.4,"src":"NMT"},{"n":"Malý Buk","t":"","h":713,"prom":138.7,"pasmo":"Góry Łużyckie","col":574.5,"src":"NMT"},{"n":"Góra Świętej Anny","t":"","h":647,"prom":138.6,"pasmo":"Obniżenie Nowej Rudy","col":508.4,"src":"NMT"},{"n":"Sokol","t":"","h":563,"prom":138.5,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":424.2,"src":"NMT"},{"n":"Ungerberg","t":"","h":553,"prom":138.2,"pasmo":"Pogórze Łużyckie","col":415.0,"src":"model powierzchni (DE)"},{"n":"Grodziec","t":"DKS","h":392,"prom":138.0,"pasmo":"Pogórze Kaczawskie","col":254.2,"src":"NMT","db":130},{"n":"Ovčí hora","t":"","h":496,"prom":137.1,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":358.8,"src":"NMT"},{"n":"Strážník","t":"","h":611,"prom":136.6,"pasmo":"Podgórze Karkonoskie","col":474.3,"src":"NMT"},{"n":"Czuba","t":"","h":658,"prom":136.5,"pasmo":"Góry Kamienne","col":521.5,"src":"NMT"},{"n":"Suchoń","t":"","h":966,"prom":136.5,"pasmo":"Masyw Śnieżnika","col":829.5,"src":"NMT"},{"n":"Kopřivný","t":"","h":825,"prom":135.8,"pasmo":"Góry Złote","col":689.2,"src":"NMT"},{"n":"Bucze Małe","t":"","h":474,"prom":135.5,"pasmo":"Pogórze Kaczawskie","col":338.9,"src":"NMT"},{"n":"Gromnik","t":"WKS","h":394,"prom":135.5,"pasmo":"Wzgórza Niemczańsko-Strzelińskie","col":258.5,"src":"NMT","db":135},{"n":"Szczeliniec Wielki","t":"WKS","h":920,"prom":135.1,"pasmo":"Góry Stołowe","col":785.0,"src":"NMT","prom_b":259.8,"db":272},{"n":"Schafberg","t":"","h":453,"prom":134.9,"pasmo":"Pogórze Wschodniołużyckie","col":317.8,"src":"model powierzchni (DE)"},{"n":"Keulenberg","t":"","h":413,"prom":134.0,"pasmo":"Pogórze Zachodniołużyckie","col":278.9,"src":"model powierzchni (DE)"},{"n":"Brzeźnica","t":"","h":493,"prom":133.9,"pasmo":"Wzgórza Niemczańsko-Strzelińskie","col":359.0,"src":"NMT"},{"n":"Anielska Góra","t":"","h":651,"prom":133.4,"pasmo":"Góry Kamienne","col":517.8,"src":"NMT"},{"n":"Adam","t":"","h":767,"prom":133.3,"pasmo":"Góry Orlickie","col":633.5,"src":"NMT"},{"n":"Plešivec","t":"","h":658,"prom":132.4,"pasmo":"Góry Łużyckie","col":525.1,"src":"NMT"},{"n":"Graniec","t":"","h":516,"prom":131.8,"pasmo":"Góry Bardzkie","col":384.7,"src":"NMT"},{"n":"Křemenáč","t":"","h":735,"prom":131.5,"pasmo":"Sokoli Grzbiet","col":603.2,"src":"NMT"},{"n":"Velký Kosíř","t":"","h":442,"prom":130.7,"pasmo":"Zábřežská vrchovina","col":310.8,"src":"NMT"},{"n":"Sokol","t":"","h":592,"prom":129.7,"pasmo":"Góry Łużyckie","col":462.3,"src":"NMT"},{"n":"Ruprechtický Špičák","t":"","h":880,"prom":129.4,"pasmo":"Góry Kamienne","col":750.7,"src":"NMT"},{"n":"Markovice","t":"","h":475,"prom":129.3,"pasmo":"Hanušovická vrchovina","col":345.6,"src":"NMT"},{"n":"Boží hora","t":"DKS","h":527,"prom":129.2,"pasmo":"Pogórze Żulowskie","col":398.2,"src":"NMT","db":127},{"n":"Boreczna","t":"","h":711,"prom":129.1,"pasmo":"Góry Wałbrzyskie","col":581.6,"src":"NMT"},{"n":"Łysa Góra","t":"","h":711,"prom":128.8,"pasmo":"Góry Kaczawskie","col":582.3,"src":"NMT"},{"n":"Červená hora","t":"","h":1332,"prom":128.7,"pasmo":"Wysoki Jesionik","col":1203.7,"src":"NMT"},{"n":"Kowadło/Kovadlina","t":"","h":990,"prom":128.5,"pasmo":"Góry Złote","col":861.1,"src":"NMT"},{"n":"Malinowa","t":"","h":839,"prom":126.9,"pasmo":"Góry Sowie","col":712.0,"src":"NMT"},{"n":"Lysý vrch","t":"","h":1128,"prom":126.3,"pasmo":"Wysoki Jesionik","col":1001.8,"src":"NMT"},{"n":"Zguba","t":"","h":428,"prom":124.8,"pasmo":"Wzgórza Niemczańsko-Strzelińskie","col":303.3,"src":"NMT"},{"n":"Rudka","t":"","h":956,"prom":124.6,"pasmo":"Masyw Śnieżnika","col":831.7,"src":"NMT"},{"n":"Wołowiec","t":"","h":776,"prom":123.7,"pasmo":"Góry Wałbrzyskie","col":652.2,"src":"NMT"},{"n":"Czernica","t":"","h":1083,"prom":123.2,"pasmo":"Góry Złote","col":960.0,"src":"NMT"},{"n":"wierzchołek 678 m","t":"","h":678,"prom":123.1,"pasmo":"Niski Jesionik","col":555.2,"src":"NMT"},{"n":"Bednářský vrch","t":"","h":592,"prom":122.9,"pasmo":"Góry Opawskie","col":469.0,"src":"NMT"},{"n":"Sarnica","t":"","h":552,"prom":122.8,"pasmo":"Góry Złote","col":428.7,"src":"NMT"},{"n":"Walberg","t":"","h":365,"prom":121.7,"pasmo":"Pogórze Zachodniołużyckie","col":243.4,"src":"NMT"},{"n":"Jedlice","t":"DKS","h":355,"prom":121.2,"pasmo":"Wzgórza Strzegomskie","col":233.7,"src":"NMT","db":121},{"n":"Drážník","t":"","h":507,"prom":121.2,"pasmo":"Hanušovická vrchovina","col":385.7,"src":"NMT"},{"n":"Ścinawka","t":"","h":535,"prom":120.9,"pasmo":"Obniżenie Ścinawki (Kotlina Broumovska)","col":414.3,"src":"NMT"},{"n":"Žárovec","t":"","h":794,"prom":120.9,"pasmo":"Hanušovická vrchovina","col":672.9,"src":"NMT"},{"n":"wierzchołek 594 m","t":"","h":594,"prom":120.8,"pasmo":"Pogórze Orlickie","col":473.5,"src":"NMT"},{"n":"Zámecký pahorek","t":"","h":868,"prom":120.7,"pasmo":"Góry Złotogórskie","col":747.5,"src":"NMT"},{"n":"Skalny Stół / Tabule","t":"","h":1283,"prom":119.9,"pasmo":"Karkonosze","col":1163.3,"src":"NMT"},{"n":"Chełmczyk","t":"","h":765,"prom":119.8,"pasmo":"Kotlina Kamiennogórska","col":645.4,"src":"NMT"},{"n":"Bieleboh","t":"","h":509,"prom":119.4,"pasmo":"Pogórze Łużyckie","col":389.2,"src":"NMT"},{"n":"Nowa Kopa","t":"DKS","h":555,"prom":119.4,"pasmo":"Obniżenie Ścinawki (Kotlina Broumovska)","col":435.7,"src":"NMT","db":119},{"n":"Špičák","t":"","h":841,"prom":119.3,"pasmo":"Pogórze Orlickie","col":722.0,"src":"NMT"},{"n":"Trupień","t":"","h":465,"prom":119.2,"pasmo":"Pogórze Kaczawskie","col":345.4,"src":"NMT"},{"n":"Schwarzenberg","t":"","h":427,"prom":119.0,"pasmo":"Pogórze Zachodniołużyckie","col":308.5,"src":"NMT"},{"n":"Doubravice","t":"","h":477,"prom":118.7,"pasmo":"Pogórze Orlickie","col":358.4,"src":"NMT"},{"n":"Wapniarka","t":"","h":516,"prom":118.6,"pasmo":"Masyw Śnieżnika","col":397.9,"src":"NMT"},{"n":"Radoszka","t":"","h":565,"prom":118.1,"pasmo":"Masyw Śnieżnika","col":446.8,"src":"NMT"},{"n":"Humrich","t":"DKS","h":510,"prom":117.2,"pasmo":"Pogórze Izerskie","col":392.5,"src":"NMT","db":124},{"n":"Czerwona Góra","t":"DKS","h":749,"prom":117.0,"pasmo":"Niski Jesionik","col":632.3,"src":"NMT","db":111},{"n":"wierzchołek 746 m","t":"","h":746,"prom":116.9,"pasmo":"Góry Opawskie","col":628.9,"src":"NMT"},{"n":"Javorník","t":"","h":685,"prom":116.8,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":568.3,"src":"NMT"},{"n":"Smolna","t":"","h":870,"prom":116.0,"pasmo":"Góry Bystrzyckie","col":753.5,"src":"NMT"},{"n":"Kunratický vrch","t":"","h":508,"prom":115.7,"pasmo":"Góry Łużyckie","col":392.8,"src":"NMT"},{"n":"Široký vrch","t":"","h":586,"prom":115.6,"pasmo":"Góry Łużyckie","col":470.4,"src":"NMT"},{"n":"Tanečnice","t":"","h":599,"prom":115.3,"pasmo":"Pogórze Łużyckie","col":483.7,"src":"NMT"},{"n":"Kamenitý kopec","t":"","h":616,"prom":114.9,"pasmo":"Hanušovická vrchovina","col":500.8,"src":"NMT"},{"n":"Bucza Góra","t":"","h":668,"prom":114.8,"pasmo":"Rudawy Janowickie","col":552.7,"src":"NMT"},{"n":"Borek","t":"","h":590,"prom":114.4,"pasmo":"Góry Bardzkie","col":475.5,"src":"NMT"},{"n":"Średnia Kopa","t":"","h":543,"prom":114.4,"pasmo":"Góry Złotogórskie","col":428.7,"src":"NMT"},{"n":"Złotnicka Czuba","t":"","h":436,"prom":114.3,"pasmo":"Pogórze Izerskie","col":321.8,"src":"NMT"},{"n":"Czeszka","t":"","h":742,"prom":114.3,"pasmo":"Góry Sowie","col":627.9,"src":"NMT"},{"n":"Jastrzębna","t":"","h":468,"prom":113.9,"pasmo":"Pogórze Kaczawskie","col":354.3,"src":"NMT"},{"n":"Fidlův kopec","t":"WKS","h":680,"prom":113.8,"pasmo":"Niski Jesionik","col":566.4,"src":"NMT","db":117},{"n":"Stržový vrch","t":"","h":710,"prom":113.6,"pasmo":"Góry Izerskie","col":596.2,"src":"NMT"},{"n":"Janský vrch","t":"","h":696,"prom":113.5,"pasmo":"Góry Kamienne","col":582.9,"src":"NMT"},{"n":"Císařský kámen","t":"","h":637,"prom":113.1,"pasmo":"Góry Izerskie","col":523.6,"src":"NMT"},{"n":"Wysoka Dąbrowa","t":"DKS","h":307,"prom":113,"pasmo":"Płaskowyż Budziszyński","col":191.3,"src":"baza (DE: brak NMT; obliczenia: wierzchołek z bazy − przełęcz 191.3 m = 115.7 m, przełęcz z modelu powierzchni)","db":113},{"n":"Ptasznik","t":"","h":718,"prom":112.8,"pasmo":"Góry Złote","col":605.3,"src":"NMT"},{"n":"Góra Świętego Jerzego","t":"","h":354,"prom":112.4,"pasmo":"Wzgórza Strzegomskie","col":241.8,"src":"NMT"},{"n":"Božanovský Špičák","t":"","h":777,"prom":112.4,"pasmo":"Góry Stołowe","col":664.3,"src":"NMT"},{"n":"Wysoka","t":"","h":526,"prom":112.4,"pasmo":"Obniżenie Nowej Rudy","col":413.9,"src":"NMT"},{"n":"Věžní skály","t":"","h":1016,"prom":112.3,"pasmo":"Góry Izerskie","col":903.7,"src":"NMT"},{"n":"Lisi Kamień","t":"","h":602,"prom":112.3,"pasmo":"Góry Wałbrzyskie","col":489.7,"src":"NMT"},{"n":"Plešivec","t":"","h":597,"prom":112.2,"pasmo":"Góry Łużyckie","col":484.9,"src":"NMT"},{"n":"Pekelský vrch","t":"","h":487,"prom":111.6,"pasmo":"Góry Izerskie","col":375.3,"src":"NMT"},{"n":"Róg","t":"","h":714,"prom":111.3,"pasmo":"Góry Stołowe","col":603.1,"src":"NMT"},{"n":"Koníček","t":"","h":508,"prom":110.9,"pasmo":"Pogórze Orlickie","col":396.6,"src":"NMT"},{"n":"Kozinec","t":"","h":608,"prom":110.8,"pasmo":"Podgórze Karkonoskie","col":496.8,"src":"NMT"},{"n":"Oderwitzer Spitzberg","t":"","h":499,"prom":110.7,"pasmo":"Pogórze Łużyckie","col":388.0,"src":"NMT"},{"n":"Černá hora","t":"","h":1084,"prom":110.7,"pasmo":"Góry Izerskie","col":973.6,"src":"NMT"},{"n":"Ječný vrch","t":"","h":503,"prom":110.6,"pasmo":"Pogórze Łużyckie","col":392.0,"src":"NMT"},{"n":"Na kostele","t":"","h":691,"prom":110.4,"pasmo":"Góry Stołowe","col":580.6,"src":"NMT"},{"n":"Pustina","t":"","h":626,"prom":110.3,"pasmo":"Zábřežská vrchovina","col":515.6,"src":"NMT"},{"n":"Vlčí hřeben","t":"","h":1136,"prom":110.2,"pasmo":"Karkonosze","col":1025.8,"src":"NMT"},{"n":"Włodzicka Góra","t":"","h":758,"prom":110.1,"pasmo":"Obniżenie Nowej Rudy","col":647.5,"src":"NMT"},{"n":"Breiteberg","t":"","h":510,"prom":109.6,"pasmo":"Pogórze Łużyckie","col":400.7,"src":"NMT"},{"n":"Špičák","t":"","h":958,"prom":109.4,"pasmo":"Góry Złote","col":848.1,"src":"NMT"},{"n":"Sušina","t":"","h":1321,"prom":109.2,"pasmo":"Masyw Śnieżnika","col":1212.1,"src":"NMT"},{"n":"Kälbersteine","t":"","h":504,"prom":108.8,"pasmo":"Pogórze Łużyckie","col":395.7,"src":"model powierzchni (DE)"},{"n":"Sokół","t":"","h":862,"prom":108.5,"pasmo":"Góry Sowie","col":753.8,"src":"NMT"},{"n":"Weifaer Höhe","t":"","h":522,"prom":108.3,"pasmo":"Pogórze Łużyckie","col":413.6,"src":"model powierzchni (DE)"},{"n":"Přední Hradiště","t":"","h":712,"prom":108.1,"pasmo":"Góry Stołowe","col":603.6,"src":"NMT"},{"n":"Triebenberg","t":"DKS","h":383,"prom":108,"pasmo":"Pogórze Zachodniołużyckie","col":280.0,"src":"baza (DE: brak NMT; obliczenia: wierzchołek z bazy − przełęcz 280.0 m = 103.0 m, przełęcz z modelu powierzchni)","db":108},{"n":"Lysý vrch","t":"","h":643,"prom":107.9,"pasmo":"Góry Izerskie","col":535.1,"src":"NMT"},{"n":"Grzybowiec","t":"","h":754,"prom":107.6,"pasmo":"Karkonosze","col":646.0,"src":"NMT"},{"n":"Schwarzer Berg","t":"","h":394,"prom":107.4,"pasmo":"Pogórze Wschodniołużyckie","col":286.3,"src":"NMT"},{"n":"Szeroka","t":"","h":845,"prom":107.3,"pasmo":"Góry Kamienne","col":738.0,"src":"NMT"},{"n":"Ovčí vrch","t":"","h":967,"prom":107.2,"pasmo":"Wysoki Jesionik","col":859.4,"src":"NMT"},{"n":"Hochstein","t":"","h":409,"prom":107.1,"pasmo":"Pogórze Wschodniołużyckie","col":301.5,"src":"NMT"},{"n":"Zahálkovy skalky","t":"","h":610,"prom":107.1,"pasmo":"Zábřežská vrchovina","col":502.6,"src":"NMT"},{"n":"Włodarz","t":"","h":811,"prom":106.9,"pasmo":"Góry Sowie","col":704.5,"src":"NMT"},{"n":"Kamzičí vrch","t":"","h":623,"prom":106.7,"pasmo":"Góry Łużyckie","col":516.6,"src":"NMT"},{"n":"wierzchołek 664 m","t":"","h":664,"prom":106.4,"pasmo":"Grzbiet Jesztedzko-Kozakowski","col":557.7,"src":"NMT"},{"n":"wierzchołek 887 m","t":"","h":887,"prom":106.3,"pasmo":"Góry Złotogórskie","col":780.2,"src":"NMT"},{"n":"Michalův vrch","t":"","h":602,"prom":105.4,"pasmo":"Zábřežská vrchovina","col":496.3,"src":"NMT"},{"n":"Schleißberg","t":"","h":438,"prom":104.6,"pasmo":"Pogórze Zachodniołużyckie","col":333.1,"src":"model powierzchni (DE)"},{"n":"Muchowskie Wzgórza","t":"","h":476,"prom":104.6,"pasmo":"Pogórze Kaczawskie","col":370.9,"src":"NMT"},{"n":"Petruškovy vrchy","t":"","h":720,"prom":104.3,"pasmo":"Podgórze Karkonoskie","col":615.6,"src":"NMT"},{"n":"Kraví hora","t":"","h":583,"prom":104.3,"pasmo":"Pogórze Orlickie","col":478.6,"src":"NMT"},{"n":"Čertova hora","t":"","h":1022,"prom":104.0,"pasmo":"Karkonosze","col":918.5,"src":"NMT"},{"n":"Turov","t":"","h":603,"prom":103.0,"pasmo":"Góry Kamienne","col":499.9,"src":"NMT"},{"n":"wierzchołek 780 m","t":"","h":780,"prom":102.5,"pasmo":"Niski Jesionik","col":677.4,"src":"NMT"},{"n":"Niedźwiadki","t":"","h":629,"prom":101.8,"pasmo":"Góry Wałbrzyskie","col":527.2,"src":"NMT"},{"n":"Pyszczyńska Góra","t":"DKS","h":276,"prom":92.4,"pasmo":"Równina Świdnicka","col":183.1,"src":"NMT","db":90},{"n":"Grodna","t":"DKS","h":507,"prom":85.6,"pasmo":"Kotlina Jeleniogórska","col":421.7,"src":"NMT","db":84},{"n":"Na Vyhlídce","t":"DKS","h":502,"prom":69.3,"pasmo":"Pogórze Burgrabickie","col":432.8,"src":"NMT","db":69},{"n":"Hůrka","t":"DKS","h":530,"prom":60.3,"pasmo":"Pogórze Witkowskie","col":469.5,"src":"NMT","db":62},{"n":"Chlum","t":"DKS","h":344,"prom":58.6,"pasmo":"Pogórze Trszickie","col":285.9,"src":"NMT","db":59},{"n":"984","t":"","h":982,"prom":33.5,"pasmo":"Masyw Śnieżnika","col":948.4,"src":"NMT"},{"n":"Strażna","t":"","h":642,"prom":24.6,"pasmo":"Pogórze Witkowskie","col":616.9,"src":"NMT"}];
+const TIER = {KS:'Korona', WKS:'Wielka Korona', DKS:'Diamentowa', '':'poza listą'};
+const st = { k:6, scale:'log', pop:'all', v:'a', pr:'off', mode:'jenks' };
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const r1 = x => Math.round(x); // granice ustalone porównujemy z wartością zaokrągloną do 1 m
+const fmt = (x, d=1) => x.toLocaleString('pl-PL', {minimumFractionDigits:d, maximumFractionDigits:d});
+
+function jenks(vals, k) { // Fisher-Jenks, vals rosnąco; zwraca indeksy początków klas
+  const n = vals.length, mat1 = [], mat2 = [];
+  for (let i = 0; i <= n; i++) { mat1.push(new Array(k+1).fill(0)); mat2.push(new Array(k+1).fill(Infinity)); }
+  for (let j = 1; j <= k; j++) { mat1[1][j] = 1; mat2[1][j] = 0; }
+  for (let l = 2; l <= n; l++) {
+    let s1 = 0, s2 = 0, w = 0, v = 0;
+    for (let m = 1; m <= l; m++) {
+      const i3 = l - m + 1, val = vals[i3-1];
+      s2 += val*val; s1 += val; w++; v = s2 - s1*s1/w;
+      const i4 = i3 - 1;
+      if (i4 !== 0) for (let j = 2; j <= k; j++) if (mat2[l][j] >= v + mat2[i4][j-1]) { mat1[l][j] = i3; mat2[l][j] = v + mat2[i4][j-1]; }
+    }
+    mat1[l][1] = 1; mat2[l][1] = v;
+  }
+  const starts = []; let kk = n;
+  for (let j = k; j >= 1; j--) { const id = mat1[kk][j] - 1; starts.unshift(id); kk = id; }
+  return { starts, sdcm: mat2[n][k] };
+}
+
+function current() {
+  return DATA.map(d => ({...d, x: st.v === 'b' && d.prom_b != null ? d.prom_b : d.prom}))
+    .filter(d => (st.pop === 'list' ? d.t : d.x >= 150) && d.n !== 'Śnieżka' && (st.pr === 'on' || d.n !== 'Pradziad'))
+    .sort((a, b) => b.x - a.x);
+}
+
+function render() {
+  const rows = current();
+  const asc = rows.map(d => d.x).reverse();
+  const tv = asc.map(x => st.scale === 'log' ? Math.log(x) : x);
+  const T = x => st.scale === 'log' ? Math.log(x) : x;
+  const mean = tv.reduce((a, b) => a + b, 0) / tv.length, sdam = tv.reduce((a, b) => a + (b-mean)**2, 0);
+  let cls, breaks, sdcm;
+  document.getElementById('kctl').hidden = st.mode !== 'jenks';
+  document.getElementById('manual').hidden = st.mode !== 'manual';
+  if (st.mode === 'jenks') {
+    const k = Math.min(st.k, rows.length), r = jenks(tv, k); sdcm = r.sdcm;
+    cls = r.starts.map((s, i) => ({ lo: asc[s], hi: asc[(r.starts[i+1] ?? asc.length) - 1], n: (r.starts[i+1] ?? asc.length) - s })).reverse();
+    breaks = cls.slice(0, -1).map((c, i) => ({ y: Math.sqrt(c.lo * cls[i+1].hi), label: `${fmt(cls[i+1].hi, 0)} | ${fmt(c.lo, 0)} m` }));
+  } else {
+    const b = document.getElementById('manual').value.split(/[;\s]+/).map(v => parseFloat(v.replace(',', '.'))).filter(v => v > 0).sort((a, c) => c - a);
+    const edges = [Infinity, ...b, 0];
+    cls = edges.slice(0, -1).map((top, i) => { const m = rows.filter(d => r1(d.x) < top && r1(d.x) >= edges[i+1]); return { n: m.length, lo: m.length ? Math.min(...m.map(d => d.x)) : NaN, hi: m.length ? Math.max(...m.map(d => d.x)) : NaN, from: edges[i+1], to: top }; });
+    sdcm = cls.reduce((acc, c) => { const v = rows.filter(d => r1(d.x) < c.to && r1(d.x) >= c.from).map(d => T(d.x)); if (!v.length) return acc; const mc = v.reduce((a, x) => a + x, 0) / v.length; return acc + v.reduce((a, x) => a + (x - mc)**2, 0); }, 0);
+    breaks = b.map(v => ({ y: v, label: `${fmt(v, 0)} m` }));
+  }
+  const gvf = 1 - sdcm / sdam;
+  rows.forEach(d => { d.c = st.mode === 'jenks' ? cls.findIndex(c => d.x >= c.lo && d.x <= c.hi) : cls.findIndex(c => r1(d.x) < c.to && r1(d.x) >= c.from); });
+
+  document.getElementById('stats').innerHTML = [
+    ['Szczytów w podziale', rows.length],
+    ['Dopasowanie (GVF)', fmt(gvf, 3)],
+    ['Granice klas [m]', breaks.map(b => b.label.replace(' m', '')).join(' · ')],
+  ].map(([a, b]) => `<div class="stat"><small>${a}</small><b>${b}</b></div>`).join('');
+
+  drawChart(rows, breaks);
+  const tb = document.querySelector('#classes tbody');
+  tb.innerHTML = cls.map((c, i) => {
+    const m = rows.filter(d => d.c === i);
+    const range = st.mode === 'jenks' ? `${fmt(c.lo, 0)}–${fmt(c.hi, 0)} m` : (c.to === Infinity ? `≥ ${fmt(c.from, 0)} m` : `${fmt(c.from, 0)}–${fmt(c.to, 0)} m`);
+    return `<tr><td>${i+1}</td><td class="n">${range}</td><td class="n">${c.n}</td><td>${m.map(d => d.t ? `${d.n} <span class="chip ${d.t}">${d.t}</span>` : `<span style="color:var(--muted)">${d.n}</span>`).join(', ')}</td></tr>`;
+  }).join('');
+  document.querySelector('#all tbody').innerHTML = rows.map(d =>
+    `<tr><td>${d.n}</td><td>${d.t ? `<span class="chip ${d.t}">${TIER[d.t]}</span>` : ''}</td><td>${d.pasmo}</td><td class="n">${d.h}</td><td class="n">${d.col != null ? fmt(d.col, 1) : '–'}</td><td class="n">${fmt(d.x, 1)}</td><td class="n">${d.db ?? ''}</td><td>${d.src}${d.prom_b != null ? ' · wariant zależny od wysokości' : ''}</td></tr>`).join('');
+}
+
+function drawChart(rows, breaks) {
+  const svg = document.getElementById('chart');
+  const H = 460, m = { l: 52, r: 16, t: 92, b: 34 }, W = Math.max(640, rows.length * 11 + m.l + m.r);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('width', W); svg.setAttribute('height', H);
+  const xmax = rows[0].x, xmin = Math.min(...rows.map(d => d.x));
+  const y0 = Math.log(Math.max(1, xmin * 0.85)), y1 = Math.log(xmax * 1.05);
+  const Y = v => m.t + (H - m.t - m.b) * (1 - (Math.log(v) - y0) / (y1 - y0));
+  const bw = (W - m.l - m.r) / rows.length, X = i => m.l + bw * (i + 0.5);
+  const ink2 = css('--ink2'), rule = css('--rule'), muted = css('--muted'), brk = css('--brk'), thr = css('--thr');
+  const col = { KS: css('--ks'), WKS: css('--wks'), DKS: css('--dks'), '': css('--none') };
+  let s = '';
+  [20, 50, 100, 200, 500, 1000].filter(v => v >= Math.exp(y0) && v <= Math.exp(y1)).forEach(v => {
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${rule}" stroke-width="1"/>`;
+    s += `<text x="${m.l - 8}" y="${Y(v) + 4}" text-anchor="end" font-family="Courier New,monospace" font-size="11" fill="${muted}">${v}</text>`;
+  });
+  s += `<text x="12" y="${m.t + 4}" font-family="Courier New,monospace" font-size="11" fill="${muted}" transform="rotate(-90 12 ${m.t + 4})" text-anchor="end">wybitność [m], skala log.</text>`;
+  [500, 350, 270].forEach(v => {
+    if (v < Math.exp(y0)) return;
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${thr}" stroke-width="1.2" stroke-dasharray="4 4" opacity=".75"/>`;
+    s += `<text x="${W - m.r - 2}" y="${Y(v) - 4}" text-anchor="end" font-family="Courier New,monospace" font-size="10.5" fill="${thr}">próg ${v} m</text>`;
+  });
+  breaks.forEach((b, i) => {
+    const yv = b.y;
+    s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(yv)}" y2="${Y(yv)}" stroke="${brk}" stroke-width="2"/>`;
+    s += `<text x="${W - m.r - 2}" y="${Y(yv) + 14}" text-anchor="end" font-family="Courier New,monospace" font-size="11" font-weight="bold" fill="${brk}" stroke="${css('--panel')}" stroke-width="4" paint-order="stroke">granica: ${b.label}</text>`;
+  });
+  rows.forEach((d, i) => {
+    const y = Y(d.x), base = H - m.b, w = Math.max(1.5, bw - 2);
+    if (d.t) s += `<rect x="${X(i) - w / 2}" y="${y}" width="${w}" height="${base - y}" rx="${Math.min(2, w / 2)}" fill="${col[d.t]}" opacity=".9"/>`;
+    else s += `<rect x="${X(i) - w / 2 + .75}" y="${y}" width="${w - 1.5}" height="${base - y}" rx="${Math.min(2, w / 2)}" fill="none" stroke="${col['']}" stroke-width="1.5"/>`;
+  });
+  // podpisy: szczyty powyżej najniższego progu, który przekracza ~14 km
+  rows.forEach((d, i) => {
+    if (d.x < 270) return;
+    const y = Y(d.x) - 4, x = X(i) + 3.5;
+    s += `<text x="${x}" y="${y}" font-family="Georgia,serif" font-size="10" fill="${d.t ? ink2 : muted}" transform="rotate(-90 ${x} ${y})">${d.n}</text>`;
+  });
+  s += `<line x1="${m.l}" x2="${W - m.r}" y1="${H - m.b}" y2="${H - m.b}" stroke="${muted}" stroke-width="1"/>`;
+  s += `<text x="${m.l}" y="${H - 10}" font-family="Courier New,monospace" font-size="11" fill="${muted}">szczyty uszeregowane malejąco wg wybitności →</text>`;
+  rows.forEach((d, i) => { s += `<rect class="hit" data-i="${i}" x="${X(i) - bw / 2}" y="${m.t}" width="${bw}" height="${H - m.t - m.b}" fill="transparent"/>`; });
+  svg.innerHTML = s;
+  const tip = document.getElementById('tip'), box = svg.closest('.chartbox');
+  svg.querySelectorAll('.hit').forEach(r => {
+    r.addEventListener('mouseenter', e => {
+      const d = rows[+r.dataset.i];
+      tip.innerHTML = `<b>${d.n}</b>${d.t ? ' · ' + TIER[d.t] : ''}<br>wybitność ${fmt(d.x, 1)} m · klasa ${d.c + 1}<br>${d.h} m n.p.m.${d.col != null ? ' · przełęcz ' + fmt(d.col, 1) + ' m' : ''}${d.db != null ? '<br>w bazie ' + d.db + ' m' : ''}<br>${d.pasmo}<br><span style="opacity:.75">${d.src}</span>`;
+      tip.style.opacity = 1;
+    });
+    r.addEventListener('mousemove', e => {
+      const b = box.getBoundingClientRect();
+      let x = e.clientX - b.left + 14; if (x + 280 > b.width) x = e.clientX - b.left - 284;
+      tip.style.left = Math.max(4, x) + 'px'; tip.style.top = (e.clientY - b.top + 12) + 'px';
+    });
+    r.addEventListener('mouseleave', () => tip.style.opacity = 0);
+  });
+}
+
+function seg(id, key) {
+  const el = document.getElementById(id);
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    el.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    st[key] = b.dataset.v; render();
+  });
+}
+seg('scale', 'scale'); seg('pop', 'pop'); seg('var', 'v'); seg('pr', 'pr'); seg('mode', 'mode');
+document.getElementById('manual').addEventListener('input', render);
+document.getElementById('k').addEventListener('input', e => { st.k = +e.target.value; document.getElementById('kout').textContent = st.k; render(); });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+render();
+(() => { // GVF dla ustawień domyślnych: granice ustalone vs optymalny Jenks (5 klas), skala log., populacja ≥ 150 m bez Śnieżki i Pradziada, wariant NMT
+  const v = DATA.filter(d => d.prom >= 150 && d.n !== 'Śnieżka' && d.n !== 'Pradziad').map(d => d.prom).sort((a, b) => a - b), t = v.map(Math.log);
+  const mean = t.reduce((a, b) => a + b, 0) / t.length, sdam = t.reduce((a, b) => a + (b - mean) ** 2, 0);
+  const edges = [Infinity, 500, 350, 270, 200, 0];
+  let sdcm = 0;
+  for (let i = 0; i < 5; i++) { const c = v.filter(x => r1(x) < edges[i] && r1(x) >= edges[i + 1]).map(Math.log); if (!c.length) continue; const m = c.reduce((a, b) => a + b, 0) / c.length; sdcm += c.reduce((a, b) => a + (b - m) ** 2, 0); }
+  document.getElementById('gvf-manual').textContent = fmt(1 - sdcm / sdam, 3);
+  document.getElementById('gvf-jenks').textContent = fmt(1 - jenks(t, 5).sdcm / sdam, 3);
+  document.getElementById('gvf-jenks6').textContent = fmt(1 - jenks(t, 6).sdcm / sdam, 3);
+})();
+</script>
+
+</body>
+</html>
