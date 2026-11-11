@@ -88,7 +88,7 @@ var COLS = [
   ['ks','KS'],['wks','WKS'],['dks','DKS'],['visits','Wejścia'],['ranking','Ranking'],['news','Wiadomości']
 ];
 var FILTERS = [['all','Wszyscy'],['unverified','Niepotwierdzony adres'],['hidden','Ukryci w rankingu'],
-  ['newsOff','Bez wiadomości'],['noPeaks','Bez zdobytych szczytów'],['noDoc','Bez danych postępu'],['disabled','Zablokowani']];
+  ['newsOff','Bez wiadomości'],['diary','Chcą pamiętnik'],['noPeaks','Bez zdobytych szczytów'],['noDoc','Bez danych postępu'],['disabled','Zablokowani']];
 function passes(r){
   if(filterKey==='unverified' && r.verified) return false;
   if(filterKey==='hidden' && r.ranking) return false;
@@ -96,6 +96,7 @@ function passes(r){
   if(filterKey==='noPeaks' && r.ks+r.wks+r.dks>0) return false;
   if(filterKey==='noDoc' && r.hasDoc) return false;
   if(filterKey==='disabled' && !r.disabled) return false;
+  if(filterKey==='diary' && !(r.diaryWanted||[]).length) return false;
   if(search){
     var q = search.toLowerCase();
     if(String(r.name||'').toLowerCase().indexOf(q)===-1 && String(r.email||'').toLowerCase().indexOf(q)===-1 && r.uid.toLowerCase()!==q) return false;
@@ -119,7 +120,7 @@ function drawUsers(){
   var tiles = [
     [s.users,'kont'],[s.verified,'z potwierdzonym adresem'],[s.last7,'nowych w 7 dni'],[s.last30,'nowych w 30 dni'],
     [s.withPeaks,'ze zdobytym szczytem'],[s.visits,'wejść w pamiętnikach'],[inv.accepted||0,'przyjętych zaproszeń'],
-    [s.hidden,'ukrytych w rankingu'],[s.newsOff,'bez wiadomości']
+    [s.hidden,'ukrytych w rankingu'],[s.newsOff,'bez wiadomości'],[s.diaryWanted||0,'chce pamiętnik']
   ];
   main(nav('')+
     '<div class="ad-tiles">'+tiles.map(function(t){ return '<div class="ad-tile"><b>'+t[0]+'</b><span>'+t[1]+'</span></div>'; }).join('')+'</div>'+
@@ -209,6 +210,7 @@ function drawUser(uid, d){
     ['Nazwa publiczna', esc(doc && doc.displayName || '—')+(a ? ' '+btn('setName','Zmień','','small') : '')],
     ['Wiadomości e-mail', yesNo(d.news,'włączone','wyłączone')+(d.newsVia ? ' <span class="ad-muted">(zmiana: '+esc(d.newsVia)+')</span>' : '')+' '+
       btn('setNews', d.news ? 'Wyłącz (na prośbę)' : 'Włącz (na prośbę)', ' data-on="'+(d.news?'0':'1')+'"', 'small')],
+    ['Chce pamiętnik', doc && doc.diaryWanted && doc.diaryWanted.length ? doc.diaryWanted.map(function(t){ return {ks:'Korona',wks:'Wielka',dks:'Diamentowa'}[t]; }).join(', ') : '—'],
     ['Ostatni zapis postępu', fmtTime(doc && doc.updated)],
     ['Schemat danych', doc ? (doc.schemaOk ? 'aktualny' : '<span class="ad-warn">stary (konto nie otwierało strony po zmianach list)</span>') : '—']
   ]));

@@ -1008,3 +1008,35 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
   .nav-logo { font-size: 10px; letter-spacing: 0.04em; line-height: 1.25; }
   .acct-name { max-width: 4em; }   /* długie imię nie wypycha przycisku konta poza ekran */
 }
+
+/* Kolejne korony (P43, app.js checkLevels/showLevels): zapowiedź nad listą i okno otwarcia / ukończenia */
+.tier-teaser { margin: 4px 6px 8px; padding: 8px 10px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 8px; font-size: 12px; line-height: 1.45; color: #C9D1D9; background: rgba(255,255,255,0.03); }
+.tier-teaser b { color: #E6EDF3; }
+.tier-teaser.wks b { color: #6EA8E8; }
+.tier-teaser.dks b { color: #A78BFA; }
+.tier-teaser .tt-cond { margin-top: 4px; color: #8B949E; }
+.unlock-box { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; margin: 0 12px; }
+.unlock-box.lv-ks { border-color: #D4A017; box-shadow: 0 0 60px rgba(212,160,23,.3); }
+.unlock-box.lv-ks .unlock-title { color: #F0C040; }
+.unlock-box.lv-wks { border-color: #3D7ABF; box-shadow: 0 0 60px rgba(61,122,191,.35); }
+.unlock-box.lv-wks .unlock-title { color: #6EA8E8; }
+.lv-sec { text-align: left; margin: 0 0 1.1rem; }
+.lv-sec + .lv-sec { padding-top: 1rem; border-top: 1px solid #30363D; }
+.lv-h { font-family: 'Georgia', serif; font-size: 1.1rem; font-weight: 700; color: #E6EDF3; margin-bottom: .3rem; }
+.lv-sum { margin: .5rem 0; padding: .5rem .7rem; background: rgba(255,255,255,0.04); border-radius: 6px; color: #C9D1D9; font-size: .92rem; }
+.lv-sum.muted { color: #8B949E; }
+.lv-pasma { display: flex; flex-wrap: wrap; gap: 4px; margin-top: .4rem; }
+.lv-pasma span { font-size: 12px; padding: 1px 8px; border-radius: 10px; border: 1px solid rgba(240,192,64,0.45); color: #F0C040; }
+.lv-diary { margin-top: .6rem; font-size: .92rem; }
+.lv-want { display: block; margin-top: .4rem; padding: 6px 14px; background: transparent; border: 1px solid #F0C040; border-radius: 4px; color: #F0C040; font: inherit; font-size: 13px; cursor: pointer; }
+.lv-want:hover:not(:disabled) { background: #F0C040; color: #0D1117; }
+.lv-want:disabled { border-color: #3FB950; color: #3FB950; cursor: default; }
+.unlock-later { display: block; margin: .6rem auto 0; background: none; border: none; color: #8B949E; font: inherit; font-size: 13px; cursor: pointer; text-decoration: underline; }
+.unlock-later[hidden] { display: none; }
+@media (max-width: 480px) { .unlock-box { padding: 1.6rem 1.1rem; } .unlock-title { font-size: 1.4rem; } }
+.unlock-box[class*="lv-"] .unlock-icon { font-size: 2.6rem; margin-bottom: .4rem; }
+/* okno korony: przewija się treść, przyciski zawsze pod nią */
+.unlock-box[class*="lv-"] { display: flex; flex-direction: column; overflow: hidden; }
+.unlock-box[class*="lv-"] .unlock-sub { overflow-y: auto; min-height: 0; flex: 1 1 auto; margin-bottom: 1rem; padding-right: 4px; }
+.unlock-box[class*="lv-"] .unlock-close { flex: none; align-self: center; }
+@media (max-height: 640px) { .unlock-box[class*="lv-"] .unlock-icon { display: none; } .unlock-box[class*="lv-"] { padding-top: 1.4rem; padding-bottom: 1.2rem; } }

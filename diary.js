@@ -566,11 +566,13 @@ function requireLogin(again){
 }
 
 /* asNew: true = od razu puste, nowe wejście (np. tuż po kliknięciu „Zdobyty!”) */
-function open(type, idx, asNew){
-  if(!requireLogin(function(){ open(type, idx, asNew); })) return;
+/* onClose: wywoływane raz po zamknięciu formularza (app.js: okno otwarcia / ukończenia korony, P43) */
+function open(type, idx, asNew, onClose){
+  if(!requireLogin(function(){ open(type, idx, asNew, onClose); })) return;
   ensureDom();
+  afterClose = onClose || null;
   var go = function(){
-    if(!loadOk){ alert('Nie udało się wczytać Twoich wejść. Odśwież stronę i spróbuj ponownie.'); return; }
+    if(!loadOk){ alert('Nie udało się wczytać Twoich wejść. Odśwież stronę i spróbuj ponownie.'); runAfterClose(); return; }
     openForm(type, idx, asNew ? 'new' : undefined);
   };
   // zawsze świeży odczyt: wejście mogło zostać zmienione na innym urządzeniu (stara kopia w pamięci
@@ -642,6 +644,39 @@ function closeForm(ask){
   releasePhotoUrls();
   o.classList.add('hidden');
   cur = null;
+  runAfterClose();
+}
+var afterClose = null;
+function runAfterClose(){
+  var f = afterClose; afterClose = null;
+  if(f) setTimeout(f, 150);
+}
+
+/* podsumowanie wejść na podane szczyty (okno ukończenia korony w app.js, P43): daty, liczby,
+   osoby liczone jak w „Moje wejścia” (personKey — różne pisownie tej samej osoby raz) */
+function summary(peakIds){
+  var ids = {}, s = {visits:0, first:null, last:null, km:0, ascent:0, photos:0, people:0, top:[]}, per = {};
+  (peakIds||[]).forEach(function(id){ ids[id] = 1; });
+  Object.keys(visits).forEach(function(k){
+    var v = visits[k];
+    if(!ids[v.peakId]) return;
+    s.visits++;
+    if(v.date){ if(!s.first || v.date < s.first) s.first = v.date; if(!s.last || v.date > s.last) s.last = v.date; }
+    s.km += v.km || 0; s.ascent += v.ascent || 0; s.photos += v.photos.length;
+    var seen = {};
+    v.companions.forEach(function(c){
+      if(!pnorm(c)) return;
+      var key = personKey(c);
+      if(seen[key]) return;
+      seen[key] = 1;
+      if(!per[key]) per[key] = {name:shownName(c), c:0};
+      per[key].c++;
+    });
+  });
+  var list = Object.keys(per).map(function(k){ return per[k]; }).sort(function(a, b){ return b.c - a.c || a.name.localeCompare(b.name, 'pl'); });
+  s.people = list.length;
+  s.top = list.slice(0, 3).map(function(x){ return x.name; });
+  return s;
 }
 
 /* ── zdjęcia w formularzu ── */
@@ -1680,6 +1715,7 @@ window.Diary = {
   load: load, clear: clear, popupBtn: popupBtn,
   open: open, openList: openList,
   visits: function(){ return visits; },
+  summary: summary,
   inviteCount: function(){ return incoming.length + offersIn.length; },
   serverOn: function(){ return INVITES_ON; }   // funkcje serwera wdrożone (także własny mail weryfikacyjny)
 };

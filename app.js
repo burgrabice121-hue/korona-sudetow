@@ -307,6 +307,16 @@ let STATE = loadState();
 let currentTab = 'ks';
 let ksMarkers = [], wksMarkers = [], dksMarkers = [];
 let openPopupIdx = null, openPopupType = null;
+/* kolejne korony (P43): stałe i stan okien — opis przy checkLevels() */
+const DKS_OPEN_AT = 14;   // Diamentowa otwiera się przy 14 z 17 szczytów Wielkiej: celowo częściowy próg („rdzeń Wielkiej”)
+const TIER_DATA = {ks:KS, wks:WKS, dks:DKS};
+const TIER_NAMES = {   // [mianownik, biernik, EN]
+  ks:  ['Korona Sudetów', 'Koronę Sudetów', 'Crown of the Sudetes'],
+  wks: ['Wielka Korona Sudetów', 'Wielką Koronę Sudetów', 'Great Crown of the Sudetes'],
+  dks: ['Diamentowa Korona Sudetów', 'Diamentową Koronę Sudetów', 'Diamond Crown of the Sudetes']
+};
+let levelTrigger = null;   // {type, idx}: szczyt właśnie zaznaczony przez użytkownika
+let levelEvents = [];      // zdarzenia czekające na pokazanie okna
 const ksLayer = L.layerGroup();
 const wksLayer = L.layerGroup();
 const dksLayer = L.layerGroup();
@@ -385,7 +395,9 @@ function markerSize(alt,type){
 }
 
 function makeIcon(p, type, conquered){
-  const sz = markerSize(p.alt, type);
+  // korona jeszcze nieotwarta (P43): mniejszy, przygaszony, ale klikalny
+  const pending = !conquered && !tierOpen(type);
+  const sz = pending ? Math.max(7, Math.round(markerSize(p.alt, type)*0.75)) : markerSize(p.alt, type);
   let col, border;
   if(conquered){
     col = type==='ks' ? COLOR_KS : type==='wks' ? '#22C55E' : '#A78BFA';
@@ -403,7 +415,7 @@ function makeIcon(p, type, conquered){
   const shape = type==='ks' ? '4px' : '50%';
   return L.divIcon({
     className:'',
-    html:`<div style="width:${sz}px;height:${sz}px;background:${col};border-radius:${shape};border:2px solid ${border};box-shadow:0 2px 8px rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${inner}</div>`,
+    html:`<div style="width:${sz}px;height:${sz}px;background:${col};border-radius:${shape};border:2px solid ${border};box-shadow:0 2px 8px rgba(0,0,0,0.5);${pending?'opacity:.5;':''}display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.3)'" onmouseout="this.style.transform='scale(1)'">${inner}</div>`,
     iconSize:[sz,sz],iconAnchor:[sz/2,sz/2],popupAnchor:[0,-sz/2-4]
   });
 }
@@ -527,10 +539,14 @@ window.togglePeak = function(type, idx){
   markers[idx].setIcon(makeIcon(p,type,conq));
   markers[idx].setPopupContent(buildPopup(p,type,idx));
 
+  levelTrigger = justConquered ? {type, idx} : null;
   updateUI();
   saveUserState();
-  // Tuż po „Zdobyty!” od razu otwórz formularz nowego wejścia (można go zamknąć bez zapisu)
-  if(justConquered && window.Diary) Diary.open(type, idx, true);
+  const ev = takeLevelEvents();
+  // Tuż po „Zdobyty!” od razu otwórz formularz nowego wejścia (można go zamknąć bez zapisu);
+  // okno otwarcia / ukończenia korony po zamknięciu formularza, żeby podsumowanie miało to wejście
+  if(justConquered && window.Diary) Diary.open(type, idx, true, ev.length ? ()=>showLevels(ev) : null);
+  else showLevels(ev);
 };
 
 /* Zaznacz szczyt jako zdobyty bez otwierania formularza (np. po przyjęciu udostępnionego wejścia).
@@ -545,9 +561,13 @@ window.markConquered = function(peakId){
     saveState(STATE);
     const markers = type==='ks'?ksMarkers:type==='wks'?wksMarkers:dksMarkers;
     if(markers[idx]){ markers[idx].setIcon(makeIcon(data[idx],type,true)); markers[idx].setPopupContent(buildPopup(data[idx],type,idx)); }
+    levelTrigger = {type, idx};
     updateUI();
     renderList(type);
     saveUserState();
+    // przyjęte zaproszenie: okno korony po przewinięciu do szczytu i wczytaniu kopii wejścia
+    const ev = takeLevelEvents();
+    if(ev.length) setTimeout(()=>showLevels(ev), 1500);
     return true;
   }
   return false;
@@ -568,31 +588,10 @@ function updateUI(){
   document.getElementById('wks-bar').style.width  = (wksDone/17*100)+'%';
   document.getElementById('dks-bar').style.width  = (dksDone/39*100)+'%';
 
-  // Achievements
-  const setAch = (id, earned, cls='earned') => {
-    const el = document.getElementById(id);
-    if(!el) return;
-    el.classList.toggle(cls, earned);
-  };
-  setAch('ach-1',    ksDone>=1);
-  setAch('ach-ks',   ksDone===8);
-  setAch('ach-wks1', wksDone>=1,   'wks-earned');
-  setAch('ach-wks',  wksDone===14, 'wks-earned');
-  setAch('ach-dks1', dksDone>=1,   'dk-earned');
-  setAch('ach-dks',  dksDone===39, 'dk-earned');
-
-  // Unlock WKS
-  if(ksDone===8 && !STATE.unlocked_wks){
-    STATE.unlocked_wks = true;
-    saveState(STATE);
-    unlockLevel('wks');
-  }
-  // Unlock DKS
-  if(wksDone===14 && !STATE.unlocked_dks && STATE.unlocked_wks){
-    STATE.unlocked_dks = true;
-    saveState(STATE);
-    unlockLevel('dks');
-  }
+  // otwarcie kolejnych koron i ukończenia (P43); okna tylko po zaznaczeniu szczytu (levelTrigger)
+  const ev = checkLevels(levelTrigger);
+  levelTrigger = null;
+  if(ev.length) levelEvents = levelEvents.concat(ev);
 
   document.getElementById('wks-prog-block').style.opacity = STATE.unlocked_wks ? '1' : '0.35';
   document.getElementById('dks-prog-block').style.opacity = STATE.unlocked_dks ? '1' : '0.35';
@@ -602,29 +601,170 @@ function updateUI(){
   renderList('dks');
 }
 
-function unlockLevel(type){
-  if(type==='wks'){
-    document.getElementById('tab-wks').classList.remove('locked');
-    wksMarkers.forEach(m=>m.setOpacity(1));
-    document.getElementById('unlock-title').textContent = 'Korona Sudetów zdobyta!';
-    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś wszystkie <strong>8 szczytów</strong> Korony Sudetów.<br><br>Odblokowano <strong>Wielką Koronę Sudetów</strong> — 17 szczytów!';
-    document.getElementById('unlock-close-btn').textContent = 'Zaczynam Wielką Koronę →';
-    document.getElementById('unlock-close-btn').onclick = function(){ closeUnlock('wks'); };
-  } else {
-    document.getElementById('tab-dks').classList.remove('locked');
-    dksMarkers.forEach(m=>m.setOpacity(1));
-    document.getElementById('unlock-title').textContent = 'Wielka Korona zdobyta!';
-    document.getElementById('unlock-sub').innerHTML = 'Ukończyłeś <strong>14 szczytów</strong> Wielkiej Korony Sudetów.<br><br>Odblokowano <strong>Diamentową Koronę Sudetów</strong> — 39 szczytów!';
-    document.getElementById('unlock-close-btn').textContent = 'Zaczynam Diamentową Koronę →';
-    document.getElementById('unlock-close-btn').onclick = function(){ closeUnlock('dks'); };
+/* ═══════════════════════════════════════════
+   KOLEJNE KORONY (P43, plan: session-logs/2026-11-11-poziomy-koron-plan.md)
+   Nic nie jest zamknięte. Wielka i Diamentowa przed otwarciem są zapowiedzią (zapowiedź nad listą,
+   mniejsze, przygaszone znaczniki — klikalne). Otwiera je ukończenie poprzedniej korony albo pierwszy
+   zaznaczony szczyt z nich; wtedy okno z nowymi pasmami i „Pokaż na mapie”. Ukończenie korony: okno
+   z podsumowaniem z pamiętnika i zapowiedzią pamiętnika z wypraw. Każde okno raz (unlocked_*, done_*).
+   Przy wczytaniu stanu (bez levelTrigger) pola ustawiają się po cichu — bez okien dla starych kont.
+═══════════════════════════════════════════ */
+function tierOpen(type){ return type==='ks' || !!STATE['unlocked_'+type]; }
+function plPlural(n, one, few, many){ const d=n%10, t=n%100; return n===1 ? one : (d>=2 && d<=4 && (t<12 || t>14)) ? few : many; }
+/* pasma, których nie ma w poprzednich koronach (kolejność jak na liście szczytów) */
+function newPasma(type){
+  const before = new Set((type==='wks' ? KS : KS.concat(WKS)).map(p=>p.pasmo));
+  const out = [];
+  TIER_DATA[type].forEach(p=>{ if(!before.has(p.pasmo) && out.indexOf(p.pasmo)===-1) out.push(p.pasmo); });
+  return out;
+}
+function checkLevels(trigger){
+  const n = t=>STATE[t].length, all = t=>TIER_DATA[t].length, ev = [];
+  const first = t=>trigger && trigger.type===t ? TIER_DATA[t][trigger.idx] : null;
+  if(!STATE.done_ks && n('ks')>=all('ks')){ STATE.done_ks = true; ev.push({kind:'done', type:'ks'}); }
+  if(!STATE.unlocked_wks && (n('ks')>=all('ks') || n('wks')>0)){
+    STATE.unlocked_wks = true; ev.push({kind:'open', type:'wks', peak: n('ks')>=all('ks') ? null : first('wks')});
   }
-  document.getElementById('unlock-overlay').classList.add('show');
+  if(!STATE.unlocked_dks && (n('wks')>=DKS_OPEN_AT || n('dks')>0)){
+    STATE.unlocked_dks = true; ev.push({kind:'open', type:'dks', peak: n('wks')>=DKS_OPEN_AT ? null : first('dks')});
+  }
+  if(!STATE.done_wks && n('wks')>=all('wks')){ STATE.done_wks = true; ev.push({kind:'done', type:'wks'}); }
+  if(!STATE.done_dks && n('dks')>=all('dks')){ STATE.done_dks = true; ev.push({kind:'done', type:'dks'}); }
+  if(!ev.length) return [];
+  saveState(STATE);
+  if(ev.some(e=>e.kind==='open')) refreshTierLook();
+  return trigger ? ev : [];
+}
+/* znaczniki zapowiadanych koron: mniejsze i przygaszone; po otwarciu pełne */
+function refreshTierLook(){
+  [['wks',wksMarkers],['dks',dksMarkers]].forEach(([t,ms])=>ms.forEach((m,i)=>m.setIcon(makeIcon(TIER_DATA[t][i], t, STATE[t].includes(i)))));
+}
+function takeLevelEvents(){ const ev = levelEvents; levelEvents = []; return ev; }
+
+/* zapowiedź nad listą szczytów jeszcze nieotwartej korony (bez przycisku, bez słowa „poziom”) */
+function tierTeaser(type){
+  const all = TIER_DATA[type].length, pas = newPasma(type), shown = pas.slice(0, 4);
+  const more = pas.length > shown.length;
+  const cond = type==='wks'
+    ? langSpans(`Otworzy się, gdy zdobędziesz całą Koronę Sudetów (masz ${STATE.ks.length}/${KS.length}) albo pierwszy szczyt z tej listy.`,
+                `Opens when you complete the Crown (you have ${STATE.ks.length}/${KS.length}) or climb the first summit from this list.`)
+    : langSpans(`Otworzy się, gdy zdobędziesz ${DKS_OPEN_AT} z ${WKS.length} szczytów Wielkiej Korony (masz ${STATE.wks.length}) albo pierwszy szczyt z tej listy.`,
+                `Opens when you climb ${DKS_OPEN_AT} of the ${WKS.length} Great Crown summits (you have ${STATE.wks.length}) or the first summit from this list.`);
+  return `<div class="tier-teaser ${type}">
+    <b>${langSpans(TIER_NAMES[type][0], TIER_NAMES[type][2])}</b> ·
+    ${langSpans(`${all} ${plPlural(all,'szczyt','szczyty','szczytów')}, ${pas.length} ${plPlural(pas.length,'nowe pasmo','nowe pasma','nowych pasm')}: ${shown.join(', ')}${more?' i inne':''}.`,
+                `${all} summits, ${pas.length} new ranges: ${shown.join(', ')}${more?' and more':''}.`)}
+    <div class="tt-cond">${cond}</div>
+  </div>`;
 }
 
-window.closeUnlock = function(tab){
+/* okno: ukończenie korony (podsumowanie z pamiętnika + zapowiedź pamiętnika) i/lub otwarcie kolejnej */
+function fmtPl(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ').replace('.', ','); }
+function fmtDayIso(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s||''); return m ? m[3]+'.'+m[2]+'.'+m[1] : ''; }
+function doneSection(type){
+  const all = TIER_DATA[type].length;
+  const s = window.Diary && Diary.summary ? Diary.summary(TIER_DATA[type].map(p=>p.id)) : null;
+  let sum;
+  if(s && s.visits){
+    const parts = [];
+    if(s.first) parts.push(langSpans(s.first===s.last ? `${fmtDayIso(s.first)}` : `od ${fmtDayIso(s.first)} do ${fmtDayIso(s.last)}`,
+                                     s.first===s.last ? `${fmtDayIso(s.first)}` : `from ${fmtDayIso(s.first)} to ${fmtDayIso(s.last)}`));
+    parts.push(langSpans(`${s.visits} ${plPlural(s.visits,'wejście','wejścia','wejść')}`, `${s.visits} climb${s.visits===1?'':'s'}`));
+    if(s.people) parts.push(langSpans(`${s.people} ${plPlural(s.people,'towarzysz','towarzyszy','towarzyszy')}`, `${s.people} compan${s.people===1?'ion':'ions'}`)+
+      (s.top.length ? ` (${langSpans('najczęściej','most often')}: ${s.top.map(escHtml).join(', ')})` : ''));
+    else parts.push(langSpans('samodzielnie', 'solo'));
+    if(s.km) parts.push(`${fmtPl(Math.round(s.km*10)/10)} km`);
+    if(s.ascent) parts.push(langSpans(`${fmtPl(s.ascent)} m podejść`, `${fmtPl(s.ascent)} m of ascent`));
+    if(s.photos) parts.push(langSpans(`${s.photos} ${plPlural(s.photos,'zdjęcie','zdjęcia','zdjęć')}`, `${s.photos} photo${s.photos===1?'':'s'}`));
+    sum = `<div class="lv-sum">${parts.join(' · ')}</div>`;
+  } else {
+    sum = `<div class="lv-sum muted">${langSpans('Wpisz swoje wejścia w „Moje wejścia” — z nich powstanie pamiętnik tej korony.',
+                                                  'Add your climbs in “My climbs” — they will make up the journal of this crown.')}</div>`;
+  }
+  const wanted = STATE.diaryWanted && STATE.diaryWanted[type];
+  return `<div class="lv-sec">
+    <div class="lv-h">${langSpans(`${TIER_NAMES[type][0]} ukończona!`, `${TIER_NAMES[type][2]} complete!`)}</div>
+    <div>${langSpans(`Wszystkie ${all} ${plPlural(all,'szczyt','szczyty','szczytów')} zdobyte.`, `All ${all} summits climbed.`)}</div>
+    ${sum}
+    <div class="lv-diary">${langSpans('Z Twoich wejść, zdjęć i opisów przygotujemy pamiętnik tej wyprawy.',
+                                      'We will make a journal of this journey from your climbs, photos and notes.')}
+      <button type="button" class="lv-want" data-tier="${type}"${wanted?' disabled':''}>${wanted
+        ? langSpans('Zapisane — damy znać ✓', 'Noted — we will let you know ✓')
+        : langSpans('Chcę taki pamiętnik', 'I want this journal')}</button></div>
+  </div>`;
+}
+function openSection(e){
+  const t = e.type, all = TIER_DATA[t].length, pas = newPasma(t);
+  const why = e.peak
+    ? langSpans(`Pierwszy szczyt tej korony: <strong>${escHtml(e.peak.name)}</strong>.`, `First summit of this crown: <strong>${escHtml(e.peak.name)}</strong>.`)
+    : t==='wks'
+      ? langSpans(`Cała Korona Sudetów zdobyta — ${KS.length}/${KS.length}.`, `The whole Crown climbed — ${KS.length}/${KS.length}.`)
+      : langSpans(`${STATE.wks.length} z ${WKS.length} szczytów Wielkiej Korony zdobyte.`, `${STATE.wks.length} of ${WKS.length} Great Crown summits climbed.`);
+  return `<div class="lv-sec">
+    <div class="lv-h">${langSpans(`Otwierasz ${TIER_NAMES[t][1]}`, `You are opening the ${TIER_NAMES[t][2]}`)}</div>
+    <div>${why}</div>
+    <div>${langSpans(`${all} ${plPlural(all,'szczyt','szczyty','szczytów')} — ${pas.length} ${plPlural(pas.length,'nowe pasmo','nowe pasma','nowych pasm')}:`,
+                     `${all} summits — ${pas.length} new ranges:`)}</div>
+    <div class="lv-pasma">${pas.map(x=>`<span>${escHtml(x)}</span>`).join('')}</div>
+  </div>`;
+}
+function showLevels(ev){
+  if(!ev || !ev.length) return;
+  const o = document.getElementById('unlock-overlay'); if(!o) return;
+  ev = ev.filter(e=>e.kind==='done').concat(ev.filter(e=>e.kind==='open'));
+  const open = ev.filter(e=>e.kind==='open').pop();
+  const lead = ev[0];
+  const icon = (lead.kind==='open' ? lead.type : lead.type);
+  o.querySelector('.unlock-icon').innerHTML = `<svg class="ci" viewBox="0 0 72 ${icon==='dks'?64:60}"><use href="#ci-${icon}"/></svg>`;
+  o.querySelector('.unlock-box').className = 'unlock-box lv-'+(open ? open.type : lead.type);
+  document.getElementById('unlock-title').innerHTML = lead.kind==='done'
+    ? langSpans('Gratulacje!', 'Congratulations!')
+    : langSpans('Nowa korona', 'A new crown');
+  document.getElementById('unlock-sub').innerHTML = ev.map(e=>e.kind==='done' ? doneSection(e.type) : openSection(e)).join('');
+  const btn = document.getElementById('unlock-close-btn');
+  btn.innerHTML = open ? langSpans('Pokaż na mapie →', 'Show on the map →') : langSpans('Zamknij', 'Close');
+  btn.onclick = function(){ closeUnlock(open ? open.type : null); };
+  let later = document.getElementById('unlock-later');
+  if(!later){
+    later = document.createElement('button'); later.id = 'unlock-later'; later.type = 'button'; later.className = 'unlock-later';
+    btn.insertAdjacentElement('afterend', later);
+  }
+  later.innerHTML = langSpans('Zamknij', 'Close');
+  later.hidden = !open;
+  later.onclick = function(){ closeUnlock(null); };
+  o.classList.add('show');
+}
+window.closeUnlock = function(type){
   document.getElementById('unlock-overlay').classList.remove('show');
-  switchTab(tab||'wks');
+  if(type) showNewAreas(type);
 };
+/* „Chcę taki pamiętnik”: users/{uid}.diaryWanted.<korona> = true (panel administracyjny pokazuje chętnych) */
+document.addEventListener('click', function(ev){
+  const b = ev.target.closest && ev.target.closest('.lv-want');
+  if(!b || b.disabled) return;
+  const t = b.getAttribute('data-tier'), fb = window._fb, user = fb && fb.auth.currentUser;
+  if(!user) return;
+  b.disabled = true;
+  fb.setDoc(fb.doc(fb.db, 'users', user.uid), {diaryWanted: {[t]: true}}, {merge: true}).then(function(){
+    STATE.diaryWanted = Object.assign({}, STATE.diaryWanted, {[t]: true}); saveState(STATE);
+    b.innerHTML = langSpans('Zapisane — damy znać ✓', 'Noted — we will let you know ✓');
+  }).catch(function(e){ console.warn('Zapis chęci pamiętnika nieudany', e); b.disabled = false; });
+});
+/* „Pokaż na mapie”: lista i znaczniki nowej korony, nowe pasma podświetlone na kilka sekund */
+function showNewAreas(type){
+  ['ks','wks','dks'].forEach(t=>{ if((t===type) !== peaksVisible[t]) window.togglePeaksLayer(t); });
+  window.switchTab(type);
+  const names = new Set(newPasma(type));
+  const feats = (typeof PASMA_GEOJSON!=='undefined' ? PASMA_GEOJSON.features : []).filter(f=>names.has(f.properties.name));
+  const sec = document.getElementById('map-section');
+  if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
+  if(!feats.length) return;
+  const lyr = L.geoJSON({type:'FeatureCollection', features:feats},
+    {style:{color:'#F0C040', weight:2, opacity:.9, fillColor:'#F0C040', fillOpacity:.22, dashArray:'6,4'}, interactive:false}).addTo(map);
+  setTimeout(()=>{ map.invalidateSize(); map.fitBounds(lyr.getBounds(), {padding:[20,20]}); }, 500);
+  setTimeout(()=>{ lyr.setStyle({fillOpacity:.08, opacity:.4}); }, 7000);
+  setTimeout(()=>{ map.removeLayer(lyr); }, 10000);
+}
 
 /* ═══════════════════════════════════════════
    TABS
@@ -660,7 +800,7 @@ function renderList(type){
   const data = type==='ks'?KS:type==='wks'?WKS:DKS;
   const stateArr = STATE[type];
   const col = type==='ks'?COLOR_KS:type==='dks'?COLOR_DKS:null;
-  el.innerHTML = data.map((p,i)=>{
+  el.innerHTML = (tierOpen(type) ? '' : tierTeaser(type)) + data.map((p,i)=>{
     const conq = stateArr.includes(i);
     const c = col||(COLORS_WKS[p.strefa]||'#3D7ABF');
     return `<div class="peak-row ${conq?'conquered':''} ${type==='dks'?'dk-peak':''}"
@@ -772,10 +912,9 @@ window.resetAll = function(){
 function clearProgress(){
   // migrateAll na pustym stanie tylko ustawia znaczniki schemaV*; bez nich po kolejnym
   // wczytaniu migracje przestawiłyby indeksy szczytów zaznaczonych już po resecie
-  STATE = migrateAll({ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false});
+  // korony znów jako zapowiedź (P43); zakładki zostają klikalne i nie szarzeją
+  STATE = migrateAll({ks:[],wks:[],dks:[],unlocked_wks:false,unlocked_dks:false,done_ks:false,done_wks:false,done_dks:false});
   saveState(STATE);
-  document.getElementById('tab-wks').classList.add('locked');
-  document.getElementById('tab-dks').classList.add('locked');
   placeMarkers();
   updateUI();
   renderList('wks');
@@ -809,7 +948,6 @@ initPeaksTable();
   sb.prepend(b);
 })();
 
-if(STATE.unlocked_dks) document.getElementById('tab-dks').classList.remove('locked');
 // Naprawia renderowanie kafelków gdy mapa była ukryta podczas inicjalizacji
 setTimeout(()=>{ map.invalidateSize(); }, 300);
 setTimeout(()=>{ map.invalidateSize(); }, 800);
@@ -1255,6 +1393,7 @@ async function saveUserState(){
       dks: STATE.dks,
       unlocked_wks: STATE.unlocked_wks,
       unlocked_dks: STATE.unlocked_dks,
+      done_ks: !!STATE.done_ks, done_wks: !!STATE.done_wks, done_dks: !!STATE.done_dks,   // okna ukończenia już pokazane (P43)
       schemaV2: STATE.schemaV2 || false,
       schemaV3: STATE.schemaV3 || false,
       schemaV4: STATE.schemaV4 || false,
@@ -1287,6 +1426,8 @@ async function loadUserState(user){
       STATE.dks = d.dks || [];
       STATE.unlocked_wks = d.unlocked_wks || false;
       STATE.unlocked_dks = d.unlocked_dks || false;
+      STATE.done_ks = !!d.done_ks; STATE.done_wks = !!d.done_wks; STATE.done_dks = !!d.done_dks;
+      STATE.diaryWanted = d.diaryWanted || {};
       STATE.schemaV2 = d.schemaV2 || false;
       STATE.schemaV3 = d.schemaV3 || false;
       STATE.schemaV4 = d.schemaV4 || false;
@@ -1304,8 +1445,6 @@ async function loadUserState(user){
       if(!wasAlreadyMigrated) saveUserState(); // odeślij skorygowane dane z powrotem do chmury
       placeMarkers();
       updateUI();
-
-      if(STATE.unlocked_dks) document.getElementById('tab-dks').classList.remove('locked');
     }
   } catch(e){ console.warn('Odczyt z Firebase nieudany', e); }
 }
