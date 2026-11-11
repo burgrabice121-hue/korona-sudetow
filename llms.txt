@@ -62,7 +62,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Jeřáb: 1003 m n.p.m., wybitność 393 m, izolacja 8 km; Sudety Wschodnie, Hanušovická vrchovina; CZ
 - Waligóra: 936 m n.p.m., wybitność 367 m, izolacja 13.1 km; Sudety Środkowe, Góry Kamienne; PL
 - Szczeliniec Wielki (Velká Hejšovina): 922 m n.p.m., wybitność 272 m, izolacja 14.7 km; Sudety Środkowe, Góry Stołowe; PL
-- Hrazený: 608 m n.p.m., wybitność 168 m, izolacja 16 km; Sudety Łużyckie, Pogórze Łużyckie; CZ
+- Hrazený: 608 m n.p.m., wybitność 161 m, izolacja 16 km; Sudety Łużyckie, Pogórze Łużyckie; CZ
 - Hochstein: 449 m n.p.m., wybitność 159 m, izolacja 15.9 km; Sudety Łużyckie, Pogórze Zachodniołużyckie; DE
 - Czorneboh: 557 m n.p.m., wybitność 192 m, izolacja 15.2 km; Sudety Łużyckie, Pogórze Łużyckie; DE
 - Kottmar: 582 m n.p.m., wybitność 187 m, izolacja 16.4 km; Sudety Łużyckie, Pogórze Łużyckie; DE
@@ -74,7 +74,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 
 ### Diamentowa Korona Sudetów (40)
 
-- Szeroka Góra: 766 m n.p.m., wybitność 283 m, izolacja 8.4 km; Sudety Środkowe, Góry Bardzkie; PL
+- Szeroka Góra: 766 m n.p.m., wybitność 293 m, izolacja 8.4 km; Sudety Środkowe, Góry Bardzkie; PL
 - Góra Poprzeczna (Příčný vrch): 975 m n.p.m., wybitność 258 m, izolacja 6.2 km; Sudety Wschodnie, Góry Złotogórskie; CZ
 - Jagodna Północna: 985 m n.p.m., wybitność 247 m, izolacja 6 km; Sudety Orlickie, Góry Bystrzyckie; PL
 - Wysoka Kopa: 1126 m n.p.m., wybitność 240 m, izolacja 6.7 km; Sudety Zachodnie, Góry Izerskie; PL
@@ -88,7 +88,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Ostrzyca: 501 m n.p.m., wybitność 160 m, izolacja 7.5 km; Pogórze Zachodniosudeckie, Pogórze Kaczawskie; PL
 - Na Vyhlídce: 501 m n.p.m., wybitność 69 m, izolacja 2.8 km; Sudety Wschodnie, Pogórze Burgrabickie; CZ
 - Chlum: 344 m n.p.m., wybitność 59 m, izolacja 8.3 km; Sudety Kulmowe, Pogórze Trszickie; CZ
-- Biskupia Kopa (Biskupská kupa): 890 m n.p.m., wybitność 176 m, izolacja 5.3 km; Sudety Kulmowe, Góry Opawskie; PL/CZ
+- Biskupia Kopa (Biskupská kupa): 890 m n.p.m., wybitność 183 m, izolacja 5.3 km; Sudety Kulmowe, Góry Opawskie; PL/CZ
 - Chełmiec: 851 m n.p.m., wybitność 301 m, izolacja 9.1 km; Sudety Środkowe, Góry Wałbrzyskie; PL
 - Smrek (Smrk): 1125 m n.p.m., wybitność 310 m, izolacja 7 km; Sudety Wschodnie, Góry Złote; CZ
 - Landekrone (Landeskrone): 419 m n.p.m., wybitność 157 m, izolacja 12 km; Sudety Łużyckie, Kotlina Żytawska; DE
@@ -105,8 +105,8 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Cap: 786 m n.p.m., wybitność 231 m, izolacja 11.8 km; Sudety Środkowe, Góry Stołowe; CZ
 - Smrek: 1124 m n.p.m., wybitność 184 m, izolacja 11.2 km; Sudety Zachodnie, Góry Izerskie; CZ
 - Lisia Góra (Liščí hora): 613 m n.p.m., wybitność 178 m, izolacja 10.5 km; Sudety Zachodnie, Podgórze Karkonoskie; CZ
-- Grodziec: 382 m n.p.m., wybitność 130 m, izolacja 13.4 km; Pogórze Zachodniosudeckie, Pogórze Kaczawskie; PL
-- Czerwona Góra (Červená hora): 749 m n.p.m., wybitność 111 m, izolacja 10.6 km; Sudety Kulmowe, Niski Jesionik; CZ
+- Grodziec: 382 m n.p.m., wybitność 128 m, izolacja 13.4 km; Pogórze Zachodniosudeckie, Pogórze Kaczawskie; PL
+- Czerwona Góra (Červená hora): 749 m n.p.m., wybitność 117 m, izolacja 10.6 km; Sudety Kulmowe, Niski Jesionik; CZ
 - Humrich: 512 m n.p.m., wybitność 124 m, izolacja 4.3 km; Pogórze Zachodniosudeckie, Pogórze Izerskie; CZ
 - Triebenberg: 383 m n.p.m., wybitność 108 m, izolacja 10.1 km; Sudety Łużyckie, Pogórze Zachodniołużyckie; DE
 - Pyszczyńska Góra: 273 m n.p.m., wybitność 90 m, izolacja 10.5 km; Przedgórze Sudeckie, Równina Świdnicka; PL

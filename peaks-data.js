@@ -16,7 +16,7 @@ const WKS = [
   { id:"jerab", name:"Jeřáb",              cz:"Jeřáb",            alt:1003, prom:393,  izol:8,    pasmo:"Hanušovická vrchovina",       strefa:"Wschodnie", kraj:"CZ",    lat:50.0567842,  lng:16.8129564,  note:"Jedyna tysięcznica Hanušovickiej Vrchoviny" },
   { id:"waligora", name:"Waligóra",           cz:"—",                alt:936,  prom:367,  izol:13.1, pasmo:"Góry Kamienne",               strefa:"Środkowe",  kraj:"PL",    lat:50.6808,  lng:16.2781,  note:"Najwyższy szczyt Gór Kamiennych" },
   { id:"szczeliniec-wielki", name:"Szczeliniec Wielki", cz:"Velká Hejšovina",  alt:922,  prom:272,  izol:14.7, pasmo:"Góry Stołowe",                strefa:"Środkowe",  kraj:"PL",    lat:50.48389, lng:16.34389, note:"Największa piaskowcowa góra stołowa w Europie Śr." },
-  { id:"hrazeny", name:"Hrazený",            cz:"Hrazený",          alt:608,  prom:168,  izol:16,   pasmo:"Pogórze Łużyckie",            strefa:"Zachodnie", kraj:"CZ",    lat:50.9756,  lng:14.4258,  note:"Najwyższy szczyt całego Pogórza Łużyckiego" },
+  { id:"hrazeny", name:"Hrazený",            cz:"Hrazený",          alt:608,  prom:161,  izol:16,   pasmo:"Pogórze Łużyckie",            strefa:"Zachodnie", kraj:"CZ",    lat:50.9756,  lng:14.4258,  note:"Najwyższy szczyt całego Pogórza Łużyckiego" },
   { id:"hochstein", name:"Hochstein",          cz:"Hochstein",        alt:449,  prom:159,  izol:15.9, pasmo:"Pogórze Zachodniołużyckie",   strefa:"Zachodnie", kraj:"DE",    lat:51.1823628, lng:14.1124197, note:"Najwyższy szczyt Pogórza Zachodniołużyckiego" },
   { id:"czorneboh", name:"Czorneboh",          cz:"Czorneboh",        alt:557,  prom:192,  izol:15.2, pasmo:"Pogórze Łużyckie",            strefa:"Zachodnie", kraj:"DE",    lat:51.1195,  lng:14.5260,  note:"Dominanta Pogórza Łużyckiego w Saksonii" },
   { id:"kottmar", name:"Kottmar",            cz:"Kottmar",          alt:582,  prom:187,  izol:16.4, pasmo:"Pogórze Łużyckie",            strefa:"Zachodnie", kraj:"DE",    lat:51.01011, lng:14.65642,  note:"Bazaltowy stożek, wybitna dominanta okolic Zittau" },
@@ -28,7 +28,7 @@ const WKS = [
 ];
 
 const DKS = [
-  { id:"szeroka-gora", name:"Szeroka Góra",      cz:"—",              alt:766, prom:283, izol:8.4,  pasmo:"Góry Bardzkie",                    kraj:"PL",    lat:50.4537, lng:16.7585, note:"Najwyższy i najwybitniejszy szczyt Gór Bardzkich" },
+  { id:"szeroka-gora", name:"Szeroka Góra",      cz:"—",              alt:766, prom:293, izol:8.4,  pasmo:"Góry Bardzkie",                    kraj:"PL",    lat:50.4537, lng:16.7585, note:"Najwyższy i najwybitniejszy szczyt Gór Bardzkich" },
   { id:"gora-poprzeczna", name:"Góra Poprzeczna",   cz:"Příčný vrch",    alt:975, prom:258, izol:6.2,  pasmo:"Góry Złotogórskie",                kraj:"CZ",    lat:50.2200, lng:17.3839, note:"Najwyższy szczyt Gór Złotogórskich" },
   { id:"jagodna-polnocna", name:"Jagodna Północna",  cz:"—",              alt:985, prom:247, izol:6,    pasmo:"Góry Bystrzyckie",                 kraj:"PL",    lat:50.2609, lng:16.5608, note:"Kulminacja Gór Bystrzyckich" },
   { id:"wysoka-kopa", name:"Wysoka Kopa",       cz:"—",              alt:1126,prom:240, izol:6.7,  pasmo:"Góry Izerskie",                    kraj:"PL",    lat:50.8500, lng:15.4194, note:"Najwyższy szczyt Gór Izerskich" },
@@ -42,7 +42,7 @@ const DKS = [
   { id:"ostrzyca", name:"Ostrzyca",          cz:"—",              alt:501, prom:160, izol:7.5,  pasmo:"Pogórze Kaczawskie",               kraj:"PL",    lat:51.0559964, lng:15.7632692, note:"Śląska Fudżijama — wygasły wulkan" },
   { id:"na-vyhlidce", name:"Na Vyhlídce",       cz:"Na Vyhlídce",    alt:501, prom:69,  izol:2.8,  pasmo:"Pogórze Burgrabickie",             kraj:"CZ",    lat:50.2974383, lng:17.2726228, note:"Najwyższy szczyt Pogórza Burgrabickiego" },
   { id:"chlum-pogorze-trszickie", name:"Chlum",             cz:"Chlum",          alt:344, prom:59,  izol:8.3,  pasmo:"Pogórze Trszickie",                kraj:"CZ",    lat:49.5408, lng:17.3574, note:"Najwybitniejszy szczyt Pogórza Trszickiego" },
-  { id:"biskupia-kopa", name:"Biskupia Kopa",     cz:"Biskupská kupa", alt:890, prom:176, izol:5.3,  pasmo:"Góry Opawskie",                    kraj:"PL/CZ", lat:50.25667,lng:17.42861,note:"Wieża na granicy PL/CZ" },
+  { id:"biskupia-kopa", name:"Biskupia Kopa",     cz:"Biskupská kupa", alt:890, prom:183, izol:5.3,  pasmo:"Góry Opawskie",                    kraj:"PL/CZ", lat:50.25667,lng:17.42861,note:"Wieża na granicy PL/CZ" },
   { id:"chelmiec", name:"Chełmiec",          cz:"—",              alt:851, prom:301, izol:9.1,  pasmo:"Góry Wałbrzyskie",                 kraj:"PL",    lat:50.7794, lng:16.2108, note:"Wieża z panoramą na Karkonosze" },
   { id:"smrek-gory-zlote", name:"Smrek",             cz:"Smrk",           alt:1125,prom:310, izol:7,    pasmo:"Góry Złote",                       kraj:"CZ",    lat:50.2286, lng:17.0336, note:"Góry Złote — Rychlebské hory" },
   { id:"landekrone", name:"Landekrone",        cz:"Landeskrone",    alt:419, prom:157, izol:12,   pasmo:"Kotlina Żytawska",                 kraj:"DE",    lat:51.1295294, lng:14.9330372, note:"Izolowany stożek bazaltowy koło Görlitz" },
@@ -59,8 +59,8 @@ const DKS = [
   { id:"cap", name:"Cap",               cz:"Cap",            alt:786, prom:231, izol:11.8, pasmo:"Góry Stołowe",                     kraj:"CZ",    lat:50.5746, lng:16.1242, note:"Szczyt Gór Stołowych po stronie czeskiej" },
   { id:"smrek-gory-izerskie", name:"Smrek",             cz:"—",              alt:1124,prom:184, izol:11.2, pasmo:"Góry Izerskie",                    kraj:"CZ",    lat:50.8891533, lng:15.2731978, note:"Szczyt Gór Izerskich" },
   { id:"lisia-gora", name:"Lisia Góra",        cz:"Liščí hora",     alt:613, prom:178, izol:10.5, pasmo:"Podgórze Karkonoskie",             kraj:"CZ",    lat:50.4765256, lng:15.9186503, note:"Szczyt Podgórza Karkonoskiego" },
-  { id:"grodziec", name:"Grodziec",          cz:"—",              alt:382, prom:130, izol:13.4, pasmo:"Pogórze Kaczawskie",               kraj:"PL",    lat:51.1760319, lng:15.7597319, note:"Szczyt Pogórza Kaczawskiego" },
-  { id:"czerwona-gora", name:"Czerwona Góra",     cz:"Červená hora",   alt:749, prom:111, izol:10.6, pasmo:"Niski Jesionik",                   kraj:"CZ",    lat:49.7766550, lng:17.5411975, note:"Szczyt Niskiego Jesionika" },
+  { id:"grodziec", name:"Grodziec",          cz:"—",              alt:382, prom:128, izol:13.4, pasmo:"Pogórze Kaczawskie",               kraj:"PL",    lat:51.1760319, lng:15.7597319, note:"Szczyt Pogórza Kaczawskiego" },
+  { id:"czerwona-gora", name:"Czerwona Góra",     cz:"Červená hora",   alt:749, prom:117, izol:10.6, pasmo:"Niski Jesionik",                   kraj:"CZ",    lat:49.7766550, lng:17.5411975, note:"Szczyt Niskiego Jesionika" },
   { id:"humrich", name:"Humrich",           cz:"Humrich",        alt:512, prom:124, izol:4.3,  pasmo:"Pogórze Izerskie",                 kraj:"CZ",    lat:50.9717142, lng:15.1702069, note:"Najwyższy szczyt Pogórza Izerskiego" },
   { id:"triebenberg", name:"Triebenberg",       cz:"Triebenberg",    alt:383, prom:108, izol:10.1, pasmo:"Pogórze Zachodniołużyckie",        kraj:"DE",    lat:51.0271161, lng:13.9233822, note:"Szczyt Pogórza Zachodniołużyckiego" },
   { id:"pyszczynska-gora", name:"Pyszczyńska Góra", cz:"—",              alt:273, prom:90,  izol:10.5, pasmo:"Równina Świdnicka",                kraj:"PL",    lat:50.9812659, lng:16.5450303, note:"Najwyższy szczyt Wzgórz Imbramowickich, izolacja ponad 10 km" },
