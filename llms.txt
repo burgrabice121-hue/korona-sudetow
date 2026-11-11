@@ -1,6 +1,6 @@
 # Wielka Korona Sudetów (viasudetica.eu)
 
-> Trzypoziomowa korona górska całych Sudetów: 64 najwybitniejsze i topograficznie samodzielne szczyty łańcucha po stronie polskiej, czeskiej i niemieckiej, wybrane według obiektywnych, mierzalnych kryteriów (wybitność i izolacja topograficzna), a nie według wysokości n.p.m. czy najwyższego szczytu w regionie. Interaktywna mapa, zapisywanie zdobytych szczytów, dziennik wejść i wspólne wejścia ze znajomymi.
+> Trzypoziomowa korona górska całych Sudetów: 63 najwybitniejsze i topograficznie samodzielne szczyty łańcucha po stronie polskiej, czeskiej i niemieckiej, wybrane według obiektywnych, mierzalnych kryteriów (wybitność i izolacja topograficzna), a nie według wysokości n.p.m. czy najwyższego szczytu w regionie. Interaktywna mapa, zapisywanie zdobytych szczytów, dziennik wejść i wspólne wejścia ze znajomymi.
 
 Autor: Wojciech Rogala. Strona: https://viasudetica.eu/ (PL/EN). Mapa do zapisywania wejść: https://wielkakoronasudetow.pl/
 
@@ -8,9 +8,9 @@ Autor: Wojciech Rogala. Strona: https://viasudetica.eu/ (PL/EN). Mapa do zapisyw
 
 - Korona Sudetów: 8 szczytów. Wybitność powyżej 500 m lub izolacja powyżej 21 km.
 - Wielka Korona Sudetów: kolejne 16 szczytów. Wybitność co najmniej 350 m lub izolacja powyżej 14 km.
-- Diamentowa Korona Sudetów: kolejne 40 szczytów. Wybitność powyżej 270 m lub izolacja co najmniej 10 km, a także najwybitniejsze szczyty pasm, pogórzy i kotlin niereprezentowanych w wyższych koronach (przy wybitności co najmniej 50 m).
+- Diamentowa Korona Sudetów: kolejne 39 szczytów. Wybitność powyżej 270 m lub izolacja co najmniej 10 km, a także najwybitniejsze szczyty pasm, pogórzy i kotlin niereprezentowanych w wyższych koronach (przy wybitności co najmniej 50 m).
 
-Poziomy są rozłączne (8 + 16 + 40 = 64). Ukończenie poziomu odblokowuje następny. Progi wyznaczono z rozkładu wybitności i izolacji wszystkich szczytów Sudetów, m.in. metodą naturalnych przełamań Jenksa.
+Poziomy są rozłączne (8 + 16 + 39 = 63). Ukończenie poziomu odblokowuje następny. Progi wyznaczono z rozkładu wybitności i izolacji wszystkich szczytów Sudetów, m.in. metodą naturalnych przełamań Jenksa.
 
 ## Pojęcia
 
@@ -34,7 +34,7 @@ Konto (Google lub e-mail), zaznaczanie zdobytych szczytów, paski postępu, dzie
 - [Strona główna, opis projektu i kryteria](https://viasudetica.eu/): metodyka, granice Sudetów, grupy górskie, kryteria kwalifikacji
 - [Dlaczego warto](https://viasudetica.eu/#warto): korzyści i etapy (Turysta, Przewodnik, Odkrywca, Sudetczyk)
 - [Mapa interaktywna](https://viasudetica.eu/#map-section)
-- [Wykaz 64 szczytów](https://viasudetica.eu/#peaks-section)
+- [Wykaz 63 szczytów](https://viasudetica.eu/#peaks-section)
 - [Mapa do zapisywania wejść](https://wielkakoronasudetow.pl/)
 - [Aktualności](https://viasudetica.eu/aktualnosci/): wpisy o zmianach na liście szczytów i wynikach badań
 - [Z badań: Góra Wszystkich Świętych zamiast Włodzickiej Góry](https://viasudetica.eu/aktualnosci/gora-wszystkich-swietych.html): dlaczego o miejscu w Diamentowej Koronie decyduje wybitność, a nie wysokość; analiza na NMT GUGiK
@@ -73,7 +73,7 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Zvičina: 672 m n.p.m., wybitność 187 m, izolacja 19.3 km; Sudety Zachodnie, Podgórze Karkonoskie; CZ
 - Słoneczna (Slunečná): 802 m n.p.m., wybitność 168 m, izolacja 19.3 km; Sudety Kulmowe, Niski Jesionik; CZ
 
-### Diamentowa Korona Sudetów (40)
+### Diamentowa Korona Sudetów (39)
 
 - Szeroka Góra: 766 m n.p.m., wybitność 283 m, izolacja 8.4 km; Sudety Środkowe, Góry Bardzkie; PL
 - Góra Poprzeczna (Příčný vrch): 975 m n.p.m., wybitność 258 m, izolacja 6.2 km; Sudety Wschodnie, Góry Złotogórskie; CZ
@@ -92,7 +92,6 @@ Kolumny: nazwa (nazwa czeska lub niemiecka), wysokość, wybitność, izolacja, 
 - Biskupia Kopa (Biskupská kupa): 890 m n.p.m., wybitność 176 m, izolacja 5.3 km; Sudety Kulmowe, Góry Opawskie; PL/CZ
 - Chełmiec: 851 m n.p.m., wybitność 301 m, izolacja 9.1 km; Sudety Środkowe, Góry Wałbrzyskie; PL
 - Smrek (Smrk): 1125 m n.p.m., wybitność 310 m, izolacja 7 km; Sudety Wschodnie, Góry Złote; CZ
-- Strażna (Strážná): 642 m n.p.m., wybitność 92 m, izolacja 12 km; Sudety Kulmowe, Pogórze Witkowskie; CZ
 - Landekrone (Landeskrone): 419 m n.p.m., wybitność 157 m, izolacja 12 km; Sudety Łużyckie, Kotlina Żytawska; DE
 - Rotstein: 454 m n.p.m., wybitność 150 m, izolacja 13 km; Sudety Łużyckie, Pogórze Wschodniołużyckie; DE
 - Jedlice: 354 m n.p.m., wybitność 105 m, izolacja 11.1 km; Przedgórze Sudeckie, Wzgórza Strzegomskie; PL

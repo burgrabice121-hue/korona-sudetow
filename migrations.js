@@ -258,6 +258,23 @@ function migrateV13(s){
   s.schemaV13 = true;
   return s;
 }
+/* Usunięcie Strażnej (była DKS[17]) (v1.14): według NMT i OSM niższa od
+   sąsiedniego Křížovego vrchu (641,5 vs 641,9 m), wybitność 25 m, izolacja
+   2,6 km. Zdobycie Strażnej przepada, indeksy DKS powyżej 17 przesuwają się
+   o 1 w dół (jak w migrateV10–V12). */
+function migrateV14(s){
+  if(s.schemaV14) return s;
+  const oldDks = s.dks || [];
+  const newDks = [];
+  oldDks.forEach(i=>{
+    if(i===17) return;                        // Strażna: była DKS[17], usunięta
+    else if(i>17) newDks.push(i-1);           // reszta DKS powyżej niej przesuwa się o 1 w dół
+    else newDks.push(i);
+  });
+  s.dks = newDks;
+  s.schemaV14 = true;
+  return s;
+}
 /* Wszystkie migracje po kolei. Nowa migracja (migrateVN) trafia TYLKO tutaj;
    korzystają z tego loadState, loadUserState i clearProgress (app.js) oraz panel (admin/admin.js). */
 function migrateAll(s){
@@ -273,5 +290,6 @@ function migrateAll(s){
   s = migrateV11(s);
   s = migrateV12(s);
   s = migrateV13(s);
+  s = migrateV14(s);
   return s;
 }
