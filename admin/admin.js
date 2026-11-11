@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   admin.js — panel administracyjny (P41), etap A: odczyt.
+   admin.js — panel administracyjny: etap A (P41) odczyt, etap B (P42) poprawki na karcie użytkownika.
    Dane wyłącznie przez functions adminApi (Admin SDK); przeglądarka nie czyta cudzych dokumentów.
    Widoki (adres po #): lista użytkowników · #u/<uid> karta · #zgloszenia · #dziennik
    Nazwy szczytów z ../peaks-data.js (KS/WKS/DKS); ks/wks/dks w users/{uid} to numery pozycji na tych listach.
@@ -8,6 +8,7 @@
 'use strict';
 
 var overview = null;          // {rows, stats, orphans} z ostatniego pobrania
+var card = null;              // {uid, d}: otwarta karta użytkownika (etap B: poprawki)
 var sortKey = 'created', sortDir = -1, filterKey = 'all', search = '';
 var TIERS = [['ks','Korona',KS],['wks','Wielka',WKS],['dks','Diamentowa',DKS]];
 var PEAK = {};
@@ -164,9 +165,9 @@ function csv(){
 }
 
 /* ── karta użytkownika ── */
-function showUser(uid){
-  main(nav('#u')+'<p><a href="#">← Lista użytkowników</a></p><p class="ad-muted">Pobieram dane konta…</p>');
-  api('user', {uid:uid}).then(function(d){ drawUser(uid, d); }).catch(function(e){
+function showUser(uid, keep){
+  if(!keep) main(nav('#u')+'<p><a href="#">← Lista użytkowników</a></p><p class="ad-muted">Pobieram dane konta…</p>');
+  return api('user', {uid:uid}).then(function(d){ card = {uid:uid, d:d}; drawUser(uid, d); }).catch(function(e){
     main(nav('#u')+'<p><a href="#">← Lista użytkowników</a></p>'+errBox(e));
   });
 }
@@ -181,7 +182,10 @@ function statusPl(s){
 function drawUser(uid, d){
   var a = d.account, doc = d.doc;
   var head = a ? esc(a.name || a.email || uid) : 'Konto nie istnieje w Authentication';
-  var out = nav('#u')+'<p><a href="#">← Lista użytkowników</a></p><h2 class="ad-h2">'+head+'</h2>';
+  var out = nav('#u')+'<p><a href="#">← Lista użytkowników</a></p><h2 class="ad-h2">'+head+'</h2>'+
+    '<div id="ad-flash" class="ad-flash" hidden></div>';
+  var me = window._fb.auth.currentUser && window._fb.auth.currentUser.uid;
+  var btn = function(act, label, extra, cls){ return '<button type="button" class="ad-btn '+(cls||'')+'" data-act="'+act+'"'+(extra||'')+'>'+label+'</button>'; };
 
   out += section('Konto', a ? kv([
     ['uid', '<code>'+esc(a.uid)+'</code>'],
@@ -192,29 +196,45 @@ function drawUser(uid, d){
     ['Ostatnie logowanie', fmtTime(a.lastSignIn)],
     ['Ostatnia aktywność', fmtTime(a.lastActive)],
     ['Stan', a.disabled ? '<span class="ad-warn">zablokowane</span>' : 'aktywne']
-  ]) : '<p class="ad-muted">Brak konta (usunięte?). Poniżej dane, które zostały w bazie.</p>');
+  ])+'<div class="ad-actions">'+
+    (a.verified ? '' : btn('sendVerify','Wyślij ponownie mail potwierdzający')+(a.uid!==me ? btn('setVerified','Oznacz adres jako potwierdzony') : ''))+
+    btn('sendReset','Wyślij link do zmiany hasła')+
+    (a.uid!==me ? btn('setDisabled', a.disabled ? 'Odblokuj konto' : 'Zablokuj konto', ' data-on="'+(a.disabled?'0':'1')+'"')+
+      btn('deleteAccount','Usuń konto…','','danger') : '')+
+  '</div>' : '<p class="ad-muted">Brak konta (usunięte?). Poniżej dane, które zostały w bazie.</p>');
 
   out += section('Ustawienia', kv([
-    ['Ranking', doc ? yesNo(doc.ranking,'widoczny','ukryty') : '<span class="ad-muted">brak dokumentu</span>'],
-    ['Nazwa publiczna', esc(doc && doc.displayName || '—')],
-    ['Wiadomości e-mail', yesNo(d.news,'włączone','wyłączone')+(d.newsVia ? ' <span class="ad-muted">(zmiana: '+esc(d.newsVia)+')</span>' : '')],
+    ['Ranking', (doc ? yesNo(doc.ranking,'widoczny','ukryty') : yesNo(true,'widoczny',''))+' '+
+      btn('setRanking', doc && !doc.ranking ? 'Pokaż (na prośbę)' : 'Ukryj (na prośbę)', ' data-on="'+(doc && !doc.ranking ? '1' : '0')+'"', 'small')],
+    ['Nazwa publiczna', esc(doc && doc.displayName || '—')+(a ? ' '+btn('setName','Zmień','','small') : '')],
+    ['Wiadomości e-mail', yesNo(d.news,'włączone','wyłączone')+(d.newsVia ? ' <span class="ad-muted">(zmiana: '+esc(d.newsVia)+')</span>' : '')+' '+
+      btn('setNews', d.news ? 'Wyłącz (na prośbę)' : 'Włącz (na prośbę)', ' data-on="'+(d.news?'0':'1')+'"', 'small')],
     ['Ostatni zapis postępu', fmtTime(doc && doc.updated)],
     ['Schemat danych', doc ? (doc.schemaOk ? 'aktualny' : '<span class="ad-warn">stary (konto nie otwierało strony po zmianach list)</span>') : '—']
   ]));
 
-  out += section('Zdobyte szczyty', doc ? TIERS.map(function(t){
+  var editPeaks = doc && doc.schemaOk;
+  out += section('Zdobyte szczyty', (doc ? (editPeaks
+      ? '<p class="ad-muted">Kliknij szczyt, aby go zaznaczyć lub odznaczyć. Jeśli użytkownik ma teraz otwartą stronę, poproś go o odświeżenie — inaczej jego przeglądarka może nadpisać zmianę.</p>'
+      : '<p class="ad-warn">Dane w starym schemacie: poprawki szczytów będą możliwe, gdy użytkownik otworzy stronę zalogowany.</p>') : '')+
+    (doc ? TIERS.map(function(t){
     var have = doc[t[0]] || [], unlocked = t[0]==='ks' || doc['unlocked_'+t[0]];
     return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+have.length+'/'+t[2].length+
-      (unlocked ? '' : ' · nieodblokowana')+'</span></h4><div class="ad-peaks">'+t[2].map(function(p, i){
-        return '<span class="ad-peak'+(have.indexOf(i)!==-1?' on':'')+'" title="'+esc(p.pasmo||'')+'">'+esc(p.name)+'</span>';
+      (unlocked ? '' : ' · nieodblokowana')+'</span>'+
+      (t[0]!=='ks' && editPeaks ? ' '+btn('setUnlock', unlocked ? 'Zablokuj koronę' : 'Odblokuj koronę', ' data-tier="'+t[0]+'" data-on="'+(unlocked?'0':'1')+'"', 'small') : '')+
+      '</h4><div class="ad-peaks">'+t[2].map(function(p, i){
+        var on = have.indexOf(i)!==-1;
+        return editPeaks
+          ? '<button type="button" class="ad-peak'+(on?' on':'')+'" data-act="setPeak" data-tier="'+t[0]+'" data-peak="'+esc(p.id)+'" data-on="'+(on?'0':'1')+'" title="'+esc(p.pasmo||'')+'">'+esc(p.name)+'</button>'
+          : '<span class="ad-peak'+(on?' on':'')+'" title="'+esc(p.pasmo||'')+'">'+esc(p.name)+'</span>';
       }).join('')+'</div>'+
       (have.some(function(i){ return i>=t[2].length; }) ? '<p class="ad-warn">Numery spoza listy: '+have.filter(function(i){ return i>=t[2].length; }).join(', ')+'</p>' : '')+
     '</div>';
-  }).join('') : '<p class="ad-muted">Brak dokumentu postępu.</p>');
+  }).join('') : '<p class="ad-muted">Brak dokumentu postępu.</p>'));
 
   var vis = (d.visits||[]).slice().sort(function(x, y){ return String(y.date||'').localeCompare(String(x.date||'')); });
   out += section('Wejścia w pamiętniku ('+vis.length+')', vis.length ? '<div class="ad-scroll"><table class="ad-table small"><thead><tr>'+
-    '<th>Data</th><th>Szczyt</th><th>Trasa</th><th>km</th><th>↑ m</th><th>Towarzysze</th><th>Zdj.</th><th>Wspólne</th><th>Notatka</th></tr></thead><tbody>'+
+    '<th>Data</th><th>Szczyt</th><th>Trasa</th><th>km</th><th>↑ m</th><th>Towarzysze</th><th>Zdj.</th><th>Wspólne</th><th>Notatka</th><th></th></tr></thead><tbody>'+
     vis.map(function(v){
       return '<tr><td>'+fmtIso(v.date)+(v.dateApprox?' <span class="ad-muted">(ok.)</span>':'')+'</td>'+
         '<td>'+esc(PEAK[v.peakId] || v.peakId || '—')+'</td>'+
@@ -222,18 +242,21 @@ function drawUser(uid, d){
         '<td class="n">'+(v.km!=null?v.km:'—')+'</td><td class="n">'+(v.ascent!=null?v.ascent:'—')+'</td>'+
         '<td>'+esc(v.companions.join(', ')||'—')+'</td><td class="n">'+v.photos+'</td>'+
         '<td class="n">'+(v.partners||'—')+'</td>'+
-        '<td class="note">'+esc(v.note.length>200 ? v.note.slice(0,200)+'…' : v.note)+'</td></tr>';
+        '<td class="note">'+esc(v.note.length>200 ? v.note.slice(0,200)+'…' : v.note)+'</td>'+
+        '<td class="acts">'+btn('editVisit','Popraw',' data-vid="'+esc(v.id)+'"','small')+btn('deleteVisit','Usuń',' data-vid="'+esc(v.id)+'"','small danger')+'</td></tr>';
     }).join('')+'</tbody></table></div>' : '<p class="ad-muted">Brak wejść.</p>');
 
   function invTable(list, mine){
     if(!list.length) return '<p class="ad-muted">Brak.</p>';
     return '<div class="ad-scroll"><table class="ad-table small"><thead><tr><th>Utworzone</th><th>Szczyt</th><th>Data wejścia</th>'+
-      (mine ? '<th>Do</th>' : '<th>Od</th>')+'<th>Status</th><th>Przypomnienia</th></tr></thead><tbody>'+
+      (mine ? '<th>Do</th>' : '<th>Od</th>')+'<th>Status</th><th>Przypomnienia</th>'+(mine ? '<th></th>' : '')+'</tr></thead><tbody>'+
       list.slice().sort(function(x, y){ return (y.created||0)-(x.created||0); }).map(function(i){
         var who = mine ? esc(i.toEmail||'—')+(i.toName?' <span class="ad-muted">('+esc(i.toName)+')</span>':'')
                        : (i.fromUid ? '<a href="#u/'+encodeURIComponent(i.fromUid)+'">'+esc(i.fromName||i.fromUid)+'</a>' : '—');
         return '<tr><td>'+fmtDay(i.created)+'</td><td>'+esc(PEAK[i.peakId]||i.peakId||'—')+'</td><td>'+fmtIso(i.date)+'</td>'+
-          '<td>'+who+'</td><td>'+statusPl(i.status)+'</td><td class="n">'+i.reminders+'</td></tr>';
+          '<td>'+who+'</td><td>'+statusPl(i.status)+'</td><td class="n">'+i.reminders+'</td>'+
+          (mine ? '<td class="acts">'+(i.status==='pending'
+            ? btn('remindInvite','Przypomnij',' data-inv="'+esc(i.id)+'"','small')+btn('cancelInvite','Anuluj',' data-inv="'+esc(i.id)+'"','small danger') : '')+'</td>' : '')+'</tr>';
       }).join('')+'</tbody></table></div>';
   }
   out += section('Zaproszenia wysłane ('+(d.sent||[]).length+')', invTable(d.sent||[], true));
@@ -266,7 +289,140 @@ function showFeedback(){
 }
 
 /* ── dziennik ── */
-var ACTION_PL = {feedbackDone:'zgłoszenie załatwione / przywrócone'};
+var ACTION_PL = {feedbackDone:'zgłoszenie załatwione / przywrócone', setPeak:'zdobyty szczyt', setUnlock:'odblokowanie korony',
+  setName:'nazwa', setRanking:'ranking', setNews:'wiadomości e-mail', editVisit:'poprawka wejścia', deleteVisit:'usunięcie wejścia',
+  cancelInvite:'anulowanie zaproszenia', remindInvite:'przypomnienie o zaproszeniu', sendVerify:'mail potwierdzający',
+  sendReset:'link do zmiany hasła', setVerified:'adres oznaczony jako potwierdzony', setDisabled:'blokada konta', deleteAccount:'usunięcie konta'};
+
+/* ── poprawki na karcie (etap B, P42): potwierdzenie → adminApi → odświeżenie karty ── */
+function flash(msg, isErr){
+  var f = $('ad-flash'); if(!f) return;
+  f.hidden = false; f.className = 'ad-flash'+(isErr?' err':''); f.textContent = msg;
+  if(!isErr) setTimeout(function(){ if(f.textContent===msg) f.hidden = true; }, 4000);
+}
+function peakName(tier, id){
+  var t = TIERS.filter(function(x){ return x[0]===tier; })[0];
+  var p = t && t[2].filter(function(x){ return x.id===id; })[0];
+  return p ? p.name+' ('+t[1]+')' : id;
+}
+function run(el, action, data, ok){
+  el.disabled = true;
+  return api(action, Object.assign({uid: card.uid}, data)).then(function(){
+    overview = null;                                   // lista odświeży się przy następnym wejściu
+    if(action==='deleteAccount'){ location.hash = ''; return; }
+    return showUser(card.uid, true).then(function(){ flash(ok || 'Zapisano.'); });
+  }).catch(function(e){
+    el.disabled = false;
+    flash(e && e.message && e.message!=='internal' ? e.message : 'Nie udało się zapisać.', true);
+  });
+}
+function doAct(el){
+  var act = el.getAttribute('data-act'), on = el.getAttribute('data-on')==='1';
+  var a = card.d.account || {}, who = a.email || card.uid;
+  var visit = function(){ var id = el.getAttribute('data-vid'); return (card.d.visits||[]).filter(function(v){ return v.id===id; })[0]; };
+  var inv = function(){ var id = el.getAttribute('data-inv'); return (card.d.sent||[]).filter(function(i){ return i.id===id; })[0]; };
+  if(act==='setPeak'){
+    var nm = peakName(el.getAttribute('data-tier'), el.getAttribute('data-peak'));
+    if(!confirm((on ? 'Zaznaczyć jako zdobyty: ' : 'Odznaczyć zdobycie: ')+nm+'?')) return;
+    return run(el, act, {tier: el.getAttribute('data-tier'), peakId: el.getAttribute('data-peak'), on: on}, (on?'Zaznaczono: ':'Odznaczono: ')+nm);
+  }
+  if(act==='setUnlock'){
+    var tn = el.getAttribute('data-tier')==='wks' ? 'Wielką Koronę' : 'Diamentową Koronę';
+    if(!confirm((on ? 'Odblokować ' : 'Zablokować ')+tn+'?')) return;
+    return run(el, act, {tier: el.getAttribute('data-tier'), on: on});
+  }
+  if(act==='setName'){
+    var cur = card.d.doc && card.d.doc.displayName || a.name || '';
+    var nn = prompt('Nowa nazwa (widoczna w rankingu i w zaproszeniach). Teraz: „'+cur+'”', cur);
+    if(nn==null || nn.trim()===cur) return;
+    return run(el, act, {name: nn});
+  }
+  if(act==='setRanking' || act==='setNews'){
+    var what = act==='setRanking' ? (on ? 'pokazać w rankingu' : 'ukryć w rankingu') : (on ? 'włączyć wiadomości e-mail' : 'wyłączyć wiadomości e-mail');
+    if(!confirm('To wybór użytkownika. Czy '+who+' prosił(a), żeby '+what+'?\n\nOK = tak, prosił(a) o to.')) return;
+    return run(el, act, {on: on, requested: true});
+  }
+  if(act==='sendVerify' && confirm('Wysłać mail z linkiem potwierdzającym na '+who+'?')) return run(el, act, {}, 'Mail wysłany.');
+  if(act==='sendReset' && confirm('Wysłać link do ustawienia nowego hasła na '+who+'?')) return run(el, act, {}, 'Link wysłany.');
+  if(act==='setVerified' && confirm('Oznaczyć '+who+' jako potwierdzony bez klikania w link?\n\nTylko gdy użytkownik napisał z tego adresu, a mail nie dochodzi.')) return run(el, act, {});
+  if(act==='setDisabled' && confirm(on ? 'Zablokować konto '+who+'? Użytkownik zostanie wylogowany i nie zaloguje się, dopóki nie odblokujesz.' : 'Odblokować konto '+who+'?')) return run(el, act, {on: on});
+  if(act==='deleteAccount'){
+    var c = prompt('Usunąć konto '+who+' razem ze wszystkimi wejściami, zdjęciami i ustawieniami? Tej operacji nie można cofnąć.\n\nAby potwierdzić, wpisz adres e-mail konta:');
+    if(c==null) return;
+    if(c.trim().toLowerCase() !== String(a.email || card.uid).toLowerCase()){ flash('Adres się nie zgadza — konta nie usunięto.', true); return; }
+    return run(el, act, {confirm: c.trim()});
+  }
+  if(act==='deleteVisit'){
+    var v = visit(); if(!v) return;
+    if(!confirm('Usunąć wejście na „'+(PEAK[v.peakId]||v.peakId)+'” z '+fmtIso(v.date)+' (zdjęć: '+v.photos+')? Tej operacji nie można cofnąć.')) return;
+    return run(el, act, {visitId: v.id}, 'Wejście usunięte.');
+  }
+  if(act==='editVisit'){ var ev = visit(); if(ev) openVisitDialog(ev); return; }
+  if(act==='remindInvite' || act==='cancelInvite'){
+    var i = inv(); if(!i) return;
+    var q = act==='remindInvite' ? 'Wysłać przypomnienie o zaproszeniu na '+i.toEmail+'?' : 'Anulować zaproszenie dla '+i.toEmail+'?';
+    if(confirm(q)) return run(el, act, {inviteId: i.id}, act==='remindInvite' ? 'Przypomnienie wysłane.' : 'Zaproszenie anulowane.');
+  }
+}
+
+/* okno poprawki wejścia: wysyłamy tylko zmienione pola */
+function openVisitDialog(v){
+  var dlg = $('ad-dlg');
+  if(!dlg){ dlg = document.createElement('dialog'); dlg.id = 'ad-dlg'; dlg.className = 'ad-dlg'; document.body.appendChild(dlg); }
+  var opts = TIERS.map(function(t){
+    return '<optgroup label="'+t[1]+'">'+t[2].map(function(p){
+      return '<option value="'+esc(p.id)+'"'+(p.id===v.peakId?' selected':'')+'>'+esc(p.name)+'</option>';
+    }).join('')+'</optgroup>';
+  }).join('');
+  var f = function(id, label, html){ return '<label>'+label+html+'</label>'; };
+  dlg.innerHTML = '<form method="dialog" id="ad-vf"><h3>Poprawka wejścia</h3>'+
+    f('vf-peak','Szczyt','<select id="vf-peak">'+opts+'</select>')+
+    '<div class="ad-row">'+f('vf-date','Data','<input type="date" id="vf-date" value="'+esc(v.date||'')+'">')+
+      '<label class="ad-chk"><input type="checkbox" id="vf-approx"'+(v.dateApprox?' checked':'')+'> data przybliżona</label></div>'+
+    '<div class="ad-row">'+f('vf-from','Skąd','<input id="vf-from" maxlength="100" value="'+esc(v.from||'')+'">')+
+      f('vf-to','Dokąd','<input id="vf-to" maxlength="100" value="'+esc(v.to||'')+'">')+'</div>'+
+    '<div class="ad-row">'+f('vf-km','km','<input id="vf-km" inputmode="decimal" value="'+(v.km!=null?v.km:'')+'">')+
+      f('vf-asc','Podejście (m)','<input id="vf-asc" inputmode="numeric" value="'+(v.ascent!=null?v.ascent:'')+'">')+'</div>'+
+    f('vf-comp','Towarzysze (jedna osoba w wierszu)','<textarea id="vf-comp" rows="4">'+esc(v.companions.join('\n'))+'</textarea>')+
+    f('vf-note','Notatka','<textarea id="vf-note" rows="4" maxlength="5000">'+esc(v.note)+'</textarea>')+
+    f('vf-link','Link','<input id="vf-link" maxlength="500" value="'+esc(v.link||'')+'">')+
+    '<p class="ad-err-line" id="vf-err"></p>'+
+    '<div class="ad-actions"><button type="submit" class="ad-btn primary" id="vf-save">Zapisz</button><button type="button" class="ad-btn" id="vf-cancel">Anuluj</button></div>'+
+  '</form>';
+  $('vf-cancel').onclick = function(){ dlg.close(); };
+  $('ad-vf').onsubmit = function(ev){
+    ev.preventDefault();
+    var nv = {
+      peakId: $('vf-peak').value, date: $('vf-date').value || null, dateApprox: $('vf-approx').checked,
+      from: $('vf-from').value.trim() || null, to: $('vf-to').value.trim() || null,
+      km: $('vf-km').value.trim()==='' ? null : Number($('vf-km').value.replace(',','.')),
+      ascent: $('vf-asc').value.trim()==='' ? null : Number($('vf-asc').value),
+      companions: $('vf-comp').value.split('\n').map(function(s){ return s.trim(); }).filter(Boolean),
+      note: $('vf-note').value, link: $('vf-link').value.trim() || null
+    };
+    var fields = {}, lines = [];
+    Object.keys(nv).forEach(function(k){
+      var o = v[k]==null || v[k]==='' ? null : v[k], n = nv[k];
+      if(k==='dateApprox'){ o = !!v.dateApprox; }
+      if(JSON.stringify(o)!==JSON.stringify(n)){
+        fields[k] = n;
+        var show = function(x){ return x==null ? '—' : Array.isArray(x) ? x.join(', ') : k==='peakId' ? (PEAK[x]||x) : String(x); };
+        lines.push(k+': '+show(o).slice(0,80)+' → '+show(n).slice(0,80));
+      }
+    });
+    if(!lines.length){ dlg.close(); return; }
+    if(!confirm('Zapisać zmiany?\n\n'+lines.join('\n'))) return;
+    $('vf-save').disabled = true;
+    api('editVisit', {uid: card.uid, visitId: v.id, fields: fields}).then(function(){
+      dlg.close(); overview = null;
+      return showUser(card.uid, true).then(function(){ flash('Wejście poprawione.'); });
+    }).catch(function(e){
+      $('vf-save').disabled = false;
+      $('vf-err').textContent = e && e.message && e.message!=='internal' ? e.message : 'Nie udało się zapisać.';
+    });
+  };
+  dlg.showModal();
+}
 function logTable(items, withTarget){
   if(!items.length) return '<p class="ad-muted">Brak wpisów.</p>';
   return '<div class="ad-scroll"><table class="ad-table small"><thead><tr><th>Kiedy</th>'+(withTarget?'<th>Konto</th>':'')+
@@ -288,6 +444,8 @@ function showLog(){
 document.addEventListener('click', function(ev){
   var t = ev.target;
   if(t.closest('[data-logout]') || t.closest('[data-relog]')){ window._fb.signOut(window._fb.auth); return; }
+  var actEl = t.closest('[data-act]');
+  if(actEl && card && !actEl.disabled){ doAct(actEl); return; }
   var th = t.closest('th[data-sort]');
   if(th){ var k = th.getAttribute('data-sort'); if(sortKey===k) sortDir = -sortDir; else { sortKey = k; sortDir = 1; } drawTable(); return; }
   var tr = t.closest('tr[data-uid]');
