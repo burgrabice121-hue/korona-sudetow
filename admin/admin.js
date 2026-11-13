@@ -10,7 +10,7 @@
 var overview = null;          // {rows, stats, orphans} z ostatniego pobrania
 var card = null;              // {uid, d}: otwarta karta użytkownika (etap B: poprawki)
 var sortKey = 'created', sortDir = -1, filterKey = 'all', search = '';
-var TIERS = [['ks','Korona',KS],['wks','Wielka',WKS],['dks','Diamentowa',DKS]];
+var TIERS = [['ks','Korona',KS],['wks','Wielka',WKS],['dks','Diamentowa',DKS],['kps','Pogórza (KPS, ukryta)',KPS]];
 var PEAK = {};
 TIERS.forEach(function(t){ t[2].forEach(function(p){ PEAK[p.id] = p.name; }); });
 
@@ -121,10 +121,10 @@ function fixOld(d){
   if(typeof migrateAll !== 'function') return d;
   (d.rows||[]).forEach(function(r){
     if(!r.old) return;
-    var c = {ks: r.old.ks.slice(), wks: r.old.wks.slice(), dks: r.old.dks.slice()};
+    var c = {ks: r.old.ks.slice(), wks: r.old.wks.slice(), dks: r.old.dks.slice(), kps: (r.old.kps||[]).slice()};
     (r.old.flags||[]).forEach(function(f){ c[f] = true; });
     try { migrateAll(c); } catch(e){ return; }
-    r.ks = c.ks.length; r.wks = c.wks.length; r.dks = c.dks.length; r.oldSchema = true;
+    r.ks = c.ks.length; r.wks = c.wks.length; r.dks = c.dks.length; r.kps = (c.kps||[]).length; r.oldSchema = true;
   });
   if(d.stats) d.stats.withPeaks = (d.rows||[]).filter(function(r){ return r.ks + r.wks + r.dks > 0; }).length;
   return d;
@@ -236,7 +236,7 @@ function drawUser(uid, d){
      Bez flag z serwera (functions sprzed P45) albo bez migrations.js — tylko surowe numery. */
   var view = null;
   if(doc && !doc.schemaOk && Array.isArray(doc.flags) && typeof migrateAll === 'function'){
-    var copy = {ks: doc.ks.slice(), wks: doc.wks.slice(), dks: doc.dks.slice()};
+    var copy = {ks: doc.ks.slice(), wks: doc.wks.slice(), dks: doc.dks.slice(), kps: (doc.kps||[]).slice()};
     doc.flags.forEach(function(f){ copy[f] = true; });
     try { view = migrateAll(copy); } catch(e){ view = null; }
   }
@@ -248,14 +248,14 @@ function drawUser(uid, d){
       : '<p class="ad-warn">Dane w starym schemacie: numery szczytów odnoszą się do dawnych list, więc panel nie pokazuje nazw (byłyby przesunięte). '+
         'Strona przeliczy je sama, gdy użytkownik otworzy ją zalogowany; wtedy będą też możliwe poprawki.</p>') : '')+
     (doc ? TIERS.map(function(t){
-    var raw = doc[t[0]] || [], unlocked = t[0]==='ks' || doc['unlocked_'+t[0]];
+    var raw = doc[t[0]] || [], unlocked = t[0]==='ks' || t[0]==='kps' || doc['unlocked_'+t[0]];
     var rawLine = '<p class="ad-muted small">Numery w bazie (stary schemat): '+(raw.length ? raw.join(', ') : '—')+'</p>';
     if(!editPeaks && !view) return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+raw.length+' zapisanych'+
       (unlocked ? '' : ' · nieodblokowana')+'</span></h4>'+rawLine+'</div>';
     var have = view ? (view[t[0]] || []) : raw;
     return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+have.length+'/'+t[2].length+
       (unlocked ? '' : ' · nieodblokowana')+(view ? ' · podgląd po przeliczeniu' : '')+'</span>'+
-      (t[0]!=='ks' && editPeaks ? ' '+btn('setUnlock', unlocked ? 'Zablokuj koronę' : 'Odblokuj koronę', ' data-tier="'+t[0]+'" data-on="'+(unlocked?'0':'1')+'"', 'small') : '')+
+      (t[0]!=='ks' && t[0]!=='kps' && editPeaks ? ' '+btn('setUnlock', unlocked ? 'Zablokuj koronę' : 'Odblokuj koronę', ' data-tier="'+t[0]+'" data-on="'+(unlocked?'0':'1')+'"', 'small') : '')+
       '</h4><div class="ad-peaks">'+t[2].map(function(p, i){
         var on = have.indexOf(i)!==-1;
         return editPeaks

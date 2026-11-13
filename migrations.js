@@ -296,6 +296,28 @@ function migrateV15(s){
   s.schemaV15 = true;
   return s;
 }
+/* Korona Pogórzy Sudeckich (v1.16): DKS ma nowe kryterium (wybitność > 270 m lub izolacja >= 10 km
+   albo najwybitniejszy szczyt jednostki z wybitnością >= 150 m). Sześć szczytów, które go nie spełniają,
+   przechodzi do nowej listy KPS (peaks-data.js) — zdobycia NIE przepadają, tylko trafiają do pola kps:
+   DKS[7] Nowa Kopa -> KPS[0], DKS[9] Boží hora -> KPS[1], DKS[10] Grodna -> KPS[2],
+   DKS[12] Na Vyhlídce -> KPS[3], DKS[13] Chlum (Pogórze Trszickie) -> KPS[4], DKS[33] Humrich -> KPS[5].
+   Pozostałe indeksy DKS przesuwają się w dół o liczbę usuniętych przed nimi. KPS[6..10] to nowe szczyty. */
+function migrateV16(s){
+  if(s.schemaV16) return s;
+  const MOVED = [7, 9, 10, 12, 13, 33];      // stare indeksy DKS; pozycja w MOVED = indeks w KPS
+  const oldDks = s.dks || [];
+  const newDks = [];
+  const kps = (s.kps || []).slice();
+  oldDks.forEach(i=>{
+    const k = MOVED.indexOf(i);
+    if(k !== -1){ if(!kps.includes(k)) kps.push(k); return; }
+    newDks.push(i - MOVED.filter(m=>m < i).length);
+  });
+  s.dks = newDks;
+  s.kps = kps;
+  s.schemaV16 = true;
+  return s;
+}
 /* Wszystkie migracje po kolei. Nowa migracja (migrateVN) trafia TYLKO tutaj;
    korzystają z tego loadState, loadUserState i clearProgress (app.js) oraz panel (admin/admin.js). */
 function migrateAll(s){
@@ -313,5 +335,6 @@ function migrateAll(s){
   s = migrateV13(s);
   s = migrateV14(s);
   s = migrateV15(s);
+  s = migrateV16(s);
   return s;
 }

@@ -28,6 +28,7 @@ var linked = [];       // przyjęte zaproszenie, z którego pochodzi wejście w 
 var offersIn = [];     // propozycje zmian we wspólnych wejściach, do mnie (oczekujące)
 
 var visits = {};       // visitId -> dane wejścia (z polem peakId)
+var hiddenVisits = {}; // wejścia na szczyty Korony Pogórzy (przed premierą, bez administratora): nie pokazywane
 var loadOk = false;    // true tylko po udanym odczycie (inaczej nie pozwalamy zapisywać "na ślepo")
 var loadPromise = null;
 var loadedAt = 0;      // kiedy ostatnio wczytano wejścia (odświeżanie po powrocie na kartę)
@@ -79,12 +80,15 @@ function todayIso(){
 }
 function fb(){ return window._fb; }
 function curUser(){ var f = fb(); return f && f.auth && f.auth.currentUser; }
-function tierArr(type){ return type==='ks'?KS:type==='wks'?WKS:DKS; }
-function tierLabel(type){ return type==='ks'?'KS':type==='wks'?'WKS':'DKS'; }
+function tierArr(type){ return type==='ks'?KS:type==='wks'?WKS:type==='kps'?KPS:DKS; }
+function tierLabel(type){ return type==='ks'?'KS':type==='wks'?'WKS':type==='kps'?'KPS':'DKS'; }
+/* Korona Pogórzy Sudeckich (2026-11-13): do premiery tylko dla administratorów (app.js kpsVisible) */
+function kpsOn(){ return typeof window.kpsVisible==='function' && window.kpsVisible(); }
+function tiersShown(){ return kpsOn() ? ['ks','wks','dks','kps'] : ['ks','wks','dks']; }
 /* krótka nazwa jak w górnym pasku — tam, gdzie mieści się zamiast skrótu (zakładki, podtytuł) */
-function tierShort(type){ return type==='ks'?'Korona':type==='wks'?'Wielka':'Diamentowa'; }
+function tierShort(type){ return type==='ks'?'Korona':type==='wks'?'Wielka':type==='kps'?'Pogórza':'Diamentowa'; }
 /* pełna nazwa: dla osób nowych na portalu (okno zaproszenia) i w podpowiedzi do skrótu */
-function tierName(type){ return type==='ks'?'Korona Sudetów':type==='wks'?'Wielka Korona Sudetów':'Diamentowa Korona Sudetów'; }
+function tierName(type){ return type==='ks'?'Korona Sudetów':type==='wks'?'Wielka Korona Sudetów':type==='kps'?'Korona Pogórzy Sudeckich':'Diamentowa Korona Sudetów'; }
 function visitsCol(f, uid){ return f.collection(f.db,'users',uid,'visits'); }
 function peopleRef(f, uid){ return f.doc(f.db,'people',uid); }
 
@@ -337,8 +341,12 @@ function load(user){
   if(!f || !user) return Promise.resolve();
   loadOk = false;
   loadPromise = Promise.all([f.getDocs(visitsCol(f, user.uid)), loadPeople(f, user)]).then(function(res){
-    var snap = res[0], next = {};
-    snap.forEach(function(d){ next[d.id] = normalize(d.id, d.data()); });
+    var snap = res[0], next = {}, kpsIds = {};
+    if(!kpsOn() && typeof KPS!=='undefined') KPS.forEach(function(p){ kpsIds[p.id] = 1; });
+    hiddenVisits = {};
+    // wejścia na szczyty Korony Pogórzy przed jej premierą: zostają w bazie, ale pamiętnik ich nie pokazuje
+    // (ani w liście, ani w licznikach osób i miejsc) — poza administratorami
+    snap.forEach(function(d){ var v = normalize(d.id, d.data()); (kpsIds[v.peakId] ? hiddenVisits : next)[d.id] = v; });
     visits = next;
     indexSpellings();
     loadOk = true;
@@ -354,7 +362,7 @@ function load(user){
 }
 
 function clear(){
-  visits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = []; linked = []; offersIn = [];
+  visits = {}; hiddenVisits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = []; linked = []; offersIn = [];
   people = {byUid:{}, alias:{}}; spelled = {}; pending = null; peopleOpen = false; compFilter = null;
   // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> handleLinkInvite() otworzy zaproszenie
   if(INVITES_ON && pendingLink()) askLogin();
@@ -1013,9 +1021,9 @@ function closeList(){
 /* wiersze: jedno na wejście; zdobyty szczyt bez wejść ma jeden wiersz „dodaj” */
 function listRows(){
   var rows = [];
-  ['ks','wks','dks'].forEach(function(type){
+  tiersShown().forEach(function(type){
     tierArr(type).forEach(function(p, idx){
-      if(STATE[type].indexOf(idx)===-1 || !p.id) return;
+      if((STATE[type]||[]).indexOf(idx)===-1 || !p.id) return;
       var vs = visitsOf(p.id);
       if(!vs.length) rows.push({p:p, type:type, idx:idx, v:null});
       vs.forEach(function(v){ rows.push({p:p, type:type, idx:idx, v:v}); });
@@ -1090,7 +1098,7 @@ function renderList(){
     ' <button type="button" class="dy-sg" data-people="1">'+(peopleOpen ? 'Zamknij osoby' : 'Osoby: nazwy i łączenie…')+'</button>'+withLine : '';
   renderPeople();
 
-  $('dl-tabs').innerHTML = [['all','Wszystkie'],['ks',tierShort('ks')],['wks',tierShort('wks')],['dks',tierShort('dks')]].map(function(t){
+  $('dl-tabs').innerHTML = [['all','Wszystkie']].concat(tiersShown().map(function(t){ return [t, tierShort(t)]; })).map(function(t){
     return '<button type="button" class="dl-tab'+(listTab===t[0]?' on':'')+'" data-tab="'+t[0]+'">'+t[1]+'</button>';
   }).join('');
 
@@ -1234,7 +1242,7 @@ function mergePeople(key, targetKey){
 function invitesCol(f){ return f.collection(f.db,'invites'); }
 function peakById(id){
   var r = null;
-  ['ks','wks','dks'].some(function(type){
+  tiersShown().some(function(type){
     var arr = tierArr(type);
     for(var i=0;i<arr.length;i++) if(arr[i].id===id){ r = {p:arr[i], type:type, idx:i}; return true; }
     return false;
