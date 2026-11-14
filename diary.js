@@ -423,7 +423,8 @@ function ensureDom(){
           '<select id="dy-share-who" title="Kto to z listy towarzyszy? Połączy tę osobę z jej kontem."></select>'+
           '<button type="button" class="dy-btn ghost" id="dy-share-go">Wyślij zaproszenie</button></div>'+
           '<div class="dy-share-hint" id="dy-share-hint"></div><div class="dy-share-list" id="dy-share-list"></div></div>'+
-        '<div class="dy-field c12"><label>Zdjęcia <span class="dy-count" id="dy-ph-count"></span></label>'+
+        '<div class="dy-field c12"><label>Zdjęcia <span class="dy-count" id="dy-ph-count"></span>'+
+          '<button type="button" class="dy-ph-edit" id="dy-ph-edit" hidden>Edytuj</button></label>'+
           '<div class="dy-photos" id="dy-photos"></div>'+
           '<input type="file" id="dy-ph-file" accept="image/*" multiple hidden></div>'+
         '<div class="dy-field c12"><label for="dy-note">Wspomnienie <span class="dy-count" id="dy-count"></span></label>'+
@@ -480,6 +481,11 @@ function ensureDom(){
     }
     if(ev.target.closest('[data-addph]')) $('dy-ph-file').click();
   });
+  $('dy-ph-edit').addEventListener('click', function(ev){
+    ev.preventDefault();
+    if(!cur) return;
+    cur.photoEdit = !cur.photoEdit; renderPhotos();
+  });
   $('dy-ph-file').addEventListener('change', function(){
     var files = Array.prototype.slice.call(this.files||[]);
     this.value = '';
@@ -512,6 +518,8 @@ function ensureDom(){
     var a = ev.target.closest('[data-accept]'); if(a) return acceptInvite(a.getAttribute('data-accept'), a);
     var oa = ev.target.closest('[data-oapply]'); if(oa) return answerOffer(oa.getAttribute('data-oapply'), 'apply', oa);
     var od = ev.target.closest('[data-odecline]'); if(od) return answerOffer(od.getAttribute('data-odecline'), 'decline', od);
+    var ao = ev.target.closest('[data-askoffer]');
+    if(ao) return sendOffer(ao.getAttribute('data-askoffer'), ao, $('invite-overlay').querySelector('.dy-foot .dy-err'));
     if(ev.target.closest('[data-later]')) return closeInviteModal();
   });
   $('dy-share-go').onclick = sendInvite;
@@ -603,6 +611,7 @@ function openForm(type, idx, which){
     companions: v ? shownList(v.companions) : [],   // pisownia z książki osób; zapis ujednolica wejście
     photos: v ? v.photos.map(function(ph){ return Object.assign({isNew:false}, ph); }) : [],
     removedPhotos: [],
+    photoEdit: false,                              // P49: krzyżyki usuwania zdjęć dopiero po „Edytuj”
     partners: v ? v.partners : 0,
     loadedMs: v ? v.updatedAtMs : 0,
     busy: false
@@ -699,7 +708,8 @@ function renderPhotos(){
     return '<div class="dy-ph'+(p.ext?' ext':'')+'" data-ph="'+esc(p.id)+'"'+(tip?' title="'+esc(tip)+'"':'')+'>'+
       '<a target="_blank" rel="noopener"><img alt="Zdjęcie '+(i+1)+'"'+(p.isNew?' src="'+esc(p.objUrl)+'"':'')+'></a>'+
       (hasPos ? '<a class="dy-ph-pin" href="'+esc(mapLink(p.lat,p.lng))+'" target="_blank" rel="noopener" title="Pokaż miejsce zdjęcia na mapie">📍</a>' : '')+
-      '<button type="button" class="dy-ph-x" data-rmph="'+i+'" aria-label="Usuń zdjęcie '+(i+1)+'">×</button></div>';
+      // P49: krzyżyk usuwania tylko w trybie „Edytuj” (łatwo było w niego trafić, chcąc obejrzeć zdjęcie)
+      (cur.photoEdit ? '<button type="button" class="dy-ph-x" data-rmph="'+i+'" aria-label="Usuń zdjęcie '+(i+1)+'">×</button>' : '')+'</div>';
   }).join('');
   if(photoRoom() > 0){
     h += '<button type="button" class="dy-ph add" data-addph="1" aria-label="Dodaj zdjęcia">＋<span>zdjęcie</span></button>';
@@ -707,6 +717,12 @@ function renderPhotos(){
   box.innerHTML = h;
   var ext = cur.photos.filter(function(p){ return p.ext; }).length;
   $('dy-ph-count').textContent = (cur.photos.length - ext)+' / '+MAX_PHOTOS + (ext ? ' · +'+ext+' od współuczestnika' : '');
+  if(!cur.photos.length) cur.photoEdit = false;
+  var pe = $('dy-ph-edit');
+  pe.hidden = !cur.photos.length;
+  pe.textContent = cur.photoEdit ? 'Gotowe' : 'Edytuj';
+  pe.classList.toggle('on', !!cur.photoEdit);
+  box.classList.toggle('editing', !!cur.photoEdit);
   // zapisane zdjęcia: miniatury ze Storage
   var visitId = cur.visitId;
   cur.photos.forEach(function(p, i){
@@ -933,15 +949,21 @@ function save(){
     return f.setDoc(ref, data);
   }).then(function(){
     deleteFiles(user.uid, ref.id, state.removedPhotos);
+    // P49: wspólne wejście z nowymi zdjęciami/danymi → po zamknięciu formularza propozycja „Wyślij zmiany”
+    var targets = state.visitId && INVITES_ON ? offerTargets() : [];
+    var askNow = targets.length && offerWorth(visits[ref.id], data, fresh.length);
     visits[ref.id] = normalize(ref.id, data);
     indexSpellings();
     state.busy = false;
     $('dy-save').textContent = 'Zapisz';
     refreshPopup(type, idx);
+    var after = null;
+    if(askNow){ after = afterClose; afterClose = null; }   // okna z app.js (np. otwarcie korony) dopiero po propozycji
     closeForm();
     var lo = $('diary-list-overlay');
     if(lo && !lo.classList.contains('hidden')) renderList();
     toast('Zapisano wejście ✓');
+    if(askNow) setTimeout(function(){ askOffer(targets, state.p.name, fresh.length, after); }, 200);
   }).catch(function(e){
     console.warn('Zapis wejścia nieudany', e);
     // sprzątanie plików wysłanych przed błędem (zapis dokumentu się nie udał)
@@ -1391,7 +1413,12 @@ function showInviteModal(list, msg){
   o.classList.remove('hidden');
   o._list = list;
 }
-function closeInviteModal(){ var o = $('invite-overlay'); if(o) o.classList.add('hidden'); }
+function closeInviteModal(){
+  var o = $('invite-overlay'); if(!o) return;
+  o.classList.add('hidden');
+  var f = o._after; o._after = null;                // P49: okna czekające za propozycją „Wyślij zmiany” (np. otwarcie korony)
+  if(f) setTimeout(f, 150);
+}
 function inviteFromAnywhere(id){
   var o = $('invite-overlay');
   var a = (o && o._list || []).concat(incoming).filter(function(x){ return x.id===id; });
@@ -1518,8 +1545,8 @@ function offerSummary(n, keys){
   if(f.length) parts.push('uzupełnienie: '+f.join(', '));
   return parts.join('; ');
 }
-function sendOffer(inviteId, btn){
-  var f = fb(), err = $('dy-err'); if(!f || !f.callable) return;
+function sendOffer(inviteId, btn, errEl){
+  var f = fb(), err = errEl || $('dy-err'); if(!f || !f.callable) return;
   if(isDirty()){ err.textContent = 'Najpierw zapisz zmiany w wejściu — druga osoba dostanie zapisaną wersję.'; return; }
   if(btn){ btn.disabled = true; btn.textContent = 'Wysyłam…'; }
   err.textContent = '';
@@ -1534,6 +1561,38 @@ function sendOffer(inviteId, btn){
     var known = ['functions/failed-precondition','functions/permission-denied','functions/not-found'];
     err.textContent = known.indexOf(code)!==-1 && e.message ? e.message : 'Nie udało się wysłać zmian. Spróbuj później.';
   });
+}
+/* P49: po zapisie wspólnego wejścia z nowymi zdjęciami lub danymi — od razu propozycja „Wyślij zmiany”
+   (do osoby, która zaprosiła, i do przyjętych zaproszonych). Te same offerUpdate co przycisk w formularzu. */
+var OFFER_FIELDS = ['date', 'from', 'to', 'km', 'ascent', 'note', 'link'];
+function offerTargets(){
+  return linked.map(function(x){ return {id:x.id, name:x.fromName || 'uczestnik'}; }).concat(
+    sent.filter(function(x){ return statusOf(x)==='accepted'; }).map(function(x){ return {id:x.id, name:x.toName || x.toEmail || 'uczestnik'}; }));
+}
+function offerWorth(prev, data, newPhotos){
+  if(newPhotos > 0) return true;
+  return OFFER_FIELDS.some(function(k){
+    var a = prev ? prev[k] : null, b = data[k];
+    if(a === '' ) a = null; if(b === '') b = null;
+    return b != null && a !== b;                   // nowa albo zmieniona wartość (puste pole nic nie proponuje)
+  });
+}
+function askOffer(targets, peakName, newPhotos, then){
+  ensureDom();
+  var what = newPhotos ? (newPhotos===1 ? 'nowe zdjęcie' : 'nowe zdjęcia') + ' i dane' : 'nowe dane';
+  $('iv-title').textContent = '🔄 Wysłać zmiany towarzyszom?';
+  $('iv-body').innerHTML = '<p class="iv-msg"><b>'+esc(peakName)+'</b> — to wspólne wejście. Wysłać '+what+' jako propozycję? '+
+    'Druga osoba dostanie tylko to, czego nie ma — nic jej nie nadpisze, a ona sama zdecyduje, czy przyjąć.</p>'+
+    targets.map(function(t){
+      return '<div class="iv-offer-row"><span>'+esc(t.name)+'</span>'+
+        '<button type="button" class="dy-btn" data-askoffer="'+esc(t.id)+'">Wyślij zmiany</button></div>';
+    }).join('');
+  $('iv-later').textContent = 'Nie teraz';
+  $('iv-later').parentNode.hidden = false;
+  var o = $('invite-overlay');
+  o.querySelector('.dy-foot .dy-err').textContent = '';
+  o._list = []; o._after = then || null;
+  o.classList.remove('hidden');
 }
 function loadOffers(user){
   var f = fb();

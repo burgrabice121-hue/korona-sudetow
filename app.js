@@ -863,7 +863,7 @@ function addRankingChoice(){
   const l = document.createElement('label');
   l.className = 'auth-rank';
   l.innerHTML = '<input type="checkbox" id="re-rank" checked> ' +
-    langSpans('Pokazuj moje zdobycze w publicznym rankingu (można to zmienić w menu konta)',
+    langSpans('Pokazuj moje wejścia w publicznym rankingu (można to zmienić w menu konta)',
               'Show my progress in the public ranking (you can change it in the account menu)');
   btn.insertAdjacentElement('beforebegin', l);
   // zgoda na wiadomości informacyjne (P30): zaznaczona domyślnie (decyzja autora 2026-11-02)
@@ -899,8 +899,8 @@ window.toggleRanking = async function(){
   if(!user) return;
   const next = !RANK_VISIBLE;
   if(!confirm(next
-    ? 'Pokazać Twoje zdobycze (imię i liczbę szczytów) w publicznym rankingu?'
-    : 'Ukryć Twoje zdobycze w rankingu? Inni nie zobaczą Twojego imienia ani liczby szczytów. Możesz to zmienić w każdej chwili.')) return;
+    ? 'Pokazać Twoje wejścia (imię i liczbę szczytów) w publicznym rankingu?'
+    : 'Ukryć Twoje wejścia w rankingu? Inni nie zobaczą Twojego imienia ani liczby szczytów. Możesz to zmienić w każdej chwili.')) return;
   try {
     await fb.setDoc(fb.doc(fb.db, 'users', user.uid), {ranking: next}, {merge: true});
     RANK_VISIBLE = next;
