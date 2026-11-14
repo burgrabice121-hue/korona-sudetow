@@ -519,7 +519,11 @@ function ensureDom(){
     var oa = ev.target.closest('[data-oapply]'); if(oa) return answerOffer(oa.getAttribute('data-oapply'), 'apply', oa);
     var od = ev.target.closest('[data-odecline]'); if(od) return answerOffer(od.getAttribute('data-odecline'), 'decline', od);
     var ao = ev.target.closest('[data-askoffer]');
-    if(ao) return sendOffer(ao.getAttribute('data-askoffer'), ao, $('invite-overlay').querySelector('.dy-foot .dy-err'));
+    if(ao) return sendOffer(ao.getAttribute('data-askoffer'), ao, $('invite-overlay').querySelector('.dy-foot .dy-err'), function(){
+      // P49: po wysłaniu do wszystkich okno zamyka się samo; inaczej „Nie teraz” → „Zamknij”
+      var left = $('iv-body').querySelectorAll('[data-askoffer]:not(:disabled)').length;
+      if(!left) setTimeout(closeInviteModal, 900); else $('iv-later').textContent = 'Zamknij';
+    });
     if(ev.target.closest('[data-later]')) return closeInviteModal();
   });
   $('dy-share-go').onclick = sendInvite;
@@ -1545,7 +1549,7 @@ function offerSummary(n, keys){
   if(f.length) parts.push('uzupełnienie: '+f.join(', '));
   return parts.join('; ');
 }
-function sendOffer(inviteId, btn, errEl){
+function sendOffer(inviteId, btn, errEl, onSent){
   var f = fb(), err = errEl || $('dy-err'); if(!f || !f.callable) return;
   if(isDirty()){ err.textContent = 'Najpierw zapisz zmiany w wejściu — druga osoba dostanie zapisaną wersję.'; return; }
   if(btn){ btn.disabled = true; btn.textContent = 'Wysyłam…'; }
@@ -1554,6 +1558,7 @@ function sendOffer(inviteId, btn, errEl){
     var d = res && res.data || {};
     if(btn){ btn.textContent = 'Wysłano'; }
     toast('Wysłano propozycję: '+offerSummary(d.photoCount, d.fieldKeys)+(d.skipped ? ' (limit zdjęć: '+d.skipped+' pominięte)' : ''));
+    if(onSent) onSent();
   }).catch(function(e){
     console.warn('Wysłanie zmian nieudane', e);
     if(btn){ btn.disabled = false; btn.textContent = 'Wyślij zmiany'; }
