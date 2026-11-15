@@ -10,8 +10,8 @@
 .ub-btn.diary{border-color:rgba(212,160,23,.5)}
 
 /* overlaye */
-#diary-overlay,#diary-list-overlay,#invite-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:8px}
-#diary-overlay.hidden,#diary-list-overlay.hidden,#invite-overlay.hidden{display:none}
+#diary-overlay,#diary-list-overlay,#invite-overlay,#gpx-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:8px}
+#diary-overlay.hidden,#diary-list-overlay.hidden,#invite-overlay.hidden,#gpx-overlay.hidden{display:none}
 #invite-overlay{z-index:8300}
 #diary-overlay{z-index:8200}
 .dy-box{background:var(--panel,#1C2330);border:1px solid var(--border,#30363D);border-radius:10px;width:640px;max-width:100%;max-height:calc(100vh - 16px);max-height:calc(100dvh - 16px);display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.5);color:#E6EDF3}
@@ -205,3 +205,23 @@ button.dl-comp:hover{border-color:rgba(240,192,64,.5)}
 .dp-sp{font-size:11px;color:#9AA4B2}
 .dp-act{display:flex;align-items:center;gap:10px}
 .dp-act select{max-width:150px;padding:3px 4px;background:#0D1117;border:1px solid var(--border,#30363D);border-radius:4px;color:#C9D1D9;font-size:11px;font-family:inherit;color-scheme:dark}
+/* P56: trasa na mapie — pole w formularzu i okienko trasy */
+.dy-trk{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dy-trk-info{flex:1 1 220px;font-size:12px;color:#8B949E;line-height:1.4}
+.dy-trk-info.ok{color:#8BC48A}
+.dy-trk .dy-btn{padding:5px 10px;font-size:12px}
+.dy-trk-pop{font-size:12px;line-height:1.45}
+.dy-trk-pop .muted{color:#8B949E;font-size:11px}
+.dy-trk-pop .pop-btn{margin-top:6px}
+#gpx-overlay{z-index:8250}
+.dl-gpx{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px;font-size:11px;color:#8B949E;line-height:1.4}
+.dl-gpx span{flex:1 1 220px}
+.gi-hint{font-size:12px;color:#8B949E;margin-bottom:10px;line-height:1.45}
+.gi-row{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:start;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;cursor:pointer}
+.gi-row input{margin-top:3px;grid-row:span 2}
+.gi-row.off{grid-template-columns:1fr;cursor:default;opacity:.7}
+.gi-trk small,.gi-km{color:#8B949E;font-size:11px}
+.gi-to{color:#C9D1D9}
+.gi-to b{color:#8BC48A}
+.gi-why{font-size:11px;color:#8B949E}
+.gi-had{font-size:11px;color:#F0C040}

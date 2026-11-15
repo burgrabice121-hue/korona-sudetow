@@ -200,6 +200,7 @@ function normalize(id, d){
     km: typeof d.km==='number' ? d.km : null,
     ascent: typeof d.ascent==='number' ? d.ascent : null,
     link: typeof d.link==='string' ? d.link : null,
+    track: typeof d.track==='string' && d.track ? d.track : null,
     photos: normalizePhotos(d.photos),
     partners: typeof d.partners==='number' && d.partners%1===0 ? Math.min(Math.max(d.partners, 0), MAX_PARTNERS) : 0,
     updatedAtMs: d.updatedAt && typeof d.updatedAt.toMillis==='function' ? d.updatedAt.toMillis() : 0
@@ -268,6 +269,254 @@ function readMeta(file){
     });
   }).catch(function(){ return {}; });
 }
+/* ── P56: ślady tras (plik GPX zapisany przy wejściu, trasa z linku Mapy.cz liczona przy rysowaniu) ── */
+var MAX_TRACK_PTS = 1500, MAX_TRACK_CHARS = 30000, MAX_GPX_BYTES = 15e6;
+// klucz REST API Mapy.com (developer.mapy.com, ograniczony do domen strony); pusty = trasy z linków
+// rysowane w przybliżeniu (linia przez punkty z linku), z kluczem — przebieg wyznaczony jak na Mapy.cz
+var MAPY_KEY = '';
+
+/* zapis śladu: „encoded polyline” (precyzja 1e-5, jak Google/OSRM/Mapy.com format=polyline) */
+function encTrack(pts){
+  var out = '', pLat = 0, pLng = 0;
+  function enc(v){
+    v = v < 0 ? ~(v << 1) : (v << 1);
+    var s = '';
+    while(v >= 0x20){ s += String.fromCharCode((0x20 | (v & 0x1f)) + 63); v >>= 5; }
+    return s + String.fromCharCode(v + 63);
+  }
+  pts.forEach(function(p){
+    var la = Math.round(p[0]*1e5), ln = Math.round(p[1]*1e5);
+    out += enc(la - pLat) + enc(ln - pLng); pLat = la; pLng = ln;
+  });
+  return out;
+}
+function decTrack(str){
+  var pts = [], i = 0, lat = 0, lng = 0;
+  function dec(){
+    var r = 0, sh = 0, b;
+    do { if(i >= str.length) throw new Error('track'); b = str.charCodeAt(i++) - 63; r |= (b & 0x1f) << sh; sh += 5; } while(b >= 0x20);
+    return (r & 1) ? ~(r >> 1) : (r >> 1);
+  }
+  try { while(i < str.length){ lat += dec(); lng += dec(); pts.push([lat/1e5, lng/1e5]); } } catch(e){ return []; }
+  return pts;
+}
+function distM(a, b){
+  var R = 6371000, r = Math.PI/180, dLa = (b[0]-a[0])*r, dLn = (b[1]-a[1])*r;
+  var h = Math.sin(dLa/2)*Math.sin(dLa/2) + Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dLn/2)*Math.sin(dLn/2);
+  return 2*R*Math.asin(Math.min(1, Math.sqrt(h)));
+}
+/* upraszczanie (Douglas–Peucker, bez rekurencji) z tolerancją rosnącą, aż zmieści się w MAX_TRACK_PTS */
+function simplifyTrack(pts){
+  if(pts.length <= MAX_TRACK_PTS) return pts;
+  var k = Math.cos(pts[0][0]*Math.PI/180), M = 111320;
+  var xy = pts.map(function(p){ return [p[1]*k*M, p[0]*M]; });
+  function run(tol){
+    var keep = new Uint8Array(pts.length), stack = [[0, pts.length-1]], t2 = tol*tol;
+    keep[0] = keep[pts.length-1] = 1;
+    while(stack.length){
+      var s = stack.pop(), a = s[0], b = s[1], ax = xy[a][0], ay = xy[a][1], dx = xy[b][0]-ax, dy = xy[b][1]-ay, L = dx*dx+dy*dy, best = -1, bi = -1;
+      for(var j = a+1; j < b; j++){
+        var px = xy[j][0]-ax, py = xy[j][1]-ay, t = L ? Math.max(0, Math.min(1, (px*dx+py*dy)/L)) : 0;
+        var ex = px - t*dx, ey = py - t*dy, d = ex*ex+ey*ey;
+        if(d > best){ best = d; bi = j; }
+      }
+      if(bi > 0 && best > t2){ keep[bi] = 1; stack.push([a, bi], [bi, b]); }
+    }
+    return pts.filter(function(_, i){ return keep[i]; });
+  }
+  var tol = 3, out = run(tol);
+  while(out.length > MAX_TRACK_PTS){ tol *= 1.5; out = run(tol); }
+  return out;
+}
+/* GPX → trasy: każda <trk> (a bez nich <rte>) osobno — eksport folderu z Mapy.cz ma wiele tras w jednym pliku */
+function gpxTracks(text){
+  var doc = new DOMParser().parseFromString(text, 'application/xml');
+  if(doc.getElementsByTagName('parsererror').length) throw new Error('Plik nie jest poprawnym GPX.');
+  var groups = doc.getElementsByTagNameNS('*', 'trk'), tag = 'trkpt';
+  if(!groups.length){ groups = doc.getElementsByTagNameNS('*', 'rte'); tag = 'rtept'; }
+  var out = [];
+  for(var g = 0; g < groups.length; g++){
+    var nodes = groups[g].getElementsByTagNameNS('*', tag), pts = [], eles = [], time = null;
+    for(var i = 0; i < nodes.length; i++){
+      var n = nodes[i], la = parseFloat(n.getAttribute('lat')), ln = parseFloat(n.getAttribute('lon'));
+      if(!isFinite(la) || !isFinite(ln) || Math.abs(la) > 90 || Math.abs(ln) > 180) continue;
+      pts.push([la, ln]);
+      var e = n.getElementsByTagNameNS('*', 'ele')[0], ev = e ? parseFloat(e.textContent) : NaN;
+      eles.push(isFinite(ev) ? ev : null);
+      if(!time){ var t = n.getElementsByTagNameNS('*', 'time')[0]; if(t) time = t.textContent; }
+    }
+    if(pts.length < 2) continue;
+    var nm = null;
+    for(var c = 0; c < groups[g].childNodes.length; c++){ var ch = groups[g].childNodes[c]; if(ch.localName==='name'){ nm = ch.textContent.trim(); break; } }
+    var st = trackStats(pts, eles, time);
+    st.name = nm || ''; st.raw = pts;
+    out.push(st);
+  }
+  if(!out.length) throw new Error('W pliku nie ma śladu trasy.');
+  return out;
+}
+/* najbliższa odległość śladu od punktu (m); co kilka punktów, potem dokładnie przy najbliższym miejscu */
+function trackNear(pts, ll){
+  var best = Infinity, bi = 0, step = pts.length > 3000 ? 5 : 1;
+  for(var i = 0; i < pts.length; i += step){ var d = distM(pts[i], ll); if(d < best){ best = d; bi = i; } }
+  for(var j = Math.max(0, bi - step); j < Math.min(pts.length, bi + step + 1); j++) best = Math.min(best, distM(pts[j], ll));
+  return best;
+}
+/* jedna trasa z pliku (formularz wejścia): przy kilku trasach ta, która przechodzi koło szczytu (z tą datą, gdy jest) */
+function parseGpx(text, peak, date){
+  var trs = gpxTracks(text);
+  if(trs.length===1 || !peak) return trs[0];
+  var ll = [peak.lat, peak.lng], near = trs.filter(function(t){ return trackNear(t.raw, ll) <= 400; });
+  if(!near.length) throw new Error('W pliku jest '+trs.length+' tras, ale żadna nie przechodzi przez '+peak.name+'. Użyj „Wgraj ślady GPX” w „Moje wejścia”.');
+  var same = date ? near.filter(function(t){ return t.date===date; }) : [];
+  return (same[0] || near[0]);
+}
+function trackStats(pts, eles, time){
+  var m = 0; for(var j = 1; j < pts.length; j++) m += distM(pts[j-1], pts[j]);
+  // podejście: suma wzrostów z progiem 5 m (szum GPS/barometru nie sumuje się)
+  var asc = 0, ref = null, hasEle = false;
+  eles.forEach(function(e){
+    if(e===null) return; hasEle = true;
+    if(ref===null){ ref = e; return; }
+    if(e > ref + 5){ asc += e - ref; ref = e; } else if(e < ref - 5) ref = e;
+  });
+  var d = time ? new Date(time) : null, date = null;
+  if(d && !isNaN(d)) date = d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
+  return {pts: simplifyTrack(pts), km: Math.round(m/100)/10, ascent: hasEle ? Math.round(asc) : null, date: date};
+}
+
+/* link Mapy.cz / Mapy.com z zaplanowaną trasą: punkty z parametru rc (kodowanie SMap.Coords) */
+var MAPY_ABC = '0ABCD2EFGH4IJKLMN6OPQRST8UVWXYZ-1abcd3efgh5ijklmn7opqrst9uvwxyz.';
+function mapyCoords(str){
+  var s = String(str||'').trim().split('').reverse(), out = [], c = [0, 0], k = 0;
+  function num(n){ var v = 0; while(n){ if(!s.length) throw new Error('rc'); var r = MAPY_ABC.indexOf(s.pop()); if(r!==-1){ v = v*64 + r; n--; } } return v; }
+  try {
+    while(s.length){
+      var r = num(1);
+      if((48 & r)===48) c[k] = ((r - 48) & 15)*16777216 + num(4);
+      else if((32 & r)===32) c[k] += (15 & r)*4096 + num(2) - 32768;
+      else c[k] += (31 & r)*64 + num(1) - 1024;
+      if(k) out.push([180*c[1]/0x10000000 - 90, 360*c[0]/0x10000000 - 180]);
+      k = (k + 1) % 2;
+    }
+  } catch(e){ return []; }
+  return out.filter(function(p){ return Math.abs(p[0]) <= 90 && Math.abs(p[1]) <= 180; });
+}
+/* {kind:'route', pts, via} dla trasy; {kind:'short'} dla krótkiego linku (nie da się go odczytać w przeglądarce) */
+function mapyLink(link){
+  var u; try { u = new URL(link); } catch(e){ return null; }
+  if(!/(^|\.)mapy\.(cz|com)$/i.test(u.hostname)) return null;
+  if(/^\/s\//.test(u.pathname)) return {kind:'short'};
+  var pts = mapyCoords(u.searchParams.get('rc'));
+  if(pts.length < 2) return null;
+  // rwp=„n;punkty” — uproszczony przebieg odcinka przed n-tym punktem trasy (bywa w linku, nie zawsze)
+  var via = {};
+  u.searchParams.getAll('rwp').forEach(function(x){
+    var m = /^(\d+);(.+)$/.exec(x); if(m) via[+m[1]] = mapyCoords(m[2]);
+  });
+  return {kind:'route', pts: pts, via: via};
+}
+function mapyApprox(r){
+  var out = [];
+  r.pts.forEach(function(p, i){ if(via(i)) out = out.concat(via(i)); out.push(p); });
+  function via(i){ return i && r.via[i] && r.via[i].length ? r.via[i] : null; }
+  return out;
+}
+/* przebieg z REST API Mapy.com (z kluczem); wynik w localStorage, żeby nie pytać przy każdym otwarciu */
+var routeMem = {};
+function mapyRoute(link, r){
+  if(!MAPY_KEY) return Promise.resolve(null);
+  var key = 'korona_route_' + hashStr(link);
+  if(routeMem[key]) return Promise.resolve(routeMem[key]);
+  try { var c = localStorage.getItem(key); if(c){ routeMem[key] = decTrack(c); return Promise.resolve(routeMem[key]); } } catch(e){}
+  var pts = r.pts, mid = pts.slice(1, -1);
+  if(mid.length > 15){ var step = mid.length/15; mid = Array.from({length:15}, function(_, i){ return mid[Math.floor(i*step)]; }); }
+  var ll = function(p){ return p[1].toFixed(6)+','+p[0].toFixed(6); };
+  var q = 'start='+ll(pts[0])+'&end='+ll(pts[pts.length-1])+(mid.length ? '&waypoints='+mid.map(ll).join(';') : '')+
+          '&routeType=foot_hiking&format=polyline&lang=pl&apikey='+encodeURIComponent(MAPY_KEY);
+  return fetch('https://api.mapy.com/v1/routing/route?'+q).then(function(res){ return res.ok ? res.json() : null; }).then(function(j){
+    var g = j && j.geometry, enc = typeof g==='string' ? g : g && typeof g.geometry==='string' ? g.geometry : null;
+    var out = enc ? decTrack(enc) : (g && g.geometry && Array.isArray(g.geometry.coordinates) ? g.geometry.coordinates.map(function(c){ return [c[1], c[0]]; }) : null);
+    if(!out || out.length < 2) return null;
+    out = simplifyTrack(out);
+    routeMem[key] = out;
+    try { localStorage.setItem(key, encTrack(out)); } catch(e){}
+    return out;
+  }).catch(function(){ return null; });
+}
+function hashStr(s){ var h = 5381; for(var i = 0; i < s.length; i++) h = ((h*33) ^ s.charCodeAt(i)) >>> 0; return h.toString(36); }
+
+/* warstwa „Moje trasy” na mapie (app.js: map); przycisk w grupie „Warstwy” dokładany skryptem */
+var trackLayer = null, tracksOn = true, trackGen = 0;
+try { tracksOn = localStorage.getItem('korona_tracks_off')!=='1'; } catch(e){}
+var TRACK_COLORS = {ks:'#D4A017', wks:'#3D7ABF', dks:'#A78BFA', kps:'#7FB069'};
+function peakRef(peakId){
+  var types = ['ks','wks','dks','kps'];
+  for(var t = 0; t < types.length; t++){
+    var arr; try { arr = tierArr(types[t]); } catch(e){ arr = null; }
+    if(!arr) continue;
+    for(var i = 0; i < arr.length; i++) if(arr[i].id===peakId) return {type:types[t], idx:i, p:arr[i]};
+  }
+  return null;
+}
+function trackPopup(v, ref){
+  var bits = [];
+  if(v.date) bits.push(fmtVisitDate(v));
+  if(v.km!=null) bits.push(fmtNum(v.km)+' km');
+  if(v.ascent!=null) bits.push('↑ '+v.ascent+' m');
+  return '<div class="dy-trk-pop"><b>'+esc(ref.p.name)+'</b>'+(bits.length ? '<div>'+esc(bits.join(' · '))+'</div>' : '')+
+    (v.track ? '' : '<div class="muted">Trasa z linku Mapy.cz</div>')+
+    '<button type="button" class="pop-btn diary has" onclick="Diary.openVisit(\''+ref.type+'\','+ref.idx+',\''+v.id+'\')">📖 Otwórz wejście</button></div>';
+}
+function drawTracks(){
+  if(typeof map==='undefined' || typeof L==='undefined') return;
+  var gen = ++trackGen;
+  if(!trackLayer) trackLayer = L.layerGroup();
+  trackLayer.clearLayers();
+  var user = curUser(), n = 0;
+  if(user && loadOk){
+    Object.keys(visits).forEach(function(k){
+      var v = visits[k], ref = peakRef(v.peakId);
+      if(!ref || (ref.type==='kps' && !kpsOn())) return;
+      var col = TRACK_COLORS[ref.type] || '#3D7ABF';
+      var add = function(pts, approx){
+        if(gen!==trackGen || !pts || pts.length < 2) return;
+        L.polyline(pts, {color:'#fff', weight:6, opacity:.55, interactive:false}).addTo(trackLayer);
+        L.polyline(pts, {color:col, weight:3.5, opacity:.95, dashArray: approx ? '7,6' : null})
+          .bindPopup(trackPopup(v, ref), {maxWidth:240}).addTo(trackLayer);
+      };
+      if(v.track){ add(decTrack(v.track), false); n++; return; }
+      var r = v.link ? mapyLink(v.link) : null;
+      if(!r || r.kind!=='route') return;
+      n++;
+      mapyRoute(v.link, r).then(function(full){ add(full || mapyApprox(r), !full); });
+    });
+  }
+  if(tracksOn && n) trackLayer.addTo(map); else map.removeLayer(trackLayer);
+  tracksButton(n);
+}
+function tracksButton(n){
+  var isEn = !!($('btn-en') && $('btn-en').classList.contains('active'));
+  [['pasma-btn','tracks-btn','Moje trasy',false],['pasma-btn-en','tracks-btn-en','My routes',true]].forEach(function(x){
+    var b0 = $(x[0]), b = $(x[1]);
+    if(n && b0 && !b){
+      b = document.createElement('button'); b.id = x[1]; b.type = 'button';
+      b.className = 'grupy-toggle-btn chk tracks-btn ' + (x[3] ? 'lang-en' : 'lang-pl');
+      b.title = 'Trasy z Twoich wejść: pliki GPX i linki do tras z Mapy.cz';
+      b.textContent = x[2];
+      b.onclick = toggleTracks;
+      b0.insertAdjacentElement('afterend', b);
+    }
+    if(!n && b){ b.remove(); return; }
+    if(b){ b.classList.toggle('active', tracksOn); b.style.display = (x[3] ? isEn : !isEn) ? '' : 'none'; }
+  });
+}
+function toggleTracks(){
+  tracksOn = !tracksOn;
+  try { tracksOn ? localStorage.removeItem('korona_tracks_off') : localStorage.setItem('korona_tracks_off', '1'); } catch(e){}
+  drawTracks();
+}
+
 function mapLink(lat, lng){
   return 'https://mapy.cz/turisticka?x='+lng+'&y='+lat+'&z=16&source=coor&id='+lng+'%2C'+lat;
 }
@@ -372,6 +621,7 @@ function clear(){
 
 function refreshAll(){
   if(typeof placeMarkers==='function') placeMarkers();
+  drawTracks();
   var lo = $('diary-list-overlay');
   if(lo && !lo.classList.contains('hidden')) renderList();
 }
@@ -414,6 +664,11 @@ function ensureDom(){
         '<div class="dy-field c3 m6"><label for="dy-km">Dystans (km)</label><input type="text" id="dy-km" inputmode="decimal" placeholder="12,5" autocomplete="off"></div>'+
         '<div class="dy-field c3 m6"><label for="dy-asc">Podejście (m)</label><input type="text" id="dy-asc" inputmode="numeric" placeholder="800" autocomplete="off"></div>'+
         '<div class="dy-field c6"><label for="dy-link">Link (Strava, Mapy.cz, album…)</label><input type="url" id="dy-link" maxlength="'+MAX_LINK+'" placeholder="https://"></div>'+
+        '<div class="dy-field c12"><label>Trasa na mapie</label>'+
+          '<div class="dy-trk"><span class="dy-trk-info" id="dy-trk-info"></span>'+
+          '<button type="button" class="dy-btn ghost" id="dy-trk-add">Dodaj plik GPX</button>'+
+          '<button type="button" class="dy-btn ghost" id="dy-trk-del" hidden>Usuń ślad</button></div>'+
+          '<input type="file" id="dy-trk-file" accept=".gpx,application/gpx+xml" hidden></div>'+
         '<div class="dy-field c12"><label for="dy-comp-in">Towarzysze</label>'+
           '<div class="dy-comp" id="dy-comp"><span id="dy-chips"></span>'+
           '<input type="text" id="dy-comp-in" maxlength="'+MAX_COMP_LEN+'" placeholder="Imię i Enter" autocomplete="off"></div>'+
@@ -439,6 +694,9 @@ function ensureDom(){
       '<div class="dy-hdr"><div class="dy-title" id="dl-title">📖 Moje wejścia</div>'+
         '<button class="dy-close" id="dl-x" title="Zamknij">✕</button></div>'+
       '<div class="dy-body"><div id="dl-invites"></div><div class="dl-stats" id="dl-stats"></div><div class="dl-comps" id="dl-comps" hidden></div><div class="dp-box" id="dl-people" hidden></div>'+
+        '<div class="dl-gpx"><button type="button" class="dy-btn ghost" id="dl-gpx-btn">🗺 Wgraj ślady GPX</button>'+
+          '<span>Jeden lub wiele plików (np. eksport folderu z Mapy.cz) — trasy same dopasują się do wejść po dacie i szczycie.</span>'+
+          '<input type="file" id="dl-gpx-file" accept=".gpx,application/gpx+xml" multiple hidden></div>'+
         '<div class="dl-tabs" id="dl-tabs"></div><div id="dl-rows"></div></div>'+
     '</div></div>'+
   '<div id="invite-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="iv-title">'+
@@ -453,6 +711,13 @@ function ensureDom(){
 
   $('dy-x').onclick = $('dy-cancel').onclick = function(){ closeForm(true); };
   $('dl-x').onclick = closeList;
+  // P56: zbiorcze wgrywanie śladów GPX
+  $('dl-gpx-btn').addEventListener('click', function(){ $('dl-gpx-file').click(); });
+  $('dl-gpx-file').addEventListener('change', function(){
+    var files = Array.prototype.slice.call(this.files || []);
+    this.value = '';
+    if(files.length) gpxImport(files);
+  });
   $('dy-save').onclick = save;
   $('dy-del').onclick = remove;
   $('dy-note').addEventListener('input', updateCount);
@@ -491,6 +756,15 @@ function ensureDom(){
     this.value = '';
     addPhotoFiles(files);
   });
+  // P56: ślad trasy z pliku GPX; podpowiedź przy linku Mapy.cz
+  $('dy-trk-add').addEventListener('click', function(){ $('dy-trk-file').click(); });
+  $('dy-trk-del').addEventListener('click', function(){ if(cur){ cur.track = null; cur.trackNote = ''; renderTrack(); } });
+  $('dy-trk-file').addEventListener('change', function(){
+    var file = this.files && this.files[0];
+    this.value = '';
+    if(file) addGpx(file);
+  });
+  $('dy-link').addEventListener('input', renderTrack);
   $('dy-date').addEventListener('change', renderSuggest);
   // kliknięcie podpowiedzi nie zabiera fokusu polu (blur dopisałby niedokończone imię)
   $('dy-suggest').addEventListener('mousedown', function(ev){ if(ev.target.closest('button')) ev.preventDefault(); });
@@ -617,6 +891,8 @@ function openForm(type, idx, which){
     removedPhotos: [],
     photoEdit: false,                              // P49: krzyżyki usuwania zdjęć dopiero po „Edytuj”
     partners: v ? v.partners : 0,
+    track: v ? v.track : null,                     // P56: ślad z GPX (encoded polyline)
+    trackNote: '',
     loadedMs: v ? v.updatedAtMs : 0,
     busy: false
   };
@@ -637,7 +913,7 @@ function openForm(type, idx, which){
   $('dy-err').textContent = '';
   $('dy-del').style.display = v ? '' : 'none';
   $('dy-save').disabled = false; $('dy-save').textContent = 'Zapisz';
-  renderPlaces(); renderVisitTabs(list); renderChips(); renderPhotos(); updateCount();
+  renderPlaces(); renderVisitTabs(list); renderChips(); renderPhotos(); updateCount(); renderTrack();
   curSig = formSig();
   sent = []; linked = []; renderShare(); loadSent();
   $('diary-overlay').classList.remove('hidden');
@@ -648,7 +924,53 @@ function formSig(){
   return JSON.stringify([$('dy-date').value, $('dy-date-approx').checked, $('dy-from').value.trim(), $('dy-to').value.trim(),
     $('dy-km').value.trim(), $('dy-asc').value.trim(), $('dy-link').value.trim(),
     $('dy-note').value.trim(), cur ? cur.companions : [],
-    cur ? cur.photos.map(function(p){ return p.id; }) : []]);
+    cur ? cur.photos.map(function(p){ return p.id; }) : [], cur ? cur.track || '' : '']);
+}
+
+/* P56: opis śladu w formularzu */
+function renderTrack(){
+  if(!cur) return;
+  var info = $('dy-trk-info'), del = $('dy-trk-del'), add = $('dy-trk-add');
+  var link = $('dy-link').value.trim(), r = link ? mapyLink(/^https?:\/\//i.test(link) ? link : 'https://'+link) : null, txt;
+  if(cur.track){
+    var pts = decTrack(cur.track), m = 0;
+    for(var i = 1; i < pts.length; i++) m += distM(pts[i-1], pts[i]);
+    txt = '✓ Ślad z pliku GPX · '+fmtNum(Math.round(m/100)/10)+' km' + (cur.trackNote ? ' — '+cur.trackNote : '');
+  } else if(r && r.kind==='route'){
+    txt = '✓ Trasa z linku Mapy.cz' + (MAPY_KEY ? '' : ' (przybliżona — przez punkty z linku)') + '. Plik GPX da dokładny ślad.';
+  } else if(r && r.kind==='short'){
+    txt = 'Krótkiego linku Mapy.cz nie da się odczytać. Wklej pełny adres trasy z paska przeglądarki albo dodaj plik GPX (w Mapy.cz: eksport trasy do GPX).';
+  } else {
+    txt = 'Dodaj plik GPX (Strava, Garmin, Komoot, Mapy.cz — „Eksport GPX”) albo wklej link do trasy z Mapy.cz.';
+  }
+  info.textContent = txt;
+  info.classList.toggle('ok', /^✓/.test(txt));
+  del.hidden = !cur.track;
+  add.textContent = cur.track ? 'Zmień plik GPX' : 'Dodaj plik GPX';
+}
+function addGpx(file){
+  var state = cur;
+  if(!state) return;
+  var err = $('dy-err');
+  if(file.size > MAX_GPX_BYTES){ err.textContent = 'Plik GPX jest za duży (do 15 MB).'; return; }
+  file.text().then(function(text){
+    if(cur!==state) return;
+    var g = parseGpx(text, state.p, $('dy-date').value || null), enc = encTrack(g.pts);
+    if(enc.length > MAX_TRACK_CHARS) throw new Error('Ślad jest zbyt szczegółowy.');
+    // szczyt przy śladzie? (tylko ostrzeżenie — można zapisać)
+    var near = Infinity, pk = [state.p.lat, state.p.lng];
+    g.pts.forEach(function(p){ near = Math.min(near, distM(p, pk)); });
+    state.track = enc;
+    state.trackNote = near > 1500 ? 'uwaga: ślad nie przechodzi przez '+state.p.name+' (najbliżej '+fmtNum(Math.round(near/100)/10)+' km)' : '';
+    if(!$('dy-km').value.trim() && g.km) $('dy-km').value = fmtNum(g.km);
+    if(!$('dy-asc').value.trim() && g.ascent) $('dy-asc').value = String(g.ascent);
+    if(!$('dy-date').value && g.date && g.date <= todayIso()) $('dy-date').value = g.date;
+    err.textContent = '';
+    renderTrack();
+  }).catch(function(e){
+    console.warn('GPX', e);
+    if(cur===state) err.textContent = (e && e.message && /GPX|śladu|szczegółowy|tras/.test(e.message)) ? e.message : 'Nie udało się odczytać pliku GPX.';
+  });
 }
 function isDirty(){ return !!cur && formSig()!==curSig; }
 
@@ -923,6 +1245,7 @@ function save(){
     updatedAt: f.serverTimestamp()
   };
   if(cur.partners) data.partners = cur.partners;   // wspólne wejście: bez tego pola reguły ograniczą zdjęcia do 6
+  if(cur.track) data.track = cur.track;             // P56: pole tylko ze śladem (bez niego zapis działa i na starych regułach)
   var type = cur.type, idx = cur.idx, state = cur;
   var ref = cur.visitId
     ? f.doc(f.db,'users',user.uid,'visits',cur.visitId)
@@ -967,6 +1290,7 @@ function save(){
     state.busy = false;
     $('dy-save').textContent = 'Zapisz';
     refreshPopup(type, idx);
+    drawTracks();
     var after = null;
     if(askNow){ after = afterClose; afterClose = null; }   // okna z app.js (np. otwarcie korony) dopiero po propozycji
     closeForm();
@@ -1018,6 +1342,7 @@ function remove(){
     cancelAllFor(vid);
     delete visits[vid];
     refreshPopup(type, idx);
+    drawTracks();
     closeForm();
     var lo = $('diary-list-overlay');
     if(lo && !lo.classList.contains('hidden')) renderList();
@@ -1048,6 +1373,109 @@ function openList(){
 
 function closeList(){
   var o = $('diary-list-overlay'); if(o) o.classList.add('hidden');
+}
+
+/* ── P56: wgrywanie śladów GPX do wielu wejść naraz ──
+   Każda trasa z plików trafia do wejść z tego samego dnia, których szczyt leży ≤ 400 m od śladu
+   (jedna trasa może obejść dwa szczyty). Lista do zatwierdzenia; wejścia z już zapisanym śladem
+   domyślnie odznaczone. Zapis: tylko pole track (+ puste km/podejście), merge. */
+var gpxItems = [];
+function gpxImport(files){
+  if(!loadOk) return;
+  var big = files.filter(function(f){ return f.size > MAX_GPX_BYTES; });
+  Promise.all(files.filter(function(f){ return f.size <= MAX_GPX_BYTES; }).map(function(f){
+    return f.text().then(function(t){
+      try { return gpxTracks(t).map(function(x){ x.file = f.name; return x; }); }
+      catch(e){ return [{file: f.name, error: e.message || 'Nie udało się odczytać pliku.'}]; }
+    });
+  })).then(function(lists){
+    var trs = [].concat.apply([], lists);
+    big.forEach(function(f){ trs.push({file: f.name, error: 'Plik jest za duży (do 15 MB).'}); });
+    var own = Object.keys(visits).map(function(k){ return visits[k]; });
+    gpxItems = [];
+    var html = trs.map(function(t, ti){
+      var title = esc(t.name || t.file) + (t.date ? ' <small>'+esc(fmtDate(t.date))+'</small>' : '');
+      if(t.error) return '<div class="gi-row off"><div class="gi-trk">'+esc(t.file)+'</div><div class="gi-why">'+esc(t.error)+'</div></div>';
+      var enc = encTrack(t.pts);
+      var hits = own.filter(function(v){
+        var r = peakRef(v.peakId);
+        return r && v.date && v.date===t.date && trackNear(t.raw, [r.p.lat, r.p.lng]) <= 400;
+      });
+      if(!hits.length || enc.length > MAX_TRACK_CHARS){
+        // podpowiedź: szczyt z listy przy trasie, ale bez wejścia z tego dnia
+        var near = [];
+        ['ks','wks','dks'].concat(kpsOn() ? ['kps'] : []).forEach(function(ty){ tierArr(ty).forEach(function(p){ if(trackNear(t.raw, [p.lat, p.lng]) <= 400) near.push(p.name); }); });
+        var why = enc.length > MAX_TRACK_CHARS ? 'Ślad jest zbyt szczegółowy.'
+          : near.length ? 'Przechodzi przez: '+near.join(', ')+' — ale nie masz wejścia z '+(t.date ? fmtDate(t.date) : 'tego dnia')+'. Dodaj je i wgraj ślad jeszcze raz.'
+          : 'Nie przechodzi koło żadnego szczytu z list koron.';
+        return '<div class="gi-row off"><div class="gi-trk">'+title+' <span class="gi-km">'+fmtNum(t.km)+' km</span></div><div class="gi-why">'+esc(why)+'</div></div>';
+      }
+      return hits.map(function(v){
+        var r = peakRef(v.peakId), i = gpxItems.length, had = !!v.track;
+        gpxItems.push({vid: v.id, enc: enc, km: t.km, ascent: t.ascent, type: r.type, idx: r.idx});
+        return '<label class="gi-row"><input type="checkbox" data-gi="'+i+'"'+(had ? '' : ' checked')+'>'+
+          '<div class="gi-trk">'+title+' <span class="gi-km">'+fmtNum(t.km)+' km</span></div>'+
+          '<div class="gi-to">→ <b>'+esc(r.p.name)+'</b> · '+esc(fmtVisitDate(v))+(had ? ' <span class="gi-had">ma już ślad — zaznacz, by zastąpić</span>' : '')+'</div></label>';
+      }).join('');
+    }).join('');
+    ensureGpxDom();
+    $('gi-rows').innerHTML = html || '<div class="dl-empty">Brak tras w plikach.</div>';
+    $('gi-err').textContent = '';
+    gpxCount();
+    $('gpx-overlay').classList.remove('hidden');
+  });
+}
+function ensureGpxDom(){
+  if($('gpx-overlay')) return;
+  var w = document.createElement('div');
+  w.innerHTML = '<div id="gpx-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="gi-title">'+
+    '<div class="dy-box dy-wide"><div class="dy-hdr"><div class="dy-title" id="gi-title">🗺 Ślady GPX do wejść</div>'+
+    '<button class="dy-close" id="gi-x" title="Zamknij">✕</button></div>'+
+    '<div class="dy-body"><div class="gi-hint">Zaznaczone ślady zapiszą się przy wejściach i pokażą na mapie w „Moje trasy”. Puste pola dystansu i podejścia uzupełnią się z pliku.</div>'+
+    '<div id="gi-rows"></div></div>'+
+    '<div class="dy-foot"><span class="dy-err" id="gi-err"></span><button class="dy-btn ghost" id="gi-cancel">Anuluj</button>'+
+    '<button class="dy-btn primary" id="gi-save">Zapisz</button></div></div></div>';
+  document.body.appendChild(w.firstChild);
+  $('gi-x').onclick = $('gi-cancel').onclick = function(){ $('gpx-overlay').classList.add('hidden'); };
+  $('gi-rows').addEventListener('change', gpxCount);
+  $('gi-save').onclick = gpxSave;
+}
+function gpxPicked(){
+  return Array.prototype.slice.call(document.querySelectorAll('#gi-rows [data-gi]:checked')).map(function(c){ return gpxItems[+c.getAttribute('data-gi')]; });
+}
+function gpxCount(){
+  var n = gpxPicked().length, b = $('gi-save');
+  b.disabled = !n; b.textContent = n ? 'Zapisz ślady ('+n+')' : 'Zapisz';
+}
+function gpxSave(){
+  var f = fb(), user = curUser(), picks = gpxPicked(), b = $('gi-save');
+  if(!f || !user || !picks.length) return;
+  b.disabled = true;
+  var done = 0, fail = 0;
+  picks.reduce(function(chain, it){
+    return chain.then(function(){
+      var v = visits[it.vid]; if(!v) return;
+      var data = {track: it.enc, updatedAt: f.serverTimestamp()};
+      if(v.km==null && it.km) data.km = it.km;
+      if(v.ascent==null && it.ascent!=null && it.ascent <= MAX_ASCENT) data.ascent = it.ascent;
+      b.textContent = 'Zapisuję '+(done+fail+1)+'/'+picks.length+'…';
+      return f.setDoc(f.doc(f.db, 'users', user.uid, 'visits', it.vid), data, {merge: true}).then(function(){
+        v.track = it.enc; if(data.km) v.km = data.km; if(data.ascent!=null) v.ascent = data.ascent;
+        v.updatedAtMs = Date.now(); done++;
+        if(it.type!=='kps') refreshPopup(it.type, it.idx);
+      }).catch(function(e){ console.warn('Zapis śladu nieudany', it.vid, e); fail++; });
+    });
+  }, Promise.resolve()).then(function(){
+    drawTracks();
+    if(!$('diary-list-overlay').classList.contains('hidden')) renderList();
+    if(fail){
+      $('gi-err').textContent = 'Zapisano '+done+', nie udało się '+fail+'.';
+      b.disabled = false; b.textContent = 'Spróbuj ponownie';
+    } else {
+      $('gpx-overlay').classList.add('hidden');
+      toast('Zapisano ślady: '+done+' ✓');
+    }
+  });
 }
 
 /* wiersze: jedno na wejście; zdobyty szczyt bez wejść ma jeden wiersz „dodaj” */
@@ -1169,6 +1597,7 @@ function renderList(){
     if(v && v.companions.length) meta.push('👥 '+esc(shownList(v.companions).join(', ')));
     if(v && v.photos.length) meta.push('📷 '+v.photos.length);
     if(v && v.link) meta.push('🔗');
+    if(v && v.track) meta.push('🗺 ślad');
     return '<div class="dl-row" data-type="'+r.type+'" data-idx="'+r.idx+'" data-vid="'+(v?esc(v.id):'')+'" tabindex="0">'+
       '<span class="dl-badge '+r.type+'" title="'+tierName(r.type)+'">'+tierLabel(r.type)+'</span>'+
       '<div class="dl-main"><div class="dl-name">'+esc(r.p.name)+' <small>'+esc(r.p.pasmo)+'</small></div>'+
@@ -1792,6 +2221,12 @@ document.addEventListener('visibilitychange', function(){
 window.Diary = {
   load: load, clear: clear, popupBtn: popupBtn,
   open: open, openList: openList,
+  // P56: otwarcie konkretnego wejścia (z trasy na mapie)
+  openVisit: function(type, idx, id){
+    if(!requireLogin(function(){ Diary.openVisit(type, idx, id); })) return;
+    ensureDom(); afterClose = null;
+    load(curUser()).then(function(){ if(loadOk) openForm(type, idx, visits[id] ? id : undefined); });
+  },
   visits: function(){ return visits; },
   summary: summary,
   inviteCount: function(){ return incoming.length + offersIn.length; },
