@@ -696,7 +696,13 @@ function ensureDom(){
       '<div class="dy-body"><div id="dl-invites"></div><div class="dl-stats" id="dl-stats"></div><div class="dl-comps" id="dl-comps" hidden></div><div class="dp-box" id="dl-people" hidden></div>'+
         '<div class="dl-gpx"><button type="button" class="dy-btn ghost" id="dl-gpx-btn">🗺 Wgraj ślady GPX</button>'+
           '<span>Jeden lub wiele plików (np. eksport folderu z Mapy.cz) — trasy same dopasują się do wejść po dacie i szczycie.</span>'+
-          '<input type="file" id="dl-gpx-file" accept=".gpx,application/gpx+xml" multiple hidden></div>'+
+          '<input type="file" id="dl-gpx-file" accept=".gpx,application/gpx+xml" multiple hidden>'+
+          '<details class="dl-gpx-help"><summary>Jak przenieść trasy z Mapy.com?</summary><ol>'+
+            '<li>Nagrane aktywności w Mapy.com dodawaj do jednego folderu (np. „Korona Sudetów”).</li>'+
+            '<li>Co jakiś czas wyeksportuj cały folder: w folderze menu <b>⋮ → Eksportuj</b> — jeden plik GPX.</li>'+
+            '<li>Tutaj kliknij <b>Wgraj ślady GPX</b> i wybierz ten plik. Trasy same przypiszą się do wejść po dacie i szczycie. '+
+              'Wejścia, które mają już ślad, są odznaczone, więc ponowne wgranie tego samego folderu niczego nie zdubluje.</li>'+
+          '</ol><p>Strava, Garmin, Komoot: pobierz aktywność jako plik GPX i wgraj go tak samo.</p></details></div>'+
         '<div class="dl-tabs" id="dl-tabs"></div><div id="dl-rows"></div></div>'+
     '</div></div>'+
   '<div id="invite-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="iv-title">'+
