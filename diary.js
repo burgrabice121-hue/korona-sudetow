@@ -1451,7 +1451,7 @@ function gpxSave(){
   var f = fb(), user = curUser(), picks = gpxPicked(), b = $('gi-save');
   if(!f || !user || !picks.length) return;
   b.disabled = true;
-  var done = 0, fail = 0;
+  var done = 0, fail = 0, saved = [];
   picks.reduce(function(chain, it){
     return chain.then(function(){
       var v = visits[it.vid]; if(!v) return;
@@ -1461,7 +1461,7 @@ function gpxSave(){
       b.textContent = 'Zapisuję '+(done+fail+1)+'/'+picks.length+'…';
       return f.setDoc(f.doc(f.db, 'users', user.uid, 'visits', it.vid), data, {merge: true}).then(function(){
         v.track = it.enc; if(data.km) v.km = data.km; if(data.ascent!=null) v.ascent = data.ascent;
-        v.updatedAtMs = Date.now(); done++;
+        v.updatedAtMs = Date.now(); done++; saved.push(it);
         if(it.type!=='kps') refreshPopup(it.type, it.idx);
       }).catch(function(e){ console.warn('Zapis śladu nieudany', it.vid, e); fail++; });
     });
@@ -1475,6 +1475,15 @@ function gpxSave(){
       $('gpx-overlay').classList.add('hidden');
       toast('Zapisano ślady: '+done+' ✓');
     }
+    // wspólne wejścia: propozycja wysłania śladu towarzyszom (offerUpdate, jak „Wyślij zmiany” w formularzu)
+    var seen = {};
+    saved = saved.filter(function(it){ if(seen[it.vid]) return false; seen[it.vid] = 1; return true; });
+    Promise.all(saved.map(function(it){
+      return targetsFor(it.vid).then(function(t){ var r = peakRef(visits[it.vid] ? visits[it.vid].peakId : ''); return {peak: r ? r.p.name : '', targets: t}; });
+    })).then(function(groups){
+      groups = groups.filter(function(g){ return g.targets.length; });
+      if(groups.length) setTimeout(function(){ askOfferMany(groups); }, 300);
+    });
   });
 }
 
@@ -1976,7 +1985,7 @@ var OFFER_TIP = 'Zaproponuj drugiej osobie swoje nowe zdjęcia i dane, których 
 /* ── aktualizacja wspólnego wejścia (offerUpdate / answerUpdate w functions/index.js) ──
    Każda strona przyjętego zaproszenia może zaproponować drugiej nowe zdjęcia i pola, które tamta ma puste.
    Nic nie jest nadpisywane; adresat przyjmuje albo odrzuca propozycję. */
-var FIELD_PL = {date:'data', from:'skąd', to:'dokąd', km:'dystans', ascent:'podejście', note:'wspomnienie', link:'link'};
+var FIELD_PL = {date:'data', from:'skąd', to:'dokąd', km:'dystans', ascent:'podejście', note:'wspomnienie', link:'link', track:'ślad trasy'};
 function offerSummary(n, keys){
   var parts = [];
   if(n) parts.push(n===1 ? '1 nowe zdjęcie' : n+(n<5 ? ' nowe zdjęcia' : ' nowych zdjęć'));
@@ -2004,7 +2013,7 @@ function sendOffer(inviteId, btn, errEl, onSent){
 }
 /* P49: po zapisie wspólnego wejścia z nowymi zdjęciami lub danymi — od razu propozycja „Wyślij zmiany”
    (do osoby, która zaprosiła, i do przyjętych zaproszonych). Te same offerUpdate co przycisk w formularzu. */
-var OFFER_FIELDS = ['date', 'from', 'to', 'km', 'ascent', 'note', 'link'];
+var OFFER_FIELDS = ['date', 'from', 'to', 'km', 'ascent', 'note', 'link', 'track'];   // track: P56 (ślad GPX)
 function offerTargets(){
   return linked.map(function(x){ return {id:x.id, name:x.fromName || 'uczestnik'}; }).concat(
     sent.filter(function(x){ return statusOf(x)==='accepted'; }).map(function(x){ return {id:x.id, name:x.toName || x.toEmail || 'uczestnik'}; }));
@@ -2032,6 +2041,37 @@ function askOffer(targets, peakName, newPhotos, then){
   var o = $('invite-overlay');
   o.querySelector('.dy-foot .dy-err').textContent = '';
   o._list = []; o._after = then || null;
+  o.classList.remove('hidden');
+}
+/* P56: towarzysze wspólnego wejścia vid poza formularzem (wgrywanie zbiorcze śladów) — jak offerTargets() */
+function targetsFor(vid){
+  var f = fb(), user = curUser();
+  if(!INVITES_ON || !f || !user || !f.query) return Promise.resolve([]);
+  var q1 = f.query(invitesCol(f), f.where('fromUid','==',user.uid), f.where('visitId','==',vid));
+  var q2 = f.query(invitesCol(f), f.where('toUid','==',user.uid), f.where('copyVisitId','==',vid));
+  var rows = function(q, map){ return f.getDocs(q).then(function(snap){ var out = []; snap.forEach(function(d){ var x = d.data(); x.id = d.id; var t = map(x); if(t) out.push(t); }); return out; }).catch(function(){ return []; }); };
+  return Promise.all([
+    rows(q1, function(x){ return statusOf(x)==='accepted' ? {id:x.id, name:x.toName || x.toEmail || 'uczestnik'} : null; }),
+    rows(q2, function(x){ return x.status==='accepted' ? {id:x.id, name:x.fromName || 'uczestnik'} : null; })
+  ]).then(function(r){ return r[0].concat(r[1]); });
+}
+/* okno „Wysłać ślady towarzyszom?” dla kilku wejść naraz (te same przyciski data-askoffer co askOffer) */
+function askOfferMany(groups){
+  ensureDom();
+  $('iv-title').textContent = '🔄 Wysłać ślady towarzyszom?';
+  $('iv-body').innerHTML = '<p class="iv-msg">Te wejścia są wspólne. Wysłać nowy ślad trasy jako propozycję? '+
+    'Druga osoba dostanie go tylko wtedy, gdy sama nie ma śladu — nic jej nie nadpisze, a ona zdecyduje, czy przyjąć.</p>'+
+    groups.map(function(g){
+      return g.targets.map(function(t){
+        return '<div class="iv-offer-row"><span><b>'+esc(g.peak)+'</b> · '+esc(t.name)+'</span>'+
+          '<button type="button" class="dy-btn" data-askoffer="'+esc(t.id)+'">Wyślij ślad</button></div>';
+      }).join('');
+    }).join('');
+  $('iv-later').textContent = 'Nie teraz';
+  $('iv-later').parentNode.hidden = false;
+  var o = $('invite-overlay');
+  o.querySelector('.dy-foot .dy-err').textContent = '';
+  o._list = []; o._after = null;
   o.classList.remove('hidden');
 }
 function loadOffers(user){
