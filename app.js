@@ -417,6 +417,7 @@ function updateUI(){
   renderList('wks');
   renderList('dks');
   renderList('kps');
+  refreshProgLinks();
 }
 
 /* ═══════════════════════════════════════════
@@ -552,6 +553,26 @@ function showLevels(ev){
   later.onclick = function(){ closeUnlock(null); };
   o.classList.add('show');
 }
+/* P53: podsumowanie ukończonej korony dostępne w każdej chwili — wiersz nad listą szczytów
+   i kliknięcie pełnego paska postępu otwierają to samo okno co przy zdobyciu ostatniego szczytu */
+function tierComplete(type){ const d = TIER_DATA[type]; return !!(d && d.length && (STATE[type]||[]).length >= d.length); }
+function tierDoneBar(type){
+  return `<button type="button" class="tier-done ${type}" onclick="showTierSummary('${type}')" title="${TIER_NAMES[type][0]}">
+    <span>✓ ${langSpans('Ukończona', 'Complete')}</span>
+    <span class="td-link">${langSpans('Podsumowanie ›', 'Summary ›')}</span></button>`;
+}
+window.showTierSummary = function(type){ if(tierComplete(type)) showLevels([{kind:'done', type}]); };
+function refreshProgLinks(){
+  [['ks', document.querySelector('#topbar .prog-block:not([id])')], ['wks', document.getElementById('wks-prog-block')], ['dks', document.getElementById('dks-prog-block')]]
+    .forEach(([t, b])=>{
+      if(!b) return;
+      const on = tierComplete(t);
+      b.classList.toggle('prog-done', on);
+      if(on){ b.setAttribute('role','button'); b.tabIndex = 0; b.title = 'Pokaż podsumowanie / Show the summary'; b.onclick = ()=>window.showTierSummary(t);
+              b.onkeydown = e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); window.showTierSummary(t); } }; }
+      else { b.removeAttribute('role'); b.removeAttribute('tabindex'); b.removeAttribute('title'); b.onclick = null; b.onkeydown = null; }
+    });
+}
 window.closeUnlock = function(type){
   document.getElementById('unlock-overlay').classList.remove('show');
   if(type) showNewAreas(type);
@@ -620,7 +641,7 @@ function renderList(type){
   const data = TIER_DATA[type];
   const stateArr = STATE[type] || [];
   const col = type==='ks'?COLOR_KS:type==='dks'?COLOR_DKS:type==='kps'?COLOR_KPS:null;
-  el.innerHTML = (tierOpen(type) ? '' : tierTeaser(type)) + data.map((p,i)=>{
+  el.innerHTML = (tierOpen(type) ? '' : tierTeaser(type)) + (tierComplete(type) ? tierDoneBar(type) : '') + data.map((p,i)=>{
     const conq = stateArr.includes(i);
     const c = col||(COLORS_WKS[p.strefa]||'#3D7ABF');
     return `<div class="peak-row ${conq?'conquered':''} ${type==='dks'?'dk-peak':''}"

@@ -1015,6 +1015,14 @@ svg.ci{display:inline-block;vertical-align:middle;flex-shrink:0}
 .tier-teaser.wks b { color: #6EA8E8; }
 .tier-teaser.dks b { color: #A78BFA; }
 .tier-teaser .tt-cond { margin-top: 4px; color: #8B949E; }
+/* P53: ukończona korona — wiersz nad listą i klikalny pasek postępu otwierają podsumowanie */
+.tier-done { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: calc(100% - 12px); margin: 4px 6px 8px; padding: 7px 10px; border: 1px solid rgba(212,160,23,.5); border-radius: 8px; background: rgba(212,160,23,.08); color: #F0C040; font: inherit; font-size: 12px; text-align: left; cursor: pointer; }
+.tier-done.wks { border-color: rgba(61,122,191,.6); background: rgba(61,122,191,.1); color: #7EC8E3; }
+.tier-done.dks { border-color: rgba(167,139,250,.6); background: rgba(167,139,250,.1); color: #A78BFA; }
+.tier-done .td-link { white-space: nowrap; text-decoration: underline; text-underline-offset: 2px; }
+.tier-done:hover, .tier-done:focus-visible { filter: brightness(1.2); }
+.prog-block.prog-done { cursor: pointer; border-radius: 4px; }
+.prog-block.prog-done:hover .pl-name, .prog-block.prog-done:focus-visible .pl-name { text-decoration: underline; text-underline-offset: 2px; }
 .unlock-box { max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px); overflow-y: auto; margin: 0 12px; }
 .unlock-box.lv-ks { border-color: #D4A017; box-shadow: 0 0 60px rgba(212,160,23,.3); }
 .unlock-box.lv-ks .unlock-title { color: #F0C040; }
