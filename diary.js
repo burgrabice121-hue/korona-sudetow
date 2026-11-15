@@ -676,13 +676,18 @@ function runAfterClose(){
 /* podsumowanie wejść na podane szczyty (okno ukończenia korony w app.js, P43): daty, liczby,
    osoby liczone jak w „Moje wejścia” (personKey — różne pisownie tej samej osoby raz) */
 function summary(peakIds){
-  var ids = {}, s = {visits:0, first:null, last:null, km:0, ascent:0, photos:0, people:0, top:[]}, per = {};
+  var ids = {}, s = {visits:0, first:null, last:null, km:0, ascent:0, photos:0, people:0, top:[]}, per = {}, peakFirst = {};
   (peakIds||[]).forEach(function(id){ ids[id] = 1; });
   Object.keys(visits).forEach(function(k){
     var v = visits[k];
     if(!ids[v.peakId]) return;
     s.visits++;
-    if(v.date){ if(!s.first || v.date < s.first) s.first = v.date; if(!s.last || v.date > s.last) s.last = v.date; }
+    // P54: początek = najwcześniejsze wejście; ukończenie = pierwsze wejście na ostatni zdobyty szczyt
+    // (najpóźniejsza z dat pierwszego wejścia na każdy szczyt), nie data ostatniego powrotu
+    if(v.date){
+      if(!s.first || v.date < s.first) s.first = v.date;
+      if(!peakFirst[v.peakId] || v.date < peakFirst[v.peakId]) peakFirst[v.peakId] = v.date;
+    }
     s.km += v.km || 0; s.ascent += v.ascent || 0; s.photos += v.photos.length;
     var seen = {};
     v.companions.forEach(function(c){
@@ -694,6 +699,7 @@ function summary(peakIds){
       per[key].c++;
     });
   });
+  Object.keys(peakFirst).forEach(function(id){ if(!s.last || peakFirst[id] > s.last) s.last = peakFirst[id]; });
   var list = Object.keys(per).map(function(k){ return per[k]; }).sort(function(a, b){ return b.c - a.c || a.name.localeCompare(b.name, 'pl'); });
   s.people = list.length;
   s.top = list.slice(0, 3).map(function(x){ return x.name; });

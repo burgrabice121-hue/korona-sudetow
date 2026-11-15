@@ -447,8 +447,9 @@ function checkLevels(trigger){
   if(!STATE.unlocked_dks && (n('wks')>=DKS_OPEN_AT || n('dks')>0)){
     STATE.unlocked_dks = true; ev.push({kind:'open', type:'dks', peak: n('wks')>=DKS_OPEN_AT ? null : first('dks')});
   }
-  if(!STATE.done_wks && n('wks')>=all('wks')){ STATE.done_wks = true; ev.push({kind:'done', type:'wks'}); }
-  if(!STATE.done_dks && n('dks')>=all('dks')){ STATE.done_dks = true; ev.push({kind:'done', type:'dks'}); }
+  // P55: Wielka ukończona dopiero z całą Koroną, Diamentowa dopiero z całą Wielką (i Koroną)
+  if(!STATE.done_wks && tierComplete('wks')){ STATE.done_wks = true; ev.push({kind:'done', type:'wks'}); }
+  if(!STATE.done_dks && tierComplete('dks')){ STATE.done_dks = true; ev.push({kind:'done', type:'dks'}); }
   if(!ev.length) return [];
   saveState(STATE);
   if(ev.some(e=>e.kind==='open')) refreshTierLook();
@@ -483,6 +484,11 @@ function fmtDayIso(s){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s||''); return
 function doneSection(type){
   const all = TIER_DATA[type].length;
   const s = window.Diary && Diary.summary ? Diary.summary(TIER_DATA[type].map(p=>p.id)) : null;
+  // P55: data ukończenia Wielkiej/Diamentowej = później z dat ukończenia tej i poprzednich koron
+  if(s && TIER_PREV[type]){
+    const all2 = Diary.summary([].concat(...tierChain(type).map(t=>TIER_DATA[t].map(p=>p.id))));
+    if(all2 && all2.last && (!s.last || all2.last > s.last)) s.last = all2.last;
+  }
   let sum;
   if(s && s.visits){
     const parts = [];
@@ -555,7 +561,12 @@ function showLevels(ev){
 }
 /* P53: podsumowanie ukończonej korony dostępne w każdej chwili — wiersz nad listą szczytów
    i kliknięcie pełnego paska postępu otwierają to samo okno co przy zdobyciu ostatniego szczytu */
-function tierComplete(type){ const d = TIER_DATA[type]; return !!(d && d.length && (STATE[type]||[]).length >= d.length); }
+/* P55: korony są kolejne — Wielka ukończona dopiero z całą Koroną, Diamentowa z całą Wielką (i Koroną) */
+const TIER_PREV = {wks:'ks', dks:'wks'};
+function tierFull(st, type){ const d = TIER_DATA[type]; return !!(d && d.length && (st[type]||[]).length >= d.length); }
+function tierCompleteOf(st, type){ return tierFull(st, type) && (!TIER_PREV[type] || tierCompleteOf(st, TIER_PREV[type])); }
+function tierComplete(type){ return tierCompleteOf(STATE, type); }
+function tierChain(type){ const out = [type]; while(TIER_PREV[out[0]]) out.unshift(TIER_PREV[out[0]]); return out; }
 function tierDoneBar(type){
   return `<button type="button" class="tier-done ${type}" onclick="showTierSummary('${type}')" title="${TIER_NAMES[type][0]}">
     <span>✓ ${langSpans('Ukończona', 'Complete')}</span>
@@ -1361,8 +1372,8 @@ async function loadRanking(){
       <td class="rank-medal">${medals[i]||i+1}</td>
       <td><div class="rank-name">${escHtml(u.displayName && String(u.displayName).indexOf('@')===-1 ? u.displayName : 'Anonimowy')}</div></td>
       <td>${(u.ks||[]).length}/8 ${(u.ks||[]).length===8?'<span class="rank-crown wk">🏆</span>':''}</td>
-      <td>${(u.wks||[]).length}/15 ${(u.wks||[]).length===15?'<span class="rank-crown wk">👑</span>':''}</td>
-      <td>${(u.dks||[]).length}/${DKS.length} ${(u.dks||[]).length===DKS.length?'<span class="rank-crown dk">💎</span>':''}</td>
+      <td>${(u.wks||[]).length}/15 ${tierCompleteOf(u,'wks')?'<span class="rank-crown wk">👑</span>':''}</td>
+      <td>${(u.dks||[]).length}/${DKS.length} ${tierCompleteOf(u,'dks')?'<span class="rank-crown dk">💎</span>':''}</td>
     </tr>`).join('')}</tbody></table>`;
   } catch(e){ el.innerHTML='<div class="rank-empty">Błąd ładowania rankingu.</div>'; }
 }
