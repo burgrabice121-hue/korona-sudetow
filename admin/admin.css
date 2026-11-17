@@ -54,6 +54,7 @@ input,select{font:inherit;background:var(--panel2);color:var(--text);border:1px 
 .ad-pill.off{color:var(--warn);border-color:rgba(240,136,62,.5)}
 .ad-tier{margin-bottom:10px}
 .ad-tier h4{margin:0 0 6px;font-size:13px}
+.ad-done{color:var(--ok);font-weight:600;margin-left:6px}
 .ad-peaks{display:flex;flex-wrap:wrap;gap:4px}
 .ad-peak{font-size:12px;border:1px solid var(--border);border-radius:10px;padding:1px 8px;color:var(--muted)}
 .ad-peak.on{background:rgba(240,192,64,.15);border-color:rgba(240,192,64,.6);color:var(--gold2)}

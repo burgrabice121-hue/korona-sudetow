@@ -11,6 +11,28 @@ var overview = null;          // {rows, stats, orphans} z ostatniego pobrania
 var card = null;              // {uid, d}: otwarta karta użytkownika (etap B: poprawki)
 var sortKey = 'created', sortDir = -1, filterKey = 'all', search = '';
 var TIERS = [['ks','Korona',KS],['wks','Wielka',WKS],['dks','Diamentowa',DKS],['kps','Pogórza (KPS, ukryta)',KPS]];
+
+/* P59: ukończenie korony na karcie — jak na stronie (P55: Wielka dopiero z Koroną, Diamentowa z Wielką).
+   Data = najpóźniejsze z pierwszych wejść na szczyty tej korony i poprzednich (jak Diary.summary, P54).
+   „Strona odnotowała” = users.done_* (okno „Gratulacje!” pokazuje się tylko, gdy użytkownik sam zaznaczy ostatni szczyt). */
+var TIER_LIST = {ks: KS, wks: WKS, dks: DKS}, TIER_PREV = {wks: 'ks', dks: 'wks'};
+function tierDoneOf(st, t){
+  return !!(TIER_LIST[t] && (st[t] || []).length >= TIER_LIST[t].length && (!TIER_PREV[t] || tierDoneOf(st, TIER_PREV[t])));
+}
+function tierDoneInfo(t, st, doc, visits){
+  if(!tierDoneOf(st, t)) return '';
+  var ids = [], c = t;
+  while(c){ TIER_LIST[c].forEach(function(p){ ids.push(p.id); }); c = TIER_PREV[c]; }
+  var first = {};
+  visits.forEach(function(v){ if(v.date && (!first[v.peakId] || v.date < first[v.peakId].date)) first[v.peakId] = v; });
+  var last = null, missing = [];
+  ids.forEach(function(id){ var v = first[id]; if(!v) missing.push(PEAK[id] || id); else if(!last || v.date > last.date) last = v; });
+  var when = missing.length
+    ? '<span class="ad-muted">data nieznana — bez wejścia z datą: '+esc(missing.slice(0, 5).join(', '))+(missing.length > 5 ? ' i '+(missing.length - 5)+' innych' : '')+'</span>'
+    : fmtIso(last.date)+(last.dateApprox ? ' <span class="ad-muted">(ok.)</span>' : '')+' <span class="ad-muted">('+esc(PEAK[last.peakId] || last.peakId)+')</span>';
+  var seen = doc.done ? (doc.done[t] ? ' · strona odnotowała' : ' · <span class="ad-warn">strona jeszcze nie odnotowała (konto nie otwierało strony od ukończenia)</span>') : '';
+  return ' <span class="ad-done">✓ ukończona '+when+'</span><span class="ad-muted small">'+seen+'</span>';
+}
 var PEAK = {};
 TIERS.forEach(function(t){ t[2].forEach(function(p){ PEAK[p.id] = p.name; }); });
 
@@ -255,6 +277,7 @@ function drawUser(uid, d){
     var have = view ? (view[t[0]] || []) : raw;
     return '<div class="ad-tier"><h4>'+t[1]+' <span class="ad-muted">'+have.length+'/'+t[2].length+
       (unlocked ? '' : ' · nieodblokowana')+(view ? ' · podgląd po przeliczeniu' : '')+'</span>'+
+      tierDoneInfo(t[0], view || doc, doc, d.visits || [])+
       (t[0]!=='ks' && t[0]!=='kps' && editPeaks ? ' '+btn('setUnlock', unlocked ? 'Zablokuj koronę' : 'Odblokuj koronę', ' data-tier="'+t[0]+'" data-on="'+(unlocked?'0':'1')+'"', 'small') : '')+
       '</h4><div class="ad-peaks">'+t[2].map(function(p, i){
         var on = have.indexOf(i)!==-1;
