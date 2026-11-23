@@ -99,6 +99,15 @@ var CIRCLE = ['Krąg Sudetczyków', 'Sudetes Circle'];
 var TITLE = {ks: [['Górołaz', 'Górołazka'], 'Hillwalker'], wks: [['Wędrowiec', 'Wędrowniczka'], 'Wanderer'],
              dks: [['Odkrywca', 'Odkrywczyni'], 'Explorer'], all: [['Sudetczyk', 'Sudetczanka'], 'Sudetes Local']};
 function title(t, form, isEn){ var x = TITLE[t]; return isEn ? x[1] : x[0][form === 'f' ? 1 : 0]; }
+/* dopełniacz do zdań „z tytułem Górołaza” (autor 2026-11-23) */
+var TITLE_GEN = {ks: ['Górołaza', 'Górołazki'], wks: ['Wędrowca', 'Wędrowniczki'], dks: ['Odkrywcy', 'Odkrywczyni'], all: ['Sudetczyka', 'Sudetczanki']};
+function titleGen(t, form){ return TITLE_GEN[t][form === 'f' ? 1 : 0]; }
+/* wybór formy tytułu przed dołączeniem (bez niego nowa osoba nie miała gdzie wybrać formy żeńskiej) */
+function formPick(t, form){
+  return '<div class="aw-row aw-form-pick">' + langSpans('Tytuł:', 'Title:') + ' ' + ['m', 'f'].map(function(x){
+    return '<button type="button" class="aw-btn ghost' + (form === x ? ' on' : '') + '" data-aw="form-' + x + '">' + esc(title(t, x, false)) + '</button>';
+  }).join('') + '</div>';
+}
 /* „Wędrowiec nr 3” (+ „· Sudetczyk” przy Diamentowej: komplet 57 szczytów) */
 function titleNo(t, no, form, isEn){
   return title(t, form, isEn) + (isEn ? ' no. ' : ' nr ') + no + (t === 'dks' ? ' · ' + title('all', form, isEn) : '');
@@ -160,18 +169,20 @@ function finBlock(box, t, opts){
     if(e && !e.hidden){
       box.innerHTML = dipButtons() + '<div class="aw-fin-ok">🎖 ' + langSpans('<b>' + esc(titleNo(t, e.no, form, false)) + '</b> · Krąg Sudetczyków',
                                                               '<b>' + esc(titleNo(t, e.no, form, true)) + '</b> · Sudetes Circle') + '</div>' +
+        '<span class="lang-pl">' + formPick(t, form) + '</span>' +
         (opts.inList ? '<button type="button" class="aw-link" data-aw="leave">' + langSpans('Wypisz mnie z Kręgu', 'Leave the Circle') + '</button>'
                      : '<button type="button" class="aw-link" data-aw="list">' + langSpans('Zobacz Krąg Sudetczyków ›', 'See the Sudetes Circle ›') + '</button>');
     } else if(!tierComplete(t)){
-      box.innerHTML = opts.inList ? '<span class="aw-muted">' + langSpans('Po ukończeniu poziomu ' + nm[0] + ' dołączysz tu z tytułem ' + tl[0] + '.',
+      box.innerHTML = opts.inList ? '<span class="aw-muted">' + langSpans('Po ukończeniu poziomu ' + nm[0] + ' dołączysz tu z tytułem ' + titleGen(t, form) + '.',
                                                                           'Once you complete the ' + nm[1] + ' you can join here as ' + tl[1] + '.') + '</span>' : '';
     } else {
       var d = tierDates(t);
       if(d.missing.length){ box.innerHTML = '<div class="aw-fin-q">' + missingMsg(d.missing.map(function(p){ return p.name; })) + '</div>'; }
       else box.innerHTML = '<div class="aw-fin-q">' +
-        langSpans('Dołączyć Cię do Kręgu Sudetczyków z tytułem ' + tl[0] + ' i numerem? Dyplom z numerem dostaniesz po dołączeniu. Krąg jest publiczny: pokazuje Twoją nazwę, tytuł z numerem i datę ukończenia.',
+        langSpans('Dołączyć Cię do Kręgu Sudetczyków z tytułem ' + titleGen(t, form) + ' i numerem? Dyplom z numerem dostaniesz po dołączeniu. Krąg jest publiczny: pokazuje Twoją nazwę, tytuł z numerem i datę ukończenia.',
                   'Add you to the Sudetes Circle as ' + tl[1] + ' with a number? You get a numbered certificate once you join. The Circle is public: it shows your name, title with number and completion date.') +
         (e && e.hidden ? ' ' + langSpans('Twój numer ' + e.no + ' czeka.', 'Your number ' + e.no + ' is kept.') : '') + '</div>' +
+        '<span class="lang-pl">' + formPick(t, form) + '</span>' +
         '<div class="aw-row"><button type="button" class="aw-btn" data-aw="join">' + langSpans('Dołącz do Kręgu', 'Join the Circle') + '</button>' +
         (opts.inList ? '' : '<button type="button" class="aw-btn ghost" data-aw="later">' + langSpans('Nie teraz', 'Not now') + '</button>') + '</div>';
     }
@@ -180,6 +191,7 @@ function finBlock(box, t, opts){
       if(!b) return;
       var a = b.getAttribute('data-aw');
       if(a === 'later'){ box.innerHTML = '<span class="aw-muted">' + langSpans('Możesz dołączyć później: menu konta → Krąg Sudetczyków. Dyplom z numerem dostaniesz po dołączeniu.', 'You can join later: account menu → Sudetes Circle. You get a numbered certificate once you join.') + '</span>'; return; }
+      if(a === 'form-m' || a === 'form-f'){ saveForm(a.slice(5)); finBlock(box, t, opts); return; }
       if(a === 'dip' || a === 'share'){ if(opts.inList) closeList(); diploma(t, a === 'share'); return; }
       if(a === 'list'){ if(window.closeUnlock) closeUnlock(null); openList(t); return; }
       if(a === 'leave' && !confirm(L('Wypisać Cię z Kręgu Sudetczyków? Numer zostanie zarezerwowany i wróci, jeśli dołączysz ponownie.',

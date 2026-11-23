@@ -119,3 +119,7 @@ body.aw-open{overflow:hidden}
 .aw-mark small{display:block;font-size:13px;font-weight:700;color:#A0522D}
 .aw-serial{position:absolute;right:56px;top:56px;font-size:14px;color:#4A4035;letter-spacing:.04em}
 .aw-serial b{color:#2C2A25;font-size:16px}
+/* wybór formy tytułu przed dołączeniem do Kręgu */
+.aw-form-pick{align-items:center;gap:6px;font-size:14px}
+.aw-form-pick .aw-btn{padding:4px 12px;font-size:14px}
+.aw-form-pick .aw-btn.on{background:#F0C040;color:#1a1a1a;border-color:#F0C040}
