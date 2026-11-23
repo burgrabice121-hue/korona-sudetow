@@ -179,6 +179,24 @@ function loadPeople(f, user){
     people = {byUid: d.byUid && typeof d.byUid==='object' ? d.byUid : {}, alias: d.alias && typeof d.alias==='object' ? d.alias : {}};
   }).catch(function(e){ people = {byUid:{}, alias:{}}; console.warn('Odczyt książki osób nieudany', e); });
 }
+/* nazwa zastępcza konta („Uczestnik z 17.10.2026”) ustępuje imieniu, pod którym ta osoba jest w wejściach
+   (autor 2026-11-23); jak isPlaceholder() w functions/people.js. Zwraca true, gdy coś zmieniono. */
+function isPlaceholder(s){ return /^uczestnik( wycieczki| z \d{2}\.\d{2}\.\d{4})?$/i.test(cleanLabel(s)); }
+function upgradePlaceholders(){
+  var cnt = {}, changed = false;
+  Object.keys(visits).forEach(function(id){
+    visits[id].companions.forEach(function(c){
+      var n = cleanLabel(c), u = people.alias[pnorm(n)];
+      if(!u || !people.byUid[u] || !isPlaceholder(people.byUid[u]) || !pnorm(n) || isPlaceholder(n)) return;
+      (cnt[u] = cnt[u] || {})[n] = (cnt[u][n] || 0) + 1;
+    });
+  });
+  Object.keys(cnt).forEach(function(u){
+    var best = Object.keys(cnt[u]).sort(function(a, b){ return cnt[u][b] - cnt[u][a] || b.length - a.length || (a < b ? -1 : 1); })[0];
+    if(best){ people.byUid[u] = best; changed = true; }
+  });
+  return changed;
+}
 function savePeople(){
   var f = fb(), user = curUser();
   if(!f || !user) return Promise.reject(new Error('no user'));
@@ -598,6 +616,7 @@ function load(user){
     snap.forEach(function(d){ var v = normalize(d.id, d.data()); (kpsIds[v.peakId] ? hiddenVisits : next)[d.id] = v; });
     visits = next;
     indexSpellings();
+    if(upgradePlaceholders()) savePeople().catch(function(e){ console.warn('Zapis nazw osób nieudany', e); });
     loadOk = true;
     loadedAt = Date.now();
     refreshAll();
@@ -1709,6 +1728,7 @@ function mergePeople(key, targetKey){
     // osoba z kontem: druga pisownia dopięta jako alias (wejścia bez zmian, pokazujemy nazwę z książki)
     var other = e.uid ? t : e;
     Object.keys(other.spell).concat([other.name]).forEach(function(sp){ if(pnorm(sp)) people.alias[pnorm(sp)] = acc; });
+    if(isPlaceholder(people.byUid[acc]) && !isPlaceholder(other.name)) people.byUid[acc] = cleanLabel(other.name);
     return peopleDone(savePeople(), 'Połączono ✓');
   }
   return peopleDone(rewriteVisits(key, t.name), 'Połączono ✓');
