@@ -3,25 +3,35 @@
    2) Obraz dyplomu do udostępnienia (canvas PNG 1200×630 i 1080×1080; Web Share API z plikiem albo pobranie).
    3) Krąg Sudetczyków: tytuł poziomu z numerem (Górołaz/Wędrowiec/Odkrywca, forma żeńska do wyboru — users.titleForm),
       finishers/{tier}_{uid}, numer nadaje serwer (functions/finishers.js, funkcja finishers).
+   4) Sudetczyk (P65, autor 2026-11-23): czwarty dyplom za komplet 57 szczytów, poziom 'all' w Kręgu, numer SUD-001,
+      dyplom A4 pionowo z pełną listą pogrupowaną według koron.
    Tylko viasudetica.eu (index.html); wielkakoronasudetow.pl tego pliku nie ładuje.
    Korzysta z globalnych app.js: TIER_DATA, tierComplete, tierChain, STATE, langSpans, escHtml, plPlural, fmtDayIso. */
 (function(){
 'use strict';
 
-var TIERS = ['ks', 'wks', 'dks'];
+var TIERS = ['ks', 'wks', 'dks', 'all'];
+var CROWNS = ['ks', 'wks', 'dks'];
 var NAME = {ks: ['Korona Sudetów', 'Crown of the Sudetes'], wks: ['Wielka Korona Sudetów', 'Great Crown of the Sudetes'],
-            dks: ['Diamentowa Korona Sudetów', 'Diamond Crown of the Sudetes']};
+            dks: ['Diamentowa Korona Sudetów', 'Diamond Crown of the Sudetes'],
+            all: ['Wszystkie trzy korony Sudetów', 'All three crowns of the Sudetes']};
 var COUNTRY = {PL: ['Polska', 'Poland'], CZ: ['Czechy', 'Czechia'], DE: ['Niemcy', 'Germany']};
 var C = {stone: '#2C2A25', bark: '#4A4035', moss: '#5C6B3A', lichen: '#8A9E5A', cream: '#F5F0E8', parchment: '#EDE6D6',
          fog: '#D4CCBA', rust: '#A0522D', gold: '#B8860B'};
 var SITE = 'viasudetica.eu';
+/* tło dyplomu i obrazu wg poziomu (autor 2026-11-23): ten sam papier, im wyższy poziom, tym ciemniejszy odcień
+   [tło, wypełnienie obrysu Sudetów]; to samo w awards.css (.t-*) */
+var PAPER = {ks: ['#F7F2EA', '#EDE5D6'], wks: ['#F0E7D6', '#E5DAC4'], dks: ['#E8DCC5', '#DCCEB3'], all: ['#DFD0B3', '#D2C1A0']};
 
 function en(){ var b = document.getElementById('btn-en'); return !!(b && b.classList.contains('active')); }
 function L(pl, e){ return en() ? e : pl; }
 function esc(s){ return escHtml(s == null ? '' : s); }
 function fb(){ return window._fb; }
 function user(){ var f = fb(); return f && f.auth && f.auth.currentUser; }
-function peaks(t){ return TIER_DATA[t] || []; }
+/* 'all' (Sudetczyk) = suma trzech koron */
+function peaks(t){ return t === 'all' ? [].concat(peaks('ks'), peaks('wks'), peaks('dks')) : TIER_DATA[t] || []; }
+function chainOf(t){ return t === 'all' ? ['all'] : tierChain(t); }
+function complete(t){ return tierComplete(t === 'all' ? 'dks' : t); }
 function day(iso){ return fmtDayIso(iso) || '—'; }
 
 /* opis poziomu (dyplom, podpis przy udostępnianiu); liczba szczytów z listy */
@@ -40,6 +50,13 @@ function desc(t, isEn){
 var GEN = {ks: 'Korony Sudetów', wks: 'Wielkiej Korony Sudetów', dks: 'Diamentowej Korony Sudetów'};
 function dipText(t, isEn){
   var n = peaks(t).length;
+  if(t === 'all'){
+    var k = peaks('ks').length, w = peaks('wks').length, d = peaks('dks').length;
+    return isEn ? 'We confirm the completion of all three crowns of the Sudetes, i.e. ' + n + ' summits: the Crown of the Sudetes (' + k + '), the Great Crown of the Sudetes (' + w +
+                  ') and the Diamond Crown of the Sudetes (' + d + '), within the Sudetes on the Polish, Czech and German sides.'
+                : 'Potwierdzamy zdobycie wszystkich trzech koron Sudetów, tj. ' + n + ' szczytów: Korony Sudetów (' + k + '), Wielkiej Korony Sudetów (' + w +
+                  ') i Diamentowej Korony Sudetów (' + d + '), w granicach Sudetów po stronie polskiej, czeskiej i niemieckiej.';
+  }
   if(isEn) return 'We confirm the completion of the ' + NAME[t][1] + ', i.e. ' + (t === 'ks'
     ? 'the ' + n + ' most prominent and most isolated summits of the whole Sudetes, within their borders on the Polish, Czech and German sides.'
     : desc(t, true));
@@ -50,7 +67,7 @@ function dipText(t, isEn){
 }
 /* dyplom WKS/DKS (prośba autora 2026-11-22): wcześniej ukończone poziomy i łączna liczba szczytów */
 function prior(t, isEn){
-  var ch = tierChain(t);
+  var ch = chainOf(t);
   if(ch.length < 2) return '';
   var total = 0;
   ch.forEach(function(c){ total += peaks(c).length; });
@@ -90,7 +107,7 @@ function tierDates(t){
     if(!d){ missing.push(p); return; }
     if(!first || d.date < first) first = d.date;
   });
-  tierChain(t).forEach(function(c){ peaks(c).forEach(function(p){ var d = f[p.id]; if(d && (!last || d.date > last)) last = d.date; }); });
+  chainOf(t).forEach(function(c){ peaks(c).forEach(function(p){ var d = f[p.id]; if(d && (!last || d.date > last)) last = d.date; }); });
   return {first: first, last: last, missing: missing, dates: f};
 }
 
@@ -108,9 +125,9 @@ function formPick(t, form){
     return '<button type="button" class="aw-btn ghost' + (form === x ? ' on' : '') + '" data-aw="form-' + x + '">' + esc(title(t, x, false)) + '</button>';
   }).join('') + '</div>';
 }
-/* „Wędrowiec nr 3” (+ „· Sudetczyk” przy Diamentowej: komplet 57 szczytów) */
+/* „Wędrowiec nr 3” (P65: bez dopisku „· Sudetczyk” przy Diamentowej — Sudetczyk ma własny dyplom i numer) */
 function titleNo(t, no, form, isEn){
-  return title(t, form, isEn) + (isEn ? ' no. ' : ' nr ') + no + (t === 'dks' ? ' · ' + title('all', form, isEn) : '');
+  return title(t, form, isEn) + (isEn ? ' no. ' : ' nr ') + no;
 }
 var myForm = null;   // users/{uid}.titleForm: 'f' | 'm' (null = jeszcze nie wczytane)
 function loadForm(){
@@ -165,16 +182,35 @@ function finBlock(box, t, opts){
   if(!user()){ box.innerHTML = ''; return; }
   box.innerHTML = '<span class="aw-muted">' + langSpans('Sprawdzam Krąg Sudetczyków…', 'Checking the Sudetes Circle…') + '</span>';
   Promise.all([ownEntry(t), loadForm()]).then(function(r){
-    var e = r[0], form = r[1], nm = NAME[t], tl = [title(t, form, false), title(t, form, true)];
-    if(e && !e.hidden){
-      box.innerHTML = dipButtons() + '<div class="aw-fin-ok">🎖 ' + langSpans('<b>' + esc(titleNo(t, e.no, form, false)) + '</b> · Krąg Sudetczyków',
+    var e = r[0], form = r[1], nm = NAME[t], tl = [title(t, form, false), title(t, form, true)], N = peaks('all').length;
+    if(e && !e.hidden && opts.sub){
+      // P65: Sudetczyk w podsumowaniu Diamentowej — własne przyciski dyplomu
+      box.innerHTML = '<div class="aw-fin-ok aw-fin-all">★ ' + langSpans('<b>' + esc(titleNo(t, e.no, form, false)) + '</b> · komplet ' + N + ' szczytów',
+                                                                  '<b>' + esc(titleNo(t, e.no, form, true)) + '</b> · all ' + N + ' summits') + '</div>' + dipButtons(t);
+    } else if(e && !e.hidden){
+      box.innerHTML = dipButtons(t) + '<div class="aw-fin-ok">🎖 ' + langSpans('<b>' + esc(titleNo(t, e.no, form, false)) + '</b> · Krąg Sudetczyków',
                                                               '<b>' + esc(titleNo(t, e.no, form, true)) + '</b> · Sudetes Circle') + '</div>' +
         '<span class="lang-pl">' + formPick(t, form) + '</span>' +
         (opts.inList ? '<button type="button" class="aw-link" data-aw="leave">' + langSpans('Wypisz mnie z Kręgu', 'Leave the Circle') + '</button>'
-                     : '<button type="button" class="aw-link" data-aw="list">' + langSpans('Zobacz Krąg Sudetczyków ›', 'See the Sudetes Circle ›') + '</button>');
-    } else if(!tierComplete(t)){
-      box.innerHTML = opts.inList ? '<span class="aw-muted">' + langSpans('Po ukończeniu poziomu ' + nm[0] + ' dołączysz tu z tytułem ' + titleGen(t, form) + '.',
-                                                                          'Once you complete the ' + nm[1] + ' you can join here as ' + tl[1] + '.') + '</span>' : '';
+                     : '<button type="button" class="aw-link" data-aw="list">' + langSpans('Zobacz Krąg Sudetczyków ›', 'See the Sudetes Circle ›') + '</button>') +
+        (t === 'dks' && !opts.inList ? '<div class="aw-fin aw-sub" data-fin="all"></div>' : '');
+      if(t === 'dks' && !opts.inList) finBlock(box.querySelector('.aw-sub'), 'all', {sub: true});
+    } else if(opts.sub){
+      // członek z Diamentową bez numeru Sudetczyka: obecnym członkom serwer nadaje go sam; brak dat na szczytach KS/WKS — prośba o daty
+      var dm = tierDates('all');
+      if(dm.missing.length){ box.innerHTML = '<div class="aw-fin-q">' + langSpans('Tytuł Sudetczyka (komplet ' + N + ' szczytów) dostaniesz po uzupełnieniu dat wejścia. Brakuje dat: ',
+                                                                                'You get the Sudetes Local title (all ' + N + ' summits) once you add the dates of ascent. Missing dates: ') +
+                                                dm.missing.map(function(p){ return esc(p.name); }).join(', ') + '.</div>'; }
+      else if(!opts.synced){
+        box.innerHTML = '<span class="aw-muted">' + langSpans('Nadaję numer Sudetczyka…', 'Assigning your Sudetes Local number…') + '</span>';
+        callFin('all', 'join').then(function(){ finBlock(box, t, {sub: true, synced: true}); }, function(err){ box.innerHTML = '<div class="aw-err">' + finErr(err) + '</div>'; });
+        return;
+      } else box.innerHTML = '';
+    } else if(!complete(t)){
+      box.innerHTML = opts.inList ? '<span class="aw-muted">' + (t === 'all'
+        ? langSpans('Po zdobyciu wszystkich ' + N + ' szczytów trzech koron dołączysz tu z tytułem ' + titleGen(t, form) + '.', 'Once you climb all ' + N + ' summits of the three crowns you can join here as ' + tl[1] + '.')
+        : langSpans('Po ukończeniu poziomu ' + nm[0] + ' dołączysz tu z tytułem ' + titleGen(t, form) + '.',
+                                                                          'Once you complete the ' + nm[1] + ' you can join here as ' + tl[1] + '.')) + '</span>' : '';
     } else {
       var d = tierDates(t);
       if(d.missing.length){ box.innerHTML = '<div class="aw-fin-q">' + missingMsg(d.missing.map(function(p){ return p.name; })) + '</div>'; }
@@ -188,7 +224,7 @@ function finBlock(box, t, opts){
     }
     box.onclick = function(ev){
       var b = ev.target.closest('[data-aw]');
-      if(!b) return;
+      if(!b || b.closest('.aw-fin') !== box) return;   // klik w zagnieżdżonym bloku Sudetczyka obsługuje jego własny box
       var a = b.getAttribute('data-aw');
       if(a === 'later'){ box.innerHTML = '<span class="aw-muted">' + langSpans('Możesz dołączyć później: menu konta → Krąg Sudetczyków. Dyplom z numerem dostaniesz po dołączeniu.', 'You can join later: account menu → Sudetes Circle. You get a numbered certificate once you join.') + '</span>'; return; }
       if(a === 'form-m' || a === 'form-f'){ saveForm(a.slice(5)); finBlock(box, t, opts); return; }
@@ -213,14 +249,16 @@ function finBlock(box, t, opts){
 
 /* ── w podsumowaniu ukończonego poziomu (app.js doneSection) ── */
 function doneBlock(t){
-  if(TIERS.indexOf(t) === -1) return '';
+  if(CROWNS.indexOf(t) === -1) return '';
   setTimeout(function(){ finBlock(document.querySelector('.aw-fin[data-fin="' + t + '"]'), t); }, 0);
   return '<div class="aw-done">' +
     '<div class="aw-fin" data-fin="' + t + '"></div>' +
     nudge(t) + '</div>';
 }
 /* przyciski dyplomu — tylko w bloku Kręgu członka (dyplom ma numer z Kręgu) */
-function dipButtons(){
+function dipButtons(t){
+  if(t === 'all') return '<div class="aw-row"><button type="button" class="aw-btn" data-aw="dip">📜 ' + langSpans('Dyplom Sudetczyka (PDF)', 'Sudetes Local certificate (PDF)') + '</button>' +
+    '<button type="button" class="aw-btn" data-aw="share">↗ ' + langSpans('Udostępnij dyplom Sudetczyka', 'Share the Sudetes Local certificate') + '</button></div>';
   return '<div class="aw-row"><button type="button" class="aw-btn" data-aw="dip">📜 ' + langSpans('Pobierz dyplom (PDF)', 'Download certificate (PDF)') + '</button>' +
     '<button type="button" class="aw-btn" data-aw="share">↗ ' + langSpans('Udostępnij dyplom', 'Share certificate') + '</button></div>';
 }
@@ -274,7 +312,7 @@ function ensureList(){
   o.innerHTML = '<div class="rank-box"><div class="rank-hdr"><h2>🎖 <span id="fin-title"></span></h2>' +
     '<button class="rank-close" type="button" onclick="Awards.closeList()">✕</button></div>' +
     '<div class="rank-body"><div class="rank-tabs">' +
-    TIERS.map(function(t){ return '<button type="button" class="rank-tab' + (t === 'dks' ? ' dk' : '') + '" data-fintab="' + t + '"></button>'; }).join('') +
+    TIERS.map(function(t){ return '<button type="button" class="rank-tab' + (t === 'dks' ? ' dk' : t === 'all' ? ' fin-all' : '') + '" data-fintab="' + t + '"></button>'; }).join('') +
     '</div><p class="fin-lead" id="fin-lead"></p><div class="aw-fin fin-own" id="fin-own"></div>' +
     '<div id="fin-content"></div><p class="fin-foot" id="fin-foot"></p></div></div>';
   document.body.appendChild(o);
@@ -293,10 +331,13 @@ function openList(t){
   document.getElementById('fin-title').innerHTML = langSpans('Krąg Sudetczyków', 'Sudetes Circle');
   o.querySelectorAll('[data-fintab]').forEach(function(b){
     var x = b.getAttribute('data-fintab');
-    b.innerHTML = langSpans(NAME[x][0].replace(' Sudetów', ''), NAME[x][1].replace(' of the Sudetes', ''));
+    b.innerHTML = x === 'all' ? '★ ' + langSpans('Sudetczycy', 'Sudetes Locals') : langSpans(NAME[x][0].replace(' Sudetów', ''), NAME[x][1].replace(' of the Sudetes', ''));
     b.classList.toggle('on', x === listTier);
   });
-  document.getElementById('fin-lead').innerHTML = langSpans(nm[0] + ': tytuł ' + TITLE[listTier][0][0] + ' / ' + TITLE[listTier][0][1] + '. Każdy numer nadajemy raz, w kolejności dołączenia do Kręgu.',
+  document.getElementById('fin-lead').innerHTML = listTier === 'all'
+    ? langSpans('Sudetczycy: komplet ' + peaks('all').length + ' szczytów wszystkich trzech koron, tytuł Sudetczyk / Sudetczanka. Numer nadajemy raz, w kolejności dołączenia; ★ oznacza Sudetczyka także w pozostałych zakładkach.',
+                'Sudetes Locals: all ' + peaks('all').length + ' summits of the three crowns, title Sudetes Local. Each number is given once, in the order of joining; ★ marks a Sudetes Local on the other tabs too.')
+    : langSpans(nm[0] + ': tytuł ' + TITLE[listTier][0][0] + ' / ' + TITLE[listTier][0][1] + '. Każdy numer nadajemy raz, w kolejności dołączenia do Kręgu.',
                                                             nm[1] + ': title ' + TITLE[listTier][1] + '. Each number is given once, in the order of joining the Circle.');
   document.getElementById('fin-foot').innerHTML = langSpans('Krąg opiera się na dziennikach wejść. Nie weryfikujemy wejść.',
                                                             'The Circle is based on the members\u2019 ascent diaries. Ascents are not verified.');
@@ -309,17 +350,21 @@ function loadList(){
   if(!el) return;
   if(!f){ el.innerHTML = '<div class="rank-empty">' + langSpans('Ładowanie…', 'Loading…') + '</div>'; setTimeout(loadList, 400); return; }
   el.innerHTML = '<div class="rank-loading">' + langSpans('Ładowanie…', 'Loading…') + '</div>';
-  f.getDocs(f.query(f.collection(f.db, 'finishers'), f.where('tier', '==', t), f.where('hidden', '==', false))).then(function(snap){
+  var q = function(x){ return f.getDocs(f.query(f.collection(f.db, 'finishers'), f.where('tier', '==', x), f.where('hidden', '==', false))); };
+  // ★ przy osobach z tytułem Sudetczyka (P65): identyfikator konta z nazwy dokumentu {tier}_{uid}
+  Promise.all([q(t), t === 'all' ? null : q('all').catch(function(){ return null; })]).then(function(res){
+    var snap = res[0], stars = {};
     if(t !== listTier) return;
+    if(res[1]) res[1].forEach(function(d){ stars[d.id.slice(4)] = 1; });
     var rows = [];
-    snap.forEach(function(d){ rows.push(d.data()); });
+    snap.forEach(function(d){ var x = d.data(); x.star = t === 'all' || !!stars[d.id.slice(t.length + 1)]; rows.push(x); });
     rows.sort(function(a, b){ return (a.no || 0) - (b.no || 0); });
     if(!rows.length){ el.innerHTML = '<div class="rank-empty">' + langSpans('Na tym poziomie nie ma jeszcze nikogo.', 'Nobody on this tier yet.') + '</div>'; return; }
     el.innerHTML = '<table class="rank-table fin-table"><thead><tr><th>' + langSpans('Tytuł', 'Title') + '</th><th>' + langSpans('Osoba', 'Person') +
       '</th><th>' + langSpans('Data ukończenia', 'Completion date') + '</th></tr></thead><tbody>' +
       rows.map(function(r){
         var f = r.form === 'f' ? 'f' : 'm';
-        return '<tr' + (t === 'dks' ? ' class="fin-star"' : '') + '><td class="fin-title">' + (t === 'dks' ? '★ ' : '') + langSpans(esc(titleNo(t, r.no, f, false)), esc(titleNo(t, r.no, f, true))) +
+        return '<tr' + (r.star ? ' class="fin-star"' : '') + '><td class="fin-title">' + (r.star ? '<span title="' + esc(L(title('all', f, false), title('all', f, true))) + '">★</span> ' : '') + langSpans(esc(titleNo(t, r.no, f, false)), esc(titleNo(t, r.no, f, true))) +
           '</td><td><div class="rank-name">' + esc(r.name) + '</div></td><td>' + esc(day(r.completed)) + '</td></tr>';
       }).join('') + '</tbody></table>';
   }).catch(function(){
@@ -363,7 +408,7 @@ function ensureDip(){
 /* dyplom tylko dla członka Kręgu tego poziomu (autor 2026-11-23): numer dyplomu = numer w Kręgu.
    Okno otwiera się po odczycie wpisu i formy tytułu — bez chwilowego „Górołaz” u Górołazki. */
 function diploma(t, share){
-  if(!tierComplete(t)) return;
+  if(!complete(t)) return;
   Promise.all([ownEntry(t), loadForm()]).then(function(r){
     var e = r[0];
     if(!e || e.hidden){
@@ -436,12 +481,13 @@ function ridge(t, w, h){
 /* znak na dyplomie i obrazie (Promocja 2026-11-23): ikona korony poziomu (symbole #ci-* z index.html),
    napis „Wielka Korona Sudetów”, pod nim adres. Marką jest nazwa, viasudetica.eu tylko adresem. */
 var BRAND = 'Wielka Korona Sudetów';
+function markIcons(t){ return t === 'all' ? CROWNS : [t]; }   // Sudetczyk: trzy korony obok siebie
 function markHtml(t){
-  return '<div class="aw-mark"><svg class="aw-mark-ic" viewBox="0 0 72 64" aria-hidden="true"><use href="#ci-' + t + '"/></svg>' +
+  return '<div class="aw-mark">' + markIcons(t).map(function(c){ return '<svg class="aw-mark-ic" viewBox="0 0 72 64" aria-hidden="true"><use href="#ci-' + c + '"/></svg>'; }).join('') +
          '<div><b>' + BRAND + '</b><small>' + SITE + '</small></div></div>';
 }
 /* numer dyplomu = numer w Kręgu Sudetczyków (nadany raz przez serwer), np. KS-001 */
-function dipNo(t, no){ return t.toUpperCase() + '-' + ('00' + no).slice(-3); }
+function dipNo(t, no){ return (t === 'all' ? 'SUD' : t.toUpperCase()) + '-' + ('00' + no).slice(-3); }
 var crownCache = {};
 function crownImg(t){
   if(crownCache[t]) return crownCache[t].complete && crownCache[t].naturalWidth ? crownCache[t] : null;
@@ -449,7 +495,7 @@ function crownImg(t){
   if(!sym) return null;
   var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + sym.getAttribute('viewBox') + '" width="144" height="128" overflow="visible">' + sym.innerHTML + '</svg>';
   var im = new Image();
-  im.onload = function(){ if(dip.mode === 'share' && dip.t === t) drawShare(); };
+  im.onload = function(){ if(dip.mode === 'share') drawShare(); };
   im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   crownCache[t] = im;
   return null;
@@ -459,10 +505,10 @@ function drawMark(g, t, x, y, align){
   g.font = '600 24px Georgia, serif';
   var w1 = g.measureText(BRAND.toUpperCase()).width;
   g.font = 'bold 28px Georgia, serif';
-  var w2 = g.measureText(SITE).width, tw = Math.max(w1, w2), iw = 64, ih = 57, gap = 14, all = iw + gap + tw;
+  var ics = markIcons(t), one = ics.length > 1 ? 44 : 64, iw = one * ics.length + (ics.length - 1) * 4, ih = one * 57 / 64;
+  var w2 = g.measureText(SITE).width, tw = Math.max(w1, w2), gap = 14, all = iw + gap + tw;
   var x0 = align === 'right' ? x - all : align === 'center' ? x - all / 2 : x;
-  var im = crownImg(t);
-  if(im) g.drawImage(im, x0, y - 44, iw, ih);
+  ics.forEach(function(c, i){ var im = crownImg(c); if(im) g.drawImage(im, x0 + i * (one + 4), y - 15 - ih / 2, one, ih); });
   g.textAlign = 'left';
   g.fillStyle = C.moss; g.font = '600 24px Georgia, serif'; g.fillText(BRAND.toUpperCase(), x0 + iw + gap, y - 18);
   g.fillStyle = C.rust; g.font = 'bold 28px Georgia, serif'; g.fillText(SITE, x0 + iw + gap, y + 14);
@@ -470,6 +516,7 @@ function drawMark(g, t, x, y, align){
 
 function renderSheet(){
   if(!dip.no) return;   // bez numeru z Kręgu nie ma dyplomu
+  if(dip.t === 'all') return renderAll();
   var t = dip.t, E = dip.isEn, d = tierDates(t), nm = NAME[t], ps = peaks(t);
   var name = nameVal() || (E ? '[Name and surname]' : '[Imię i nazwisko]');
   var many = ps.length > 10;   // dwie kolumny, kody krajów (WKS, DKS); gęsty druk dopiero > 16 (DKS)
@@ -504,7 +551,51 @@ function renderSheet(){
       '<div class="aw-who">' + esc(name) + '</div>' +
       '<p class="aw-text">' + esc(dipText(t, E)) + (prior(t, E) ? '<br>' + esc(prior(t, E)) : '') + '</p>' +
       '<div class="aw-tables">' + tables + '</div>' +
-      '<div class="aw-meta">' + esc(period) + '<span class="aw-no">' + (dip.no ? esc(titleNo(t, dip.no, dip.form, E)) + ' · ' + CIRCLE[E ? 1 : 0] : esc(title(t, dip.form, E) + (t === 'dks' ? ' · ' + title('all', dip.form, E) : ''))) + '</span>' + '</div>' +
+      '<div class="aw-meta">' + esc(period) + '<span class="aw-no">' + esc(titleNo(t, dip.no, dip.form, E)) + ' · ' + CIRCLE[E ? 1 : 0] + '</span>' + '</div>' +
+      '<div class="aw-foot"><small>' +
+        (multi ? (E ? '* climbed more than once · ' : '* zdobyty wielokrotnie · ') : '') +
+        (E ? 'Certificate based on entries in the ascent diary · issued ' : 'Dyplom na podstawie wpisów w dzienniku wejść · wystawiono ') +
+        esc(day(new Date().toISOString().slice(0, 10))) + '</small></div>';
+  fitSheet();
+}
+/* dyplom Sudetczyka (P65): A4 pionowo, pełna lista 57 szczytów pogrupowana według koron w dwóch kolumnach */
+function renderAll(){
+  var E = dip.isEn, d = tierDates('all'), N = peaks('all').length, multi = false;
+  var name = nameVal() || (E ? '[Name and surname]' : '[Imię i nazwisko]');
+  var items = [];   // wiersze: nagłówek korony albo szczyt
+  CROWNS.forEach(function(c){
+    var ps = peaks(c).slice().sort(function(a, b){
+      var x = d.dates[a.id], y = d.dates[b.id];
+      return x && y ? (x.date < y.date ? -1 : x.date > y.date ? 1 : 0) : x ? -1 : y ? 1 : 0;
+    });
+    items.push('<tr class="grp"><td colspan="4"><svg class="aw-grp-ic" viewBox="0 0 72 64" aria-hidden="true"><use href="#ci-' + c + '"/></svg>' +
+      esc(NAME[c][E ? 1 : 0]) + ' · ' + ps.length + '</td></tr>');
+    ps.forEach(function(p){
+      var x = d.dates[p.id], star = x && x.n > 1;
+      if(star) multi = true;
+      items.push('<tr><td>' + esc(E && p.en ? p.en : p.name) + (star ? '<sup class="aw-star">*</sup>' : '') + '</td><td class="n">' + esc(String(p.alt).replace('.', ',')) + ' m</td><td>' +
+        esc(String(p.kraj || '')) + '</td><td class="n">' + (x ? esc(day(x.date)) + (x.approx ? (E ? ' (approx.)' : ' (ok.)') : '') : '—') + '</td></tr>');
+    });
+  });
+  var head = '<thead><tr><th>' + (E ? 'Summit' : 'Szczyt') + '</th><th class="n">' + (E ? 'Elevation' : 'Wysokość') + '</th><th>' +
+             (E ? 'Country' : 'Kraj') + '</th><th class="n">' + (E ? 'Date of ascent' : 'Data wejścia') + '</th></tr></thead>';
+  var per = Math.ceil(items.length / 2), tables = '';
+  for(var i = 0; i < 2; i++) tables += '<table class="aw-tbl">' + head + '<tbody>' + items.slice(i * per, (i + 1) * per).join('') + '</tbody></table>';
+  var period = d.first && d.last ? (E ? 'Time taken: from ' + day(d.first) + ' to ' + day(d.last) : 'Czas zdobywania: od ' + day(d.first) + ' do ' + day(d.last)) : '';
+  var sheet = document.getElementById('aw-sheet');
+  sheet.className = 'aw-sheet t-all portrait';
+  if(!document.getElementById('aw-in')) sheet.innerHTML = '<div class="aw-bgsvg" id="aw-bgsvg"></div><div class="aw-in" id="aw-in"></div>';
+  bgOutline('all');
+  document.getElementById('aw-in').innerHTML =
+      markHtml('all') +
+      '<div class="aw-serial">' + (E ? 'No. ' : 'Nr ') + '<b>' + dipNo('all', dip.no) + '</b></div>' +
+      '<div class="aw-kicker">' + (E ? 'Certificate' : 'Dyplom') + '</div>' +
+      '<h1 class="aw-title">' + esc(title('all', dip.form, E)) + '</h1>' +
+      '<div class="aw-sub-t">' + esc(NAME.all[E ? 1 : 0] + ' · ' + N + (E ? ' summits' : ' szczytów')) + '</div>' +
+      '<div class="aw-who">' + esc(name) + '</div>' +
+      '<p class="aw-text">' + esc(dipText('all', E)) + '</p>' +
+      '<div class="aw-tables">' + tables + '</div>' +
+      '<div class="aw-meta">' + esc(period) + '<span class="aw-no">' + esc(titleNo('all', dip.no, dip.form, E)) + ' · ' + CIRCLE[E ? 1 : 0] + '</span></div>' +
       '<div class="aw-foot"><small>' +
         (multi ? (E ? '* climbed more than once · ' : '* zdobyty wielokrotnie · ') : '') +
         (E ? 'Certificate based on entries in the ascent diary · issued ' : 'Dyplom na podstawie wpisów w dzienniku wejść · wystawiono ') +
@@ -533,11 +624,11 @@ function bgOutline(t){
   function P(lng, lat){ return [(ox + (lng - lo[0]) * kx * s).toFixed(1), (oy + (hi[1] - lat) * s).toFixed(1)]; }
   var d = rings.map(function(r){ return 'M' + r.map(function(c){ return P(c[0], c[1]).join(' '); }).join('L') + 'Z'; }).join('');
   var dots = '';
-  tierChain(t).forEach(function(c){
+  chainOf(t).forEach(function(c){
     var own = c === t;
     peaks(c).forEach(function(p){
       var q = P(p.lng, p.lat);
-      dots += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + (own ? 5.5 : 3) + '" class="' + (own ? 'own' : 'prev') + '"/>';
+      dots += '<circle cx="' + q[0] + '" cy="' + q[1] + '" r="' + (own ? (t === 'all' ? 4.5 : 5.5) : 3) + '" class="' + (own ? 'own' : 'prev') + '"/>';
     });
   });
   // obrys całości: grube linie grup pod wypełnieniem — granice wewnętrzne znikają
@@ -548,14 +639,15 @@ function bgOutline(t){
 function fitSheet(){
   var st = document.getElementById('aw-stage'), sc = document.getElementById('aw-scale');
   if(!st || st.hidden) return;
-  var k = Math.min(1, (st.clientWidth - 24) / 1123);
+  var W = dip.t === 'all' ? 794 : 1123, H = dip.t === 'all' ? 1123 : 794;   // Sudetczyk: A4 pionowo
+  var k = Math.min(1, (st.clientWidth - 24) / W);
   sc.style.transform = 'scale(' + k + ')';
-  sc.style.height = (794 * k) + 'px'; sc.style.width = (1123 * k) + 'px';
+  sc.style.height = (H * k) + 'px'; sc.style.width = (W * k) + 'px';
 }
 function printDip(){
   var s = document.createElement('style');
   s.id = 'aw-page';
-  s.textContent = '@page{size:A4 landscape;margin:0}';
+  s.textContent = '@page{size:A4 ' + (dip.t === 'all' ? 'portrait' : 'landscape') + ';margin:0}';
   document.head.appendChild(s);
   document.body.classList.add('aw-printing');
   var done = function(){ document.body.classList.remove('aw-printing'); var x = document.getElementById('aw-page'); if(x) x.remove(); window.removeEventListener('afterprint', done); };
@@ -584,12 +676,12 @@ function drawOutline(g, x, y, w, h, t){
   // obrys całości: grube linie wszystkich grup, potem wypełnienie przykrywa granice wewnętrzne
   g.lineJoin = 'round'; g.strokeStyle = C.moss; g.lineWidth = 5;
   rings.forEach(function(r){ path(r); g.stroke(); });
-  g.fillStyle = C.parchment;
+  g.fillStyle = (PAPER[t] || PAPER.ks)[1];
   rings.forEach(function(r){ path(r); g.fill(); });
   pts.forEach(function(p){
     var q = P(p.lng, p.lat);
-    g.beginPath(); g.arc(q[0], q[1], t === 'dks' ? 6 : 9, 0, 2 * Math.PI);
-    g.fillStyle = C.rust; g.fill(); g.lineWidth = 2.5; g.strokeStyle = C.cream; g.stroke();
+    g.beginPath(); g.arc(q[0], q[1], t === 'all' ? 5.5 : t === 'dks' ? 6 : 9, 0, 2 * Math.PI);
+    g.fillStyle = C.rust; g.fill(); g.lineWidth = 2.5; g.strokeStyle = (PAPER[t] || PAPER.ks)[0]; g.stroke();
   });
 }
 function fitText(g, s, max, size, font){
@@ -606,7 +698,7 @@ function drawShare(){
       (f === 'wide' ? (E ? 'Landscape 1200×630' : 'Poziomy 1200×630') : (E ? 'Square 1080×1080' : 'Kwadrat 1080×1080')) + '</button>';
   }).join('');
   var d = tierDates(t), n = peaks(t).length, nc = countries(t).length, year = (d.last || '').slice(0, 4);
-  g.fillStyle = C.cream; g.fillRect(0, 0, W, H);
+  g.fillStyle = (PAPER[t] || PAPER.ks)[0]; g.fillRect(0, 0, W, H);
   g.strokeStyle = C.bark; g.lineWidth = 6; g.strokeRect(24, 24, W - 48, H - 48);
   g.strokeStyle = C.fog; g.lineWidth = 2; g.strokeRect(38, 38, W - 76, H - 76);
   var wide = dip.fmt === 'wide', tx = wide ? 80 : 90, tw = wide ? 600 : W - 180;
@@ -617,24 +709,25 @@ function drawShare(){
   var lines = [];
   g.fillStyle = C.moss; g.font = '600 22px Georgia, serif';
   g.fillText((E ? 'CERTIFICATE' : 'DYPLOM') + (dip.no ? (E ? ' NO. ' : ' NR ') + dipNo(t, dip.no) : ''), tx, top);
-  var nm = NAME[t][E ? 1 : 0], ttl = E ? nm + ' completed' : nm + ' ukończona';
+  var all = t === 'all', nm = all ? title('all', dip.form, E) : NAME[t][E ? 1 : 0], ttl = all ? nm : E ? nm + ' completed' : nm + ' ukończona';
+  var l2 = all ? (E ? 'all three crowns' : 'wszystkie trzy korony') : E ? 'completed' : 'ukończona';
   g.fillStyle = C.stone;
-  // tytuł w dwóch wierszach: nazwa poziomu + „ukończona”
-  fitText(g, nm, tw, wide ? 58 : 64, 'bold {} Georgia, serif');
+  // tytuł w dwóch wierszach: nazwa poziomu + „ukończona” (Sudetczyk: tytuł + „wszystkie trzy korony”)
+  fitText(g, nm, tw, wide ? (all ? 66 : 58) : (all ? 72 : 64), 'bold {} Georgia, serif');
   g.fillText(nm, tx, top + 70);
-  g.fillStyle = C.rust; fitText(g, E ? 'completed' : 'ukończona', tw, wide ? 50 : 56, 'italic bold {} Georgia, serif');
-  g.fillText(E ? 'completed' : 'ukończona', tx, top + 132);
+  g.fillStyle = C.rust; fitText(g, l2, tw, wide ? (all ? 42 : 50) : (all ? 48 : 56), 'italic bold {} Georgia, serif');
+  g.fillText(l2, tx, top + 132);
   var y = top + 200, show = document.getElementById('aw-show').checked, who = nameVal();
   if(show && who){ g.fillStyle = C.stone; fitText(g, who, tw, 40, '{} Georgia, serif'); g.fillText(who, tx, y); y += 58; }
   g.fillStyle = C.bark; g.font = '30px Georgia, serif';
-  var stat = E ? n + ' summits · ' + nc + ' countr' + (nc === 1 ? 'y' : 'ies') + (year ? ' · ' + year : '')
+  var stat = all ? (E ? n + ' summits · 3 crowns · ' + nc + ' countries' : n + ' szczytów · 3 korony · ' + nc + ' ' + plPlural(nc, 'kraj', 'kraje', 'krajów'))
+           : E ? n + ' summits · ' + nc + ' countr' + (nc === 1 ? 'y' : 'ies') + (year ? ' · ' + year : '')
                : n + ' ' + plPlural(n, 'szczyt', 'szczyty', 'szczytów') + ' · ' + nc + ' ' + plPlural(nc, 'kraj', 'kraje', 'krajów') + (year ? ' · ' + year : '');
   g.fillText(stat, tx, y); y += 46;
   if(d.first && d.last && d.first !== d.last){
     g.font = '24px Georgia, serif'; g.fillStyle = C.bark;
     g.fillText(E ? 'from ' + day(d.first) + ' to ' + day(d.last) : 'od ' + day(d.first) + ' do ' + day(d.last), tx, y); y += 42;
   }
-  if(!dip.no){ g.fillStyle = C.moss; g.font = 'bold 28px Georgia, serif'; g.fillText(title(t, dip.form, E) + (t === 'dks' ? ' · ' + title('all', dip.form, E) : ''), tx, y); y += 44; }
   if(dip.no){
     g.fillStyle = C.moss; fitText(g, titleNo(t, dip.no, dip.form, E), tw, 28, 'bold {} Georgia, serif'); g.fillText(titleNo(t, dip.no, dip.form, E), tx, y); y += 34;
     g.font = '22px Georgia, serif'; g.fillText(CIRCLE[E ? 1 : 0], tx, y); y += 40;
@@ -648,8 +741,11 @@ function shareSupported(){
 }
 function shareImg(){
   var cv = document.getElementById('aw-canvas'), E = dip.isEn, t = dip.t;
-  var fname = 'dyplom-' + t + '-' + (dip.fmt === 'square' ? '1080x1080' : '1200x630') + '.png';
-  var text = (E ? NAME[t][1] + ' completed: ' + desc(t, true) : 'Ukończona ' + NAME[t][0] + ': ' + desc(t, false)) + ' https://' + SITE;
+  var fname = 'dyplom-' + (t === 'all' ? 'sudetczyk' : t) + '-' + (dip.fmt === 'square' ? '1080x1080' : '1200x630') + '.png', N = peaks('all').length;
+  var text = (t === 'all'
+    ? (E ? 'All three crowns of the Sudetes: ' + N + ' summits in Poland, Czechia and Germany. I’m now Sudetes Local no. ' + dip.no + '.'
+         : 'Wszystkie trzy korony Sudetów: ' + N + ' szczytów w Polsce, Czechach i Niemczech. Jestem ' + (dip.form === 'f' ? 'Sudetczanką' : 'Sudetczykiem') + ' nr ' + dip.no + '.')
+    : E ? NAME[t][1] + ' completed: ' + desc(t, true) : 'Ukończona ' + NAME[t][0] + ': ' + desc(t, false)) + ' https://' + SITE;
   cv.toBlob(function(blob){
     if(!blob) return;
     var file = new File([blob], fname, {type: 'image/png'});

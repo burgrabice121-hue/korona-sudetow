@@ -123,3 +123,38 @@ body.aw-open{overflow:hidden}
 .aw-form-pick{align-items:center;gap:6px;font-size:14px}
 .aw-form-pick .aw-btn{padding:4px 12px;font-size:14px}
 .aw-form-pick .aw-btn.on{background:#F0C040;color:#1a1a1a;border-color:#F0C040}
+/* Sudetczyk (P65): dyplom A4 pionowo (794×1123 px), lista 57 szczytów w dwóch kolumnach z nagłówkami koron */
+.aw-sheet.portrait{width:794px;height:1123px}
+.portrait .aw-in{padding:92px 58px 46px}
+.portrait .aw-title{font-size:44px}
+.t-all .aw-title{color:#5C6B3A}
+.aw-sub-t{margin-top:2px;font-size:15px;font-style:italic;color:#A0522D}
+.portrait .aw-who{margin-top:10px;font-size:26px;min-width:380px}
+.portrait .aw-text{font-size:13px;line-height:1.4;max-width:660px;margin-top:10px}
+.portrait .aw-tables{gap:18px;margin-top:10px}
+.portrait .aw-tbl{font-size:10.5px;min-width:0}
+.portrait .aw-tbl td{padding:1.5px 6px;white-space:nowrap}
+.portrait .aw-tbl th{font-size:8.5px;padding:2px 6px}
+.portrait .aw-tbl tr.grp td{padding:6px 6px 2px;border-bottom:1px solid #4A4035;font-weight:700;color:#5C6B3A;font-size:11px;letter-spacing:.03em}
+.portrait .aw-tbl tr.grp:first-child td{padding-top:2px}
+.aw-grp-ic{width:16px;height:14px;vertical-align:-2px;margin-right:5px}
+.portrait .aw-meta{font-size:13px;gap:18px;flex-wrap:wrap;justify-content:center}
+.portrait .aw-mark{top:46px;left:50px}
+.portrait .aw-mark-ic{width:30px;height:27px}
+.portrait .aw-serial{top:54px;right:52px}
+.portrait .aw-bgsvg{top:62%;width:620px;height:320px}
+@media print{ body.aw-printing .aw-sheet.portrait{width:210mm;height:296mm} }
+/* podsumowanie Diamentowej: blok Sudetczyka; lista Kręgu: zakładka Sudetczyków */
+.aw-sub{margin-top:.8rem;padding-top:.6rem;border-top:1px dashed rgba(255,255,255,.15)}
+.aw-fin-all{color:#A78BFA}
+/* odcień papieru wg poziomu (autor 2026-11-23): im wyższy poziom, tym ciemniejszy; wartości jak PAPER w awards.js */
+.aw-sheet.t-ks{background:#F7F2EA}
+.aw-sheet.t-wks{background:#F0E7D6}
+.aw-sheet.t-dks{background:#E8DCC5}
+.aw-sheet.t-all{background:#DFD0B3}
+.t-ks .aw-bgsvg .fill{fill:#EDE5D6}
+.t-wks .aw-bgsvg .fill{fill:#E5DAC4}
+.t-dks .aw-bgsvg .fill{fill:#DCCEB3}
+.t-all .aw-bgsvg .fill{fill:#D2C1A0}
+.aw-sheet .aw-tbl td{border-bottom-color:rgba(74,64,53,.2)}
+.aw-sheet::after{border-color:rgba(74,64,53,.25)}
