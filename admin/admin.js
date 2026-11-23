@@ -91,7 +91,7 @@ function renderWho(user){
 
 /* ── nawigacja ── */
 function nav(active){
-  var t = [['','Użytkownicy'],['#zgloszenia','Zgłoszenia'],['#dziennik','Dziennik zmian']];
+  var t = [['','Użytkownicy'],['#zgloszenia','Zgłoszenia'],['#wiadomosci','Wiadomości'],['#dziennik','Dziennik zmian']];
   return '<nav class="ad-nav">'+t.map(function(x){
     return '<a href="'+(x[0]||'#')+'" class="'+(active===x[0]?'on':'')+'">'+x[1]+'</a>';
   }).join('')+'</nav>';
@@ -101,6 +101,7 @@ function route(){
   if(/^#u\//.test(h)) return showUser(decodeURIComponent(h.slice(3)));
   if(h==='#zgloszenia') return showFeedback();
   if(h==='#dziennik') return showLog();
+  if(h==='#wiadomosci') return showNews();
   showUsers(false);
 }
 
@@ -351,7 +352,7 @@ function showFeedback(){
 var ACTION_PL = {feedbackDone:'zgłoszenie załatwione / przywrócone', setPeak:'zdobyty szczyt', setUnlock:'odblokowanie korony',
   setName:'nazwa', setRanking:'ranking', setNews:'wiadomości e-mail', editVisit:'poprawka wejścia', deleteVisit:'usunięcie wejścia',
   cancelInvite:'anulowanie zaproszenia', remindInvite:'przypomnienie o zaproszeniu', sendVerify:'mail potwierdzający',
-  sendReset:'link do zmiany hasła', setVerified:'adres oznaczony jako potwierdzony', setDisabled:'blokada konta', deleteAccount:'usunięcie konta'};
+  sendReset:'link do zmiany hasła', news:'wiadomość zbiorcza (zlecenie)', setVerified:'adres oznaczony jako potwierdzony', setDisabled:'blokada konta', deleteAccount:'usunięcie konta'};
 
 /* ── poprawki na karcie (etap B, P42): potwierdzenie → adminApi → odświeżenie karty ── */
 function flash(msg, isErr){
@@ -499,10 +500,131 @@ function showLog(){
   }).catch(function(e){ main(nav('#dziennik')+errBox(e)); });
 }
 
+/* ── wiadomości zbiorcze (P66, zlecenie autora przez Promocję 2026-11-23): zamiast ręcznego dokumentu w konsoli Firestore.
+   Lista = pliki functions/newsletters/*.js wdrożone na serwerze; stan z newsletters/{id}; podgląd treści;
+   policz odbiorców, test na adres, wysyłka do wszystkich (dopiero po teście, z liczbą odbiorców w potwierdzeniu).
+   Stan odświeża się co 3 s, dopóki coś trwa. ── */
+var news = null, newsTimer = null, newsMe = null, newsBusy = {};
+function newsStatus(r){
+  var n = function(k, l){ return r[k] ? l+': '+r[k] : ''; };
+  var extra = [n('optOut','rezygnacja'), n('unverified','niepotwierdzony adres'), n('already','wysłane wcześniej')].filter(Boolean).join(', ');
+  if(!r.file) return '<span class="ad-pill off">brak pliku na serwerze</span>';
+  if(r.pending) return '<span class="ad-pill">zlecono: '+esc({count:'liczenie',test:'test',send:'wysyłka'}[r.pending]||r.pending)+'…</span>';
+  switch(r.status){
+    case null: case undefined: return '<span class="ad-pill off">nie wysłany</span>';
+    case 'counting': return '<span class="ad-pill">liczę odbiorców…</span>';
+    case 'sending': return '<span class="ad-pill">wysyłka trwa…</span>';
+    case 'counted': return '<span class="ad-pill">odbiorców: <b>'+(r.recipients||0)+'</b></span>'+(extra ? ' <span class="ad-muted">('+extra+')</span>' : '');
+    case 'test sent': return '<span class="ad-pill on">test wysłany</span> <span class="ad-muted">'+esc(r.testTo||'')+' · '+fmtTime(r.testSentAt)+'</span>';
+    case 'done': return '<span class="ad-pill on">wysłany: '+(r.sent||0)+'</span>'+(r.failed ? ' <span class="ad-pill off">błędy: '+r.failed+'</span>' : '')+
+      ' <span class="ad-muted">'+fmtTime(r.finishedAt)+(extra ? ' · '+extra : '')+'</span>';
+    case 'error': return '<span class="ad-pill off">błąd</span> <span class="ad-muted">'+esc(r.error||'')+'</span>';
+  }
+  return esc(r.status);
+}
+function newsRunning(r){ return !!(r.pending || r.status==='counting' || r.status==='sending'); }
+function showNews(){
+  if(!news) main(nav('#wiadomosci')+'<p class="ad-muted">Pobieram wiadomości…</p>');
+  clearTimeout(newsTimer);
+  return api('newsList').then(function(d){
+    news = d.items || []; newsMe = newsMe || d.me;
+    if(location.hash!=='#wiadomosci') return;
+    drawNews();
+    if(news.some(newsRunning)) newsTimer = setTimeout(function(){ if(location.hash==='#wiadomosci') showNews(); }, 3000);
+  }).catch(function(e){ main(nav('#wiadomosci')+errBox(e)); });
+}
+function drawNews(){
+  var keep = $('ad-news-to') ? $('ad-news-to').value : (newsMe || '');
+  var fl = $('ad-flash'), fls = fl && !fl.hidden ? [fl.textContent, fl.className] : null;   // komunikat przetrwa odświeżenie listy
+  main(nav('#wiadomosci')+'<div class="ad-flash" id="ad-flash" hidden></div>'+
+    '<p class="ad-muted">Maile z plików <code>functions/newsletters/*.js</code> wdrożonych na serwerze (treść pisze Promocja, zmiana treści = nowe wdrożenie functions). '+
+    'Kolejność: podgląd → test na swój adres → sprawdź w poczcie → wyślij do wszystkich. Wysyłka pomija konta niepotwierdzone, zablokowane i z rezygnacją; ponowna wysyłka dośle tylko brakujące.</p>'+
+    '<label class="ad-news-to">Adres testu <input type="email" id="ad-news-to" value="'+esc(keep)+'"></label>'+
+    (news.length ? news.map(function(r){
+      var run = newsRunning(r) || newsBusy[r.id];
+      return '<article class="ad-news'+(r.status==='done'?' done':'')+'" data-news="'+esc(r.id)+'">'+
+        '<header><b>'+esc(r.subject || r.id)+'</b> <span class="ad-muted">'+esc(r.id)+'</span></header>'+
+        (r.preheader ? '<div class="ad-muted">Podgląd w skrzynce: '+esc(r.preheader)+'</div>' : '')+
+        '<div class="ad-news-st">'+newsStatus(r)+'</div>'+
+        (r.file ? '<div class="ad-actions">'+
+          '<button type="button" class="ad-btn" data-news-act="preview">Podgląd</button>'+
+          '<button type="button" class="ad-btn" data-news-act="count"'+(run?' disabled':'')+'>Policz odbiorców</button>'+
+          '<button type="button" class="ad-btn" data-news-act="test"'+(run?' disabled':'')+'>Wyślij test</button>'+
+          '<button type="button" class="ad-btn primary" data-news-act="send"'+(run || !r.testSentAt ? ' disabled' : '')+
+            ' title="'+(r.testSentAt ? '' : 'Najpierw wyślij test')+'">'+(r.status==='done' ? 'Dośli brakujące' : 'Wyślij do wszystkich')+'</button>'+
+        '</div>' : '')+
+      '</article>';
+    }).join('') : '<p class="ad-muted">Na serwerze nie ma żadnych plików wiadomości.</p>'));
+  if(fls){ $('ad-flash').hidden = false; $('ad-flash').textContent = fls[0]; $('ad-flash').className = fls[1]; }
+}
+/* czekanie na koniec liczenia (przed wysyłką: liczba osób w potwierdzeniu) */
+function newsWait(id, until){
+  return new Promise(function(res, rej){
+    var t0 = Date.now();
+    (function tick(){
+      api('newsList').then(function(d){
+        var r = (d.items||[]).filter(function(x){ return x.id===id; })[0];
+        if(r && !r.pending && until(r)) return res(r);
+        if(r && r.status==='error') return rej(new Error(r.error || 'Błąd.'));
+        if(Date.now() - t0 > 180000) return rej(new Error('Serwer nie odpowiedział w ciągu 3 minut.'));
+        setTimeout(tick, 2000);
+      }, rej);
+    })();
+  });
+}
+function newsAct(btn){
+  var art = btn.closest('[data-news]'), id = art.getAttribute('data-news'), act = btn.getAttribute('data-news-act');
+  var r = news.filter(function(x){ return x.id===id; })[0];
+  if(act==='preview') return newsPreview(id);
+  var fail = function(e){ delete newsBusy[id]; flash(e && e.message && e.message!=='internal' ? e.message : 'Nie udało się.', true); showNews(); };
+  if(act==='test'){
+    var to = ($('ad-news-to').value || '').trim();
+    if(!confirm('Wysłać test »'+r.subject+'« na '+(to||newsMe)+'?')) return;
+    newsBusy[id] = 1; btn.disabled = true;
+    return api('newsAct', {id:id, act:'test', testTo:to}).then(function(){ delete newsBusy[id]; flash('Test zlecony — sprawdź pocztę za chwilę.'); showNews(); }, fail);
+  }
+  if(act==='count'){
+    newsBusy[id] = 1; btn.disabled = true;
+    return api('newsAct', {id:id, act:'count'}).then(function(){ delete newsBusy[id]; showNews(); }, fail);
+  }
+  if(act==='send'){
+    newsBusy[id] = 1; drawNews();
+    flash('Liczę odbiorców przed wysyłką…');
+    return api('newsAct', {id:id, act:'count'}).then(function(){
+      return newsWait(id, function(x){ return x.status==='counted'; });
+    }).then(function(x){
+      delete newsBusy[id];
+      if(!x.recipients){ flash('Nie ma do kogo wysłać'+(x.already ? ' — wszyscy ('+x.already+') już go dostali.' : '.')); return showNews(); }
+      if(!confirm('Wysłać »'+r.subject+'« do '+x.recipients+' '+(x.recipients===1?'osoby':'osób')+'?'+(x.already ? '\n(Wcześniej wysłane: '+x.already+' — tych pomijam.)' : '')+'\n\nTego nie da się cofnąć.')){ return showNews(); }
+      return api('newsAct', {id:id, act:'send'}).then(function(){ flash('Wysyłka ruszyła. Stan odświeża się sam.'); showNews(); });
+    }).catch(fail);
+  }
+}
+function newsPreview(id){
+  api('newsPreview', {id:id}).then(function(p){
+    var dl = document.createElement('dialog');
+    dl.className = 'ad-dlg ad-news-dlg';
+    dl.innerHTML = '<h3>'+esc(p.subject)+'</h3>'+
+      '<div class="ad-muted">'+(p.preheader ? 'Podgląd w skrzynce: '+esc(p.preheader)+' · ' : '')+(p.replyTo ? 'Odpowiedzi na: '+esc(p.replyTo) : 'Odpowiedzi: brak adresu')+
+      ' · tak wygląda wersja wdrożona na serwerze; link rezygnacji w podglądzie jest nieaktywny.</div>'+
+      '<iframe class="ad-news-frame" sandbox="" title="Podgląd maila"></iframe>'+
+      '<details><summary>Wersja tekstowa</summary><pre class="ad-news-txt"></pre></details>'+
+      '<div class="ad-actions"><button type="button" class="ad-btn primary" data-close="1">Zamknij</button></div>';
+    document.body.appendChild(dl);
+    dl.querySelector('iframe').srcdoc = p.html;
+    dl.querySelector('pre').textContent = p.text;
+    dl.addEventListener('close', function(){ dl.remove(); });
+    dl.addEventListener('click', function(e){ if(e.target.closest('[data-close]') || e.target===dl) dl.close(); });
+    dl.showModal();
+  }).catch(function(e){ flash(e && e.message || 'Nie udało się pobrać podglądu.', true); });
+}
+
 /* ── zdarzenia ── */
 document.addEventListener('click', function(ev){
   var t = ev.target;
   if(t.closest('[data-logout]') || t.closest('[data-relog]')){ window._fb.signOut(window._fb.auth); return; }
+  var nb = t.closest('[data-news-act]');
+  if(nb && !nb.disabled){ newsAct(nb); return; }
   var actEl = t.closest('[data-act]');
   if(actEl && card && !actEl.disabled){ doAct(actEl); return; }
   var th = t.closest('th[data-sort]');

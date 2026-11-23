@@ -91,3 +91,13 @@ button.ad-peak:disabled{opacity:.5;cursor:wait}
 .ad-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
 .ad-row>label{min-width:140px}
 .ad-dlg label.ad-chk{flex-direction:row;align-items:center;gap:6px;flex:0 0 auto;padding-bottom:6px}
+/* P66: wiadomości zbiorcze */
+.ad-news{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--gold);border-radius:8px;padding:10px 14px;margin-bottom:10px}
+.ad-news.done{border-left-color:var(--ok)}
+.ad-news header{font-size:15px}
+.ad-news-st{margin-top:6px;font-size:13px}
+.ad-news-to{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;color:var(--muted)}
+.ad-news-to input{font:inherit;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;width:min(320px,60vw)}
+.ad-news-dlg{width:min(720px,calc(100vw - 24px))}
+.ad-news-frame{width:100%;height:min(62vh,640px);border:1px solid var(--border);border-radius:6px;background:#fff;margin-top:10px}
+.ad-news-txt{white-space:pre-wrap;font-size:12px;max-height:30vh;overflow:auto;background:var(--panel2);padding:8px;border-radius:6px}
