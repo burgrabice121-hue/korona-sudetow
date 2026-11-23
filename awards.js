@@ -158,7 +158,7 @@ function finBlock(box, t, opts){
   Promise.all([ownEntry(t), loadForm()]).then(function(r){
     var e = r[0], form = r[1], nm = NAME[t], tl = [title(t, form, false), title(t, form, true)];
     if(e && !e.hidden){
-      box.innerHTML = '<div class="aw-fin-ok">🎖 ' + langSpans('<b>' + esc(titleNo(t, e.no, form, false)) + '</b> · Krąg Sudetczyków',
+      box.innerHTML = dipButtons() + '<div class="aw-fin-ok">🎖 ' + langSpans('<b>' + esc(titleNo(t, e.no, form, false)) + '</b> · Krąg Sudetczyków',
                                                               '<b>' + esc(titleNo(t, e.no, form, true)) + '</b> · Sudetes Circle') + '</div>' +
         (opts.inList ? '<button type="button" class="aw-link" data-aw="leave">' + langSpans('Wypisz mnie z Kręgu', 'Leave the Circle') + '</button>'
                      : '<button type="button" class="aw-link" data-aw="list">' + langSpans('Zobacz Krąg Sudetczyków ›', 'See the Sudetes Circle ›') + '</button>');
@@ -169,8 +169,8 @@ function finBlock(box, t, opts){
       var d = tierDates(t);
       if(d.missing.length){ box.innerHTML = '<div class="aw-fin-q">' + missingMsg(d.missing.map(function(p){ return p.name; })) + '</div>'; }
       else box.innerHTML = '<div class="aw-fin-q">' +
-        langSpans('Dołączyć Cię do Kręgu Sudetczyków z tytułem ' + tl[0] + ' i numerem? Krąg jest publiczny: pokazuje Twoją nazwę, tytuł z numerem i datę ukończenia.',
-                  'Add you to the Sudetes Circle as ' + tl[1] + ' with a number? The Circle is public: it shows your name, title with number and completion date.') +
+        langSpans('Dołączyć Cię do Kręgu Sudetczyków z tytułem ' + tl[0] + ' i numerem? Dyplom z numerem dostaniesz po dołączeniu. Krąg jest publiczny: pokazuje Twoją nazwę, tytuł z numerem i datę ukończenia.',
+                  'Add you to the Sudetes Circle as ' + tl[1] + ' with a number? You get a numbered certificate once you join. The Circle is public: it shows your name, title with number and completion date.') +
         (e && e.hidden ? ' ' + langSpans('Twój numer ' + e.no + ' czeka.', 'Your number ' + e.no + ' is kept.') : '') + '</div>' +
         '<div class="aw-row"><button type="button" class="aw-btn" data-aw="join">' + langSpans('Dołącz do Kręgu', 'Join the Circle') + '</button>' +
         (opts.inList ? '' : '<button type="button" class="aw-btn ghost" data-aw="later">' + langSpans('Nie teraz', 'Not now') + '</button>') + '</div>';
@@ -179,7 +179,8 @@ function finBlock(box, t, opts){
       var b = ev.target.closest('[data-aw]');
       if(!b) return;
       var a = b.getAttribute('data-aw');
-      if(a === 'later'){ box.innerHTML = '<span class="aw-muted">' + langSpans('Możesz dołączyć później: menu konta → Krąg Sudetczyków.', 'You can join later: account menu → Sudetes Circle.') + '</span>'; return; }
+      if(a === 'later'){ box.innerHTML = '<span class="aw-muted">' + langSpans('Możesz dołączyć później: menu konta → Krąg Sudetczyków. Dyplom z numerem dostaniesz po dołączeniu.', 'You can join later: account menu → Sudetes Circle. You get a numbered certificate once you join.') + '</span>'; return; }
+      if(a === 'dip' || a === 'share'){ if(opts.inList) closeList(); diploma(t, a === 'share'); return; }
       if(a === 'list'){ if(window.closeUnlock) closeUnlock(null); openList(t); return; }
       if(a === 'leave' && !confirm(L('Wypisać Cię z Kręgu Sudetczyków? Numer zostanie zarezerwowany i wróci, jeśli dołączysz ponownie.',
                                      'Leave the Sudetes Circle? Your number is kept and comes back if you join again.'))) return;
@@ -203,10 +204,13 @@ function doneBlock(t){
   if(TIERS.indexOf(t) === -1) return '';
   setTimeout(function(){ finBlock(document.querySelector('.aw-fin[data-fin="' + t + '"]'), t); }, 0);
   return '<div class="aw-done">' +
-    '<div class="aw-row"><button type="button" class="aw-btn" onclick="Awards.diploma(\'' + t + '\')">📜 ' + langSpans('Pobierz dyplom (PDF)', 'Download certificate (PDF)') + '</button>' +
-    '<button type="button" class="aw-btn" onclick="Awards.diploma(\'' + t + '\', true)">↗ ' + langSpans('Udostępnij dyplom', 'Share certificate') + '</button></div>' +
-    nudge(t) +
-    '<div class="aw-fin" data-fin="' + t + '"></div></div>';
+    '<div class="aw-fin" data-fin="' + t + '"></div>' +
+    nudge(t) + '</div>';
+}
+/* przyciski dyplomu — tylko w bloku Kręgu członka (dyplom ma numer z Kręgu) */
+function dipButtons(){
+  return '<div class="aw-row"><button type="button" class="aw-btn" data-aw="dip">📜 ' + langSpans('Pobierz dyplom (PDF)', 'Download certificate (PDF)') + '</button>' +
+    '<button type="button" class="aw-btn" data-aw="share">↗ ' + langSpans('Udostępnij dyplom', 'Share certificate') + '</button></div>';
 }
 
 /* zachęta przy dyplomie (prośba autora 2026-11-22): uzupełnić trasy, zdjęcia, towarzyszy (kompletny pamiętnik),
@@ -344,18 +348,25 @@ function ensureDip(){
   window.addEventListener('resize', fitSheet);
   return o;
 }
+/* dyplom tylko dla członka Kręgu tego poziomu (autor 2026-11-23): numer dyplomu = numer w Kręgu.
+   Okno otwiera się po odczycie wpisu i formy tytułu — bez chwilowego „Górołaz” u Górołazki. */
 function diploma(t, share){
   if(!tierComplete(t)) return;
-  var o = ensureDip(), u = user();
-  dip.t = t; dip.isEn = en(); dip.no = null; dip.fmt = dip.fmt || 'wide';
-  var n = String(u && u.displayName || '').trim();
-  document.getElementById('aw-name').value = n.indexOf('@') === -1 ? n : '';
-  o.hidden = false;
-  document.body.classList.add('aw-open');
-  setMode(share ? 'share' : 'print');
-  dip.form = myForm || 'm'; formBar();
   Promise.all([ownEntry(t), loadForm()]).then(function(r){
-    var e = r[0]; dip.no = e && !e.hidden ? e.no : null; dip.form = r[1]; formBar(); renderSheet(); if(dip.mode === 'share') drawShare();
+    var e = r[0];
+    if(!e || e.hidden){
+      alert(L('Dyplom z numerem dostaniesz po dołączeniu do Kręgu Sudetczyków (menu konta → Krąg Sudetczyków).',
+              'You get a numbered certificate once you join the Sudetes Circle (account menu → Sudetes Circle).'));
+      return;
+    }
+    var o = ensureDip(), u = user();
+    dip.t = t; dip.isEn = en(); dip.no = e.no; dip.form = r[1]; dip.fmt = dip.fmt || 'wide';
+    var n = String(u && u.displayName || '').trim();
+    document.getElementById('aw-name').value = n.indexOf('@') === -1 ? n : '';
+    o.hidden = false;
+    document.body.classList.add('aw-open');
+    formBar();
+    setMode(share ? 'share' : 'print');
   });
 }
 /* forma tytułu (Górołaz / Górołazka…) — tylko po polsku; w EN tytuł jest jeden */
@@ -446,6 +457,7 @@ function drawMark(g, t, x, y, align){
 }
 
 function renderSheet(){
+  if(!dip.no) return;   // bez numeru z Kręgu nie ma dyplomu
   var t = dip.t, E = dip.isEn, d = tierDates(t), nm = NAME[t], ps = peaks(t);
   var name = nameVal() || (E ? '[Name and surname]' : '[Imię i nazwisko]');
   var many = ps.length > 10;   // dwie kolumny, kody krajów (WKS, DKS); gęsty druk dopiero > 16 (DKS)
@@ -574,7 +586,7 @@ function fitText(g, s, max, size, font){
 }
 function drawShare(){
   var cv = document.getElementById('aw-canvas');
-  if(!cv || dip.mode !== 'share') return;
+  if(!cv || dip.mode !== 'share' || !dip.no) return;
   var E = dip.isEn, t = dip.t, sz = SIZES[dip.fmt] || SIZES.wide, W = sz[0], H = sz[1], g = cv.getContext('2d');
   cv.width = W; cv.height = H;
   document.getElementById('aw-fmt').innerHTML = ['wide', 'square'].map(function(f){
