@@ -97,7 +97,14 @@ function pnorm(s){
   return String(s==null?'':s).toLowerCase().replace(/ł/g,'l').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/\./g,' ').replace(/\s+/g,' ').trim();
 }
-function personOf(name){ var u = people.alias[pnorm(name)]; return u && people.byUid[u] ? u : null; }
+/* jedna osoba, kilka kont (autor 2026-11-23: Michał z dwoma adresami): konta o tej samej nazwie w książce pokazujemy jako jedną osobę.
+   Kanoniczne konto grupy = to, na które wskazuje alias tej nazwy (o ile ma tę samą nazwę). */
+function canonUid(u){
+  var k = pnorm(people.byUid[u]), a = k && people.alias[k];
+  return a && a !== u && people.byUid[a] && pnorm(people.byUid[a]) === k ? a : u;
+}
+function groupUids(c){ return Object.keys(people.byUid).filter(function(u){ return canonUid(u) === c; }); }
+function personOf(name){ var u = people.alias[pnorm(name)]; return u && people.byUid[u] ? canonUid(u) : null; }
 function shownName(name){
   var u = personOf(name);
   return u ? people.byUid[u] : (spelled[pnorm(name)] || String(name).replace(/\s+/g,' ').trim());
@@ -149,9 +156,10 @@ function peopleEntries(){
     });
   });
   Object.keys(people.byUid).forEach(function(u){
-    if(!map['u:'+u]) map['u:'+u] = {key:'u:'+u, uid:u, name:people.byUid[u], c:0, spell:{}};
+    var c = canonUid(u);
+    if(!map['u:'+c]) map['u:'+c] = {key:'u:'+c, uid:c, name:people.byUid[c], c:0, spell:{}};
   });
-  return Object.keys(map).map(function(k){ return map[k]; });
+  return Object.keys(map).map(function(k){ var e = map[k]; if(e.uid) e.uids = groupUids(e.uid); return e; });
 }
 function lev1(a, b){                                // odległość edycyjna <= 1
   if(a===b) return true;
@@ -631,7 +639,7 @@ function load(user){
 
 function clear(){
   visits = {}; hiddenVisits = {}; loadOk = false; loadPromise = null; cur = null; incoming = []; sent = []; linked = []; offersIn = [];
-  people = {byUid:{}, alias:{}}; spelled = {}; pending = null; peopleOpen = false; compFilter = null;
+  people = {byUid:{}, alias:{}}; spelled = {}; pending = null; peopleOpen = false; compFilter = null; inviteHints = null;
   // niezalogowany z linkiem z maila: poproś o logowanie; po nim load() -> handleLinkInvite() otworzy zaproszenie
   if(INVITES_ON && pendingLink()) askLogin();
   closeForm(); closeList();
@@ -847,6 +855,7 @@ function ensureDom(){
     }
     if(!ev.target.closest('[data-people]')) return;
     peopleOpen = !peopleOpen; renderList();
+    if(peopleOpen) loadInviteHints();
   });
   $('dl-people').addEventListener('click', function(ev){
     var b = ev.target.closest('[data-pact]'); if(!b) return;
@@ -1646,6 +1655,33 @@ function renderList(){
 }
 
 /* ── „Osoby” w „Moje wejścia”: nazwy, łączenie pisowni, rozłączanie kont (P37) ── */
+/* podpowiedź przy koncie w „Osobach” (autor 2026-11-23): na jaki adres i do którego wejścia wysłałem zaproszenie,
+   które ta osoba przyjęła — bez tego konta „Uczestnik z …” (ranking wyłączony, bez „Kto to?”) trudno rozpoznać.
+   Tylko moje własne zaproszenia (adresy wpisane przeze mnie), czytane przy otwarciu „Osób”. */
+var inviteHints = null;   // uid -> [{email, peakId, date}]
+function loadInviteHints(){
+  var f = fb(), user = curUser();
+  if(!INVITES_ON || !f || !user || !f.query) return;
+  f.getDocs(f.query(invitesCol(f), f.where('fromUid','==',user.uid))).then(function(snap){
+    var h = {};
+    snap.forEach(function(d){
+      var x = d.data();
+      if(x.status !== 'accepted' || !x.toUid) return;
+      (h[x.toUid] = h[x.toUid] || []).push({email: x.toEmail || '', peakId: x.peakId, date: x.date || ''});
+    });
+    Object.keys(h).forEach(function(u){ h[u].sort(function(a, c){ return a.date < c.date ? 1 : a.date > c.date ? -1 : 0; }); });
+    inviteHints = h;
+    if(peopleOpen) renderPeople();
+  }).catch(function(e){ console.warn('Odczyt zaproszeń do „Osób” nieudany', e); });
+}
+function hintHtml(uid){
+  var h = inviteHints && inviteHints[uid];
+  if(!h || !h.length) return '';
+  var emails = [], seen = {};
+  h.forEach(function(x){ if(x.email && !seen[x.email]){ seen[x.email] = 1; emails.push(x.email); } });
+  var visitsTxt = h.slice(0, 2).map(function(x){ var pk = peakById(x.peakId); return (pk ? pk.p.name : x.peakId) + (x.date ? ' ' + fmtDate(x.date) : ''); });
+  return '<div class="dp-sp">zaproszenie na: ' + emails.map(esc).join(', ') + ' · ' + visitsTxt.map(esc).join(', ') + (h.length > 2 ? ' i ' + (h.length - 2) + ' inne' : '') + '</div>';
+}
 function renderPeople(){
   var box = $('dl-people'); if(!box) return;
   box.hidden = !peopleOpen;
@@ -1654,16 +1690,18 @@ function renderPeople(){
     return (b.uid?1:0) - (a.uid?1:0) || b.c - a.c || a.name.localeCompare(b.name, 'pl');
   });
   var opts = function(e){
-    return '<option value="">Połącz z…</option>'+all.filter(function(x){ return x.key!==e.key && !(x.uid && e.uid); })
+    return '<option value="">Połącz z…</option>'+all.filter(function(x){ return x.key!==e.key; })
       .map(function(x){ return '<option value="'+esc(x.key)+'">'+esc(x.name)+(x.uid ? ' (konto)' : '')+'</option>'; }).join('');
   };
   box.innerHTML = '<div class="dp-hint">Osoby z kontem łączą się same, gdy przyjmiecie zaproszenie do wspólnego wejścia — '+
-      'wtedy w kopiach wejść widzisz je zawsze pod Twoją nazwą. Tu zmienisz nazwę, połączysz dwie pisownie tej samej osoby albo rozłączysz konto.</div>'+
+      'wtedy w kopiach wejść widzisz je zawsze pod Twoją nazwą. Tu zmienisz nazwę, połączysz dwie pisownie tej samej osoby albo rozłączysz konto. '+
+      'Konto „Uczestnik z …” to osoba, która przyjęła Twoje zaproszenie, ale nie pokazuje nazwy w rankingu: rozpoznasz ją po adresie zaproszenia, '+
+      'a w „Połącz z…” wybierz imię, którym ją nazywasz. Dwa konta tej samej osoby też połączysz w „Połącz z…” — będą widoczne jako jedna osoba.</div>'+
     (all.length ? all.map(function(e){
       var sp = Object.keys(e.spell).filter(function(x){ return x!==e.name; });
       return '<div class="dp-row" data-key="'+esc(e.key)+'">'+
-        '<div class="dp-main"><b>'+esc(e.name)+'</b>'+(e.uid ? ' <span class="dp-acc" title="Połączone z kontem tej osoby">konto</span>' : '')+
-          (e.c ? ' <i>×'+e.c+'</i>' : '')+(sp.length ? '<div class="dp-sp">też jako: '+sp.map(esc).join(', ')+'</div>' : '')+'</div>'+
+        '<div class="dp-main"><b>'+esc(e.name)+'</b>'+(e.uid ? ' <span class="dp-acc" title="Połączone z kontem tej osoby">'+(e.uids.length > 1 ? e.uids.length+' konta' : 'konto')+'</span>' : '')+
+          (e.c ? ' <i>×'+e.c+'</i>' : '')+(sp.length ? '<div class="dp-sp">też jako: '+sp.map(esc).join(', ')+'</div>' : '')+(e.uid ? e.uids.map(hintHtml).join('') : '')+'</div>'+
         '<div class="dp-act"><select data-merge="1" title="Ta sama osoba co…">'+opts(e)+'</select>'+
           '<button type="button" class="dy-inv-x dy-inv-re" data-pact="rename">Zmień nazwę</button>'+
           (e.uid ? '<button type="button" class="dy-inv-x" data-pact="unlink" title="Odłącz od konta (wejścia zostają bez zmian)">Rozłącz</button>' : '')+'</div>'+
@@ -1705,7 +1743,7 @@ function peopleAction(act, key){
     n = cleanLabel(n);
     if(!n || n===e.name) return;
     if(e.uid){
-      people.byUid[e.uid] = n;
+      e.uids.forEach(function(u){ people.byUid[u] = n; });
       if(!people.alias[pnorm(n)]) people.alias[pnorm(n)] = e.uid;
       return peopleDone(savePeople(), 'Zmieniono nazwę ✓');
     }
@@ -1713,15 +1751,23 @@ function peopleAction(act, key){
   }
   if(act==='unlink' && e.uid){
     if(!confirm('Odłączyć „'+e.name+'” od konta? Wejścia zostają bez zmian, ale kolejne kopie z zaproszeń mogą przynieść inną pisownię.')) return;
-    delete people.byUid[e.uid];
-    Object.keys(people.alias).forEach(function(k){ if(people.alias[k]===e.uid) delete people.alias[k]; });
+    e.uids.forEach(function(u){
+      delete people.byUid[u];
+      Object.keys(people.alias).forEach(function(k){ if(people.alias[k]===u) delete people.alias[k]; });
+    });
     return peopleDone(savePeople(), 'Rozłączono');
   }
 }
 function mergePeople(key, targetKey){
   var e = entryByKey(key), t = entryByKey(targetKey);
   if(!e || !t) return;
-  if(e.uid && t.uid){ alert('To dwa różne konta — nie da się ich połączyć.'); renderPeople(); return; }
+  if(e.uid && t.uid){
+    // dwa konta tej samej osoby: wspólna nazwa w książce, każde konto zostaje osobno (rozłączenie rozdziela je z powrotem)
+    if(!confirm('„'+e.name+'” i „'+t.name+'” to ta sama osoba z dwoma kontami? Będzie widoczna jako „'+t.name+'”.')){ renderPeople(); return; }
+    e.uids.forEach(function(u){ people.byUid[u] = t.name; });
+    if(!people.alias[pnorm(t.name)]) people.alias[pnorm(t.name)] = t.uid;
+    return peopleDone(savePeople(), 'Połączono ✓');
+  }
   if(!confirm('Połączyć „'+e.name+'” z „'+t.name+'”? We wszystkich wejściach będzie widoczna jedna osoba.')){ renderPeople(); return; }
   var acc = e.uid || t.uid;
   if(acc){
