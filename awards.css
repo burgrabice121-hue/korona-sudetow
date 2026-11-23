@@ -1,0 +1,121 @@
+/* Nagrody dla zdobywców (P60): przyciski w podsumowaniu poziomu, lista zdobywców, dyplom do druku, obraz do udostępnienia */
+
+/* w podsumowaniu ukończonego poziomu (ciemne okno #unlock-overlay) */
+.aw-done{margin-top:.8rem;padding-top:.7rem;border-top:1px solid rgba(255,255,255,.12);text-align:left}
+.aw-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:.4rem}
+.aw-btn{padding:6px 14px;background:#F0C040;border:1px solid #F0C040;border-radius:4px;color:#0D1117;font:inherit;font-size:13px;cursor:pointer}
+.aw-btn:hover:not(:disabled){background:#D4A017;border-color:#D4A017}
+.aw-btn.ghost{background:transparent;color:#F0C040}
+.aw-btn.ghost:hover:not(:disabled){background:#F0C040;color:#0D1117}
+.aw-btn:disabled{opacity:.6;cursor:default}
+.aw-link{background:none;border:0;padding:0;margin-top:.3rem;color:#F0C040;font:inherit;font-size:13px;cursor:pointer;text-decoration:underline}
+.aw-muted{color:#9AA4B2;font-size:.9em}
+.aw-err{color:#F0883E;font-size:13px;margin-top:.3rem}
+.aw-nudge{margin-top:.7rem;font-size:.9rem;color:#C9D1D9}
+.aw-nudge p{margin:.3rem 0}
+.aw-fin{margin-top:.7rem;font-size:.92rem}
+.aw-fin:empty{display:none}
+.aw-fin-ok{color:#3FB950}
+.aw-fin-q{color:#E6EDF3}
+
+/* lista zdobywców: wygląd jak ranking (#ranking-overlay) */
+#fin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:8000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#fin-overlay.hidden{display:none}
+#fin-overlay .rank-tab.fin-link{margin-left:auto}
+.rank-tab.fin-link{margin-left:auto}
+.fin-lead{margin:.2rem 0 .5rem;font-size:13px;color:#C9D1D9}
+.fin-own{margin:0 0 .8rem;padding:8px 10px;border:1px solid var(--border,#30363D);border-radius:6px;background:rgba(255,255,255,.03)}
+.fin-foot{margin:.8rem 0 0;font-size:12px;color:#9AA4B2}
+
+/* dyplom i obraz: pełny ekran ponad oknem podsumowania (z-index 9999) */
+#aw-dip{position:fixed;inset:0;z-index:10050;background:#3a362f;overflow:auto;display:flex;flex-direction:column;color:#F5F0E8;font-family:Georgia,serif}
+#aw-dip[hidden]{display:none}
+body.aw-open{overflow:hidden}
+.aw-bar{position:sticky;top:0;z-index:2;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 16px;background:#2C2A25;border-bottom:1px solid #4A4035}
+.aw-tabs{display:flex;gap:4px}
+.aw-tabs button{padding:6px 12px;border:1px solid #4A4035;border-radius:4px;background:transparent;color:#D4CCBA;font:inherit;font-size:13px;cursor:pointer}
+.aw-tabs button.on{background:#5C6B3A;border-color:#5C6B3A;color:#F5F0E8}
+.aw-name{display:flex;align-items:center;gap:6px;font-size:13px;color:#D4CCBA}
+.aw-name input{width:240px;max-width:56vw;padding:5px 8px;border:1px solid #4A4035;border-radius:4px;background:#F5F0E8;color:#2C2A25;font:inherit;font-size:14px}
+.aw-show{font-size:13px;color:#D4CCBA;display:flex;align-items:center;gap:4px}
+.aw-show[hidden]{display:none}
+.aw-x{margin-left:auto;background:none;border:0;color:#F5F0E8;font-size:20px;cursor:pointer;padding:2px 6px}
+.aw-hint{padding:8px 16px 0;font-size:13px;color:#D4CCBA}
+.aw-stage{padding:12px;display:flex;justify-content:center}
+.aw-stage[hidden]{display:none}
+.aw-scale{transform-origin:0 0;flex-shrink:0}
+.aw-share{padding:12px 16px 24px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.aw-share[hidden]{display:none}
+.aw-fmt{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.aw-fmt button{padding:5px 12px;border:1px solid #4A4035;border-radius:4px;background:transparent;color:#D4CCBA;font:inherit;font-size:13px;cursor:pointer}
+.aw-fmt button.on{background:#F5F0E8;color:#2C2A25}
+#aw-canvas{max-width:min(100%,900px);max-height:70vh;height:auto;width:auto;box-shadow:0 6px 30px rgba(0,0,0,.45)}
+
+/* arkusz A4 poziomo: 1123×794 px = 297×210 mm przy 96 dpi */
+.aw-sheet{position:relative;width:1123px;height:794px;box-sizing:border-box;background:#F5F0E8;color:#2C2A25;overflow:hidden;
+  box-shadow:0 6px 30px rgba(0,0,0,.45);font-family:Georgia,'Times New Roman',serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.aw-sheet::before{content:'';position:absolute;inset:22px;border:4px double #4A4035;pointer-events:none}
+.aw-sheet::after{content:'';position:absolute;inset:34px;border:1px solid #D4CCBA;pointer-events:none}
+.aw-ridge{position:absolute;left:38px;right:38px;bottom:38px;width:calc(100% - 76px);height:92px}
+.aw-ridge path{fill:#5C6B3A;opacity:.16}
+.aw-in{position:relative;height:100%;box-sizing:border-box;padding:52px 80px 46px;display:flex;flex-direction:column;align-items:center;text-align:center}
+.aw-kicker{font-size:15px;letter-spacing:.32em;text-transform:uppercase;color:#5C6B3A}
+.aw-title{margin:4px 0 0;font-size:46px;line-height:1.1;font-weight:700;color:#2C2A25}
+.t-wks .aw-title{color:#4A4035}
+.t-dks .aw-title{color:#3d3560}
+.aw-who{margin:14px 0 0;min-width:420px;padding:0 20px 4px;border-bottom:1px solid #A0522D;font-size:30px;font-style:italic;color:#2C2A25}
+.aw-text{margin:12px 0 0;max-width:860px;font-size:16px;line-height:1.45;color:#4A4035}
+.aw-tables{margin-top:14px;display:flex;gap:26px;justify-content:center;align-items:flex-start}
+.aw-tbl{border-collapse:collapse;font-size:14px;min-width:520px;background:transparent;box-shadow:none;margin:0}
+.aw-sheet .aw-tbl thead, .aw-sheet .aw-tbl tr, .aw-sheet .aw-tbl th, .aw-sheet .aw-tbl td{background:transparent !important;color:inherit}
+.aw-sheet .aw-tbl th{color:#5C6B3A;font-family:Georgia,serif}
+.aw-tbl th{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#5C6B3A;font-weight:600;text-align:left;padding:3px 10px;border-bottom:1px solid #4A4035}
+.aw-tbl td{padding:4px 10px;border-bottom:1px solid #D4CCBA;text-align:left}
+.aw-tbl .n{text-align:right;white-space:nowrap}
+.many .aw-text{font-size:14px}
+.many .aw-tbl{font-size:11px;min-width:0}
+.many .aw-tbl td{padding:1.5px 8px}
+.many .aw-tbl th{font-size:9.5px;padding:2px 8px}
+.many .aw-title{font-size:40px}
+.many .aw-who{font-size:26px;margin-top:8px}
+.aw-meta{margin-top:auto;padding-top:10px;font-size:15px;color:#4A4035;display:flex;gap:24px;align-items:baseline}
+.aw-no{font-weight:700;color:#5C6B3A}
+.aw-foot{margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:14px;color:#2C2A25}
+.aw-foot small{font-size:11px;color:#4A4035}
+
+/* druk: tylko arkusz, rozmiar A4 poziomo (reguła @page dodawana na czas drukowania, awards.js printDip) */
+@media print{
+  body.aw-printing > *:not(#aw-dip){display:none !important}
+  body.aw-printing{background:#fff !important;overflow:visible !important}
+  body.aw-printing #aw-dip{position:static;display:block;background:none;overflow:visible}
+  body.aw-printing .aw-bar, body.aw-printing .aw-hint, body.aw-printing .aw-share{display:none !important}
+  body.aw-printing .aw-stage{padding:0;display:block}
+  body.aw-printing .aw-scale{transform:none !important;width:auto !important;height:auto !important}
+  body.aw-printing .aw-sheet{box-shadow:none;width:297mm;height:209mm}
+}
+.many .aw-tbl td{white-space:nowrap}
+.cols2 .aw-tbl{min-width:0}
+.cols2 .aw-tbl td{white-space:nowrap}
+.aw-form{display:flex;align-items:center;gap:4px;font-size:13px;color:#D4CCBA}
+.aw-form:empty{display:none}
+.aw-form button{padding:4px 10px;border:1px solid #4A4035;border-radius:4px;background:transparent;color:#D4CCBA;font:inherit;font-size:13px;cursor:pointer}
+.aw-form button.on{background:#F5F0E8;color:#2C2A25}
+.rank-table td.fin-title{white-space:nowrap;color:#F0C040}
+.rank-table .fin-star td.fin-title{color:#A78BFA}
+/* tło dyplomu: obrys Sudetów i zdobyte szczyty (autor 2026-11-23) */
+.aw-bgsvg{position:absolute;left:50%;top:61.5%;width:640px;height:330px;transform:translate(-50%,-50%);z-index:0;pointer-events:none}
+.aw-bgsvg svg{width:100%;height:100%;display:block}
+.aw-bgsvg .edge{fill:none;stroke:#5C6B3A;stroke-width:5;stroke-linejoin:round;opacity:.35}
+.aw-bgsvg .fill{fill:#EDE6D6;stroke:none}
+.aw-bgsvg .own{fill:#A0522D;opacity:.45}
+.aw-bgsvg .prev{fill:#4A4035;opacity:.25}
+.aw-sheet .aw-in{z-index:2}
+.aw-sheet::before,.aw-sheet::after{z-index:3}
+.aw-star{color:#A0522D;font-weight:700;margin-left:1px}
+/* znak i numer dyplomu (Promocja 2026-11-23) */
+.aw-mark{position:absolute;left:52px;top:44px;display:flex;align-items:center;gap:8px;text-align:left;line-height:1.15}
+.aw-mark-ic{width:40px;height:36px;flex:none}
+.aw-mark b{display:block;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#5C6B3A}
+.aw-mark small{display:block;font-size:13px;font-weight:700;color:#A0522D}
+.aw-serial{position:absolute;right:56px;top:56px;font-size:14px;color:#4A4035;letter-spacing:.04em}
+.aw-serial b{color:#2C2A25;font-size:16px}

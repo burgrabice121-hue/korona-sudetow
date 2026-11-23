@@ -45,6 +45,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 <link rel="stylesheet" href="styles.css?v=20261115">
+<link rel="stylesheet" href="awards.css?v=20261122">
 
 <!-- Firebase SDK -->
 <script type="module" src="firebase-init.js?v=20261026"></script>
@@ -761,21 +762,25 @@
       <div class="persona-grid">
         <div class="persona-card z">
           <div class="persona-tier"><svg class="ci" viewBox="0 0 72 60" width="20" height="17"><use href="#ci-ks"/></svg><span class="lang-pl">Korona Sudetów · 8 szczytów</span><span class="lang-en" style="display:none">Crown of the Sudetes · 8 summits</span></div>
-          <h4 class="lang-pl">Turysta</h4>
-          <h4 class="lang-en" style="display:none">Hiker</h4>
+          <h4 class="lang-pl">Górołaz</h4>
+          <h4 class="lang-en" style="display:none">Hillwalker</h4>
           <div class="persona-feel lang-pl">pewność · satysfakcja · ciekawość</div>
           <div class="persona-feel lang-en" style="display:none">confidence · satisfaction · curiosity</div>
           <p class="lang-pl">Masz w głowie mapę całego łańcucha, od Łużyc po Jesioniki, i wiesz, co gdzie leży. Pierwszy domknięty cel daje prawdziwą satysfakcję, a ciekawość podpowiada, że to dopiero początek.</p>
           <p class="lang-en" style="display:none">You carry a map of the whole chain in your head, from Lusatia to the Jeseníky, and know what lies where. Your first completed goal brings real satisfaction, and curiosity tells you this is only the beginning.</p>
+          <p class="persona-krag lang-pl" style="margin-top:.7rem;font-size:.85rem"><strong>W Kręgu Sudetczyków:</strong> numer z tytułem i pierwsze wiadomości o zmianach w koronie.</p>
+          <p class="persona-krag lang-en" style="display:none;margin-top:.7rem;font-size:.85rem"><strong>In the Sudetes Circle:</strong> a number with your title and the first news about changes to the Crown.</p>
         </div>
         <div class="persona-card s">
           <div class="persona-tier"><svg class="ci" viewBox="0 0 72 60" width="20" height="17"><use href="#ci-wks"/></svg><span class="lang-pl">Wielka Korona · 15 szczytów</span><span class="lang-en" style="display:none">Great Crown · 15 summits</span></div>
-          <h4 class="lang-pl">Przewodnik</h4>
-          <h4 class="lang-en" style="display:none">Guide</h4>
+          <h4 class="lang-pl">Wędrowiec</h4>
+          <h4 class="lang-en" style="display:none">Wanderer</h4>
           <div class="persona-feel lang-pl">swoboda · duma · przynależność</div>
           <div class="persona-feel lang-en" style="display:none">freedom · pride · belonging</div>
           <p class="lang-pl">Granica państwa przestała wyznaczać koniec Twoich gór. Swobodnie wędrujesz po polskiej, czeskiej i niemieckiej stronie i wiesz, którędy najlepiej iść. Czujesz dumę z własnej konsekwencji, a znajomi pytają Cię, dokąd jechać.</p>
           <p class="lang-en" style="display:none">The state border no longer marks the end of your mountains. You roam freely on the Polish, Czech and German sides and know the best way to go. You are proud of your own persistence, and friends ask you where to go.</p>
+          <p class="persona-krag lang-pl" style="margin-top:.7rem;font-size:.85rem"><strong>W Kręgu Sudetczyków:</strong> do tego pytamy Cię o zdanie, zanim zmienimy kryteria.</p>
+          <p class="persona-krag lang-en" style="display:none;margin-top:.7rem;font-size:.85rem"><strong>In the Sudetes Circle:</strong> we also ask for your opinion before we change the criteria.</p>
         </div>
         <div class="persona-card e">
           <div class="persona-tier"><svg class="ci" viewBox="0 0 72 64" width="20" height="18"><use href="#ci-dks"/></svg><span class="lang-pl">Diamentowa Korona · 34 szczyty</span><span class="lang-en" style="display:none">Diamond Crown · 34 summits</span></div>
@@ -785,6 +790,8 @@
           <div class="persona-feel lang-en" style="display:none">calm · wonder · understanding</div>
           <p class="lang-pl">Czytasz krajobraz: wiesz, czym różnią się pasma i co je od siebie oddziela. Najpiękniejsze chwile przeżywasz na cichych pogórzach, z dala od tłumów. To duma, która nie potrzebuje oklasków.</p>
           <p class="lang-en" style="display:none">You read the landscape: you know how the ranges differ and what separates them. Your finest moments happen in the quiet foothills, far from the crowds. It is a pride that needs no applause.</p>
+          <p class="persona-krag lang-pl" style="margin-top:.7rem;font-size:.85rem"><strong>W Kręgu Sudetczyków:</strong> do tego zapraszamy Cię do badań terenu, np. przy wyznaczaniu granic pasm.</p>
+          <p class="persona-krag lang-en" style="display:none;margin-top:.7rem;font-size:.85rem"><strong>In the Sudetes Circle:</strong> we also invite you to field research, e.g. on drawing range boundaries.</p>
         </div>
         <div class="persona-card all">
           <div class="persona-tier"><span class="lang-pl">Komplet · 57 szczytów</span><span class="lang-en" style="display:none">The full set · 57 summits</span></div>
@@ -794,8 +801,12 @@
           <div class="persona-feel lang-en" style="display:none">fulfilment · gratitude · emotion</div>
           <p class="lang-pl">Każdy punkt na mapie to konkretny dzień, pogoda i ludzie obok Ciebie. Czujesz spełnienie i wdzięczność za całą drogę, a pamiętnik z wypraw zostaje z Tobą na lata, do wspominania i dzielenia się.</p>
           <p class="lang-en" style="display:none">Every point on the map is a particular day, the weather and the people beside you. You feel fulfilment and gratitude for the whole journey, and the diary of your trips stays with you for years, to look back on and share.</p>
+          <p class="persona-krag lang-pl" style="margin-top:.7rem;font-size:.85rem"><strong>W Kręgu Sudetczyków:</strong> wszystkie przywileje Kręgu i wyróżnienie na liście Sudetczyków.</p>
+          <p class="persona-krag lang-en" style="display:none;margin-top:.7rem;font-size:.85rem"><strong>In the Sudetes Circle:</strong> all the privileges of the Circle and a special mark on the list.</p>
         </div>
       </div>
+      <p class="warto-lead lang-pl" style="margin-top:1.4rem">Krąg Sudetczyków to grono zdobywców, którzy pomagają rozwijać Wielką Koronę Sudetów. Dołączasz po ukończeniu pierwszego poziomu i dostajesz numer z tytułem, np. Górołaz nr 12. Z każdym kolejnym tytułem masz w Kręgu większy udział: od wiadomości o zmianach, przez opinię o kryteriach, po badania terenu. Dyplom każdego poziomu możesz pobrać i udostępnić znajomym.</p>
+      <p class="warto-lead lang-en" style="display:none;margin-top:1.4rem">The Sudetes Circle is the group of finishers who help develop the Great Crown of the Sudetes. You join after completing your first tier and receive a number with your title, e.g. Hillwalker no. 12. Each new title gives you a bigger part in the Circle: from news about changes, through your opinion on the criteria, to field research. You can download a certificate for each tier and share it with friends.</p>
     </div><!-- /collapsible-extra -->
 
     <a class="btn-primary warto-cta lang-pl" href="#map-section" onclick="return showTier('ks')">Zacznij od Korony Sudetów →</a>
@@ -1635,7 +1646,7 @@
 <script src="pasma-geojson.js?v=20261122e"></script>
 <script src="peaks-data.js?v=20261113a"></script>
 <script src="migrations.js?v=20261113a"></script>
-<script src="app.js?v=20261115b"></script><script src="diary.js?v=20261115f"></script>
+<script src="app.js?v=20261122"></script><script src="diary.js?v=20261115f"></script><script src="awards.js?v=20261122"></script>
 
 
 <!-- AUTH OVERLAY -->

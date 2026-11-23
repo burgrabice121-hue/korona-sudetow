@@ -516,6 +516,7 @@ function doneSection(type){
       <button type="button" class="lv-want" data-tier="${type}"${wanted?' disabled':''}>${wanted
         ? langSpans('Zapisane — damy znać ✓', 'Noted — we will let you know ✓')
         : langSpans('Chcę taki pamiętnik', 'I want this journal')}</button></div>
+    ${window.Awards ? Awards.doneBlock(type) : ''}
   </div>`;
 }
 function openSection(e){
@@ -1211,6 +1212,7 @@ function renderUserBar(user){
         ${user.emailVerified ? '' : `<button class="acct-verify" onclick="closeAcctMenu();verifyEmail()">✉ ${langSpans('Potwierdź adres e-mail','Confirm e-mail address')}</button>`}
         <button onclick="closeAcctMenu();window.Diary&&Diary.openList()">📖 ${langSpans('Moje wejścia','My climbs')}${inv ? ' <b class="acct-badge">'+inv+'</b>' : ''}</button>
         ${document.getElementById('ranking-overlay') ? `<button onclick="closeAcctMenu();openRanking()">🏆 Ranking</button>` : ''}
+        ${document.getElementById('ranking-overlay') ? `<button onclick="closeAcctMenu();window.Awards&&Awards.openList()">🎖 ${langSpans('Krąg Sudetczyków','Sudetes Circle')}</button>` : ''}
         <button onclick="closeAcctMenu();toggleRanking()" title="${RANK_VISIBLE ? 'Kliknij, aby ukryć się w rankingu' : 'Kliknij, aby pokazać się w rankingu'}">${RANK_VISIBLE ? '👁 '+langSpans('Ranking: widoczny','Ranking: visible') : '🙈 '+langSpans('Ranking: ukryty','Ranking: hidden')}</button>
         <button onclick="closeAcctMenu();toggleNews()" title="Wiadomości e-mail o zmianach w koronie i ciekawostki">${NEWS_ON ? '✉ '+langSpans('Wiadomości: włączone','News e-mails: on') : '🔕 '+langSpans('Wiadomości: wyłączone','News e-mails: off')}</button>
         <button class="acct-reset" onclick="closeAcctMenu();resetAll()">↺ ${langSpans('Resetuj postęp','Reset progress')}</button>

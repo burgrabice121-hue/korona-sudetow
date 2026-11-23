@@ -32,7 +32,7 @@ Konto (Google lub e-mail), zaznaczanie zdobytych szczytów, paski postępu, dzie
 ## Strony
 
 - [Strona główna, opis projektu i kryteria](https://viasudetica.eu/): metodyka, granice Sudetów, grupy górskie, kryteria kwalifikacji
-- [Dlaczego warto](https://viasudetica.eu/#warto): korzyści i etapy (Turysta, Przewodnik, Odkrywca, Sudetczyk)
+- [Dlaczego warto](https://viasudetica.eu/#warto): korzyści, etapy (Górołaz, Wędrowiec, Odkrywca, Sudetczyk) i Krąg Sudetczyków: grono zdobywców z numerami, dyplomami i przywilejami rosnącymi z tytułem
 - [Mapa interaktywna](https://viasudetica.eu/#map-section)
 - [Wykaz 57 szczytów](https://viasudetica.eu/#peaks-section)
 - [Mapa do zapisywania wejść](https://wielkakoronasudetow.pl/)
