@@ -136,6 +136,7 @@ button.dl-comp:hover{border-color:rgba(240,192,64,.5)}
 }
 /* udostępnianie wejścia uczestnikom (zaproszenia) */
 .dy-share-row{display:flex;gap:6px}
+.dy-share-row .dy-wa{color:#25D366;border-color:rgba(37,211,102,.45)}
 .dy-share-row input{flex:1;min-width:0}
 .dy-share-row .dy-btn:disabled,#dy-share-in:disabled{opacity:.45;cursor:not-allowed}
 .dy-share-hint{font-size:11px;color:#8B949E;margin-top:4px;line-height:1.4}

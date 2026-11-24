@@ -700,10 +700,11 @@ function ensureDom(){
           '<div class="dy-comp" id="dy-comp"><span id="dy-chips"></span>'+
           '<input type="text" id="dy-comp-in" maxlength="'+MAX_COMP_LEN+'" placeholder="Imię i Enter" autocomplete="off"></div>'+
           '<div class="dy-suggest" id="dy-suggest"></div></div>'+
-        '<div class="dy-field c12" id="dy-share" hidden><label for="dy-share-in">Zaproś drogą sudecką (e-mail)</label>'+
+        '<div class="dy-field c12" id="dy-share" hidden><label for="dy-share-in">Zaproś drogą sudecką (e-mail lub WhatsApp)</label>'+
           '<div class="dy-share-row"><input type="email" id="dy-share-in" maxlength="254" placeholder="adres@przyklad.pl" autocomplete="off">'+
           '<select id="dy-share-who" title="Kto to z listy towarzyszy? Połączy tę osobę z jej kontem."></select>'+
-          '<button type="button" class="dy-btn ghost" id="dy-share-go">Wyślij</button></div>'+
+          '<button type="button" class="dy-btn ghost" id="dy-share-go">Wyślij</button>'+
+          '<button type="button" class="dy-btn ghost dy-wa" id="dy-share-wa" title="Jednorazowy link do zaproszenia, wysłany przez WhatsApp">WhatsApp</button></div>'+
           '<div class="dy-share-hint" id="dy-share-hint"></div><div class="dy-share-list" id="dy-share-list"></div></div>'+
         '<div class="dy-field c12"><label>Zdjęcia <span class="dy-count" id="dy-ph-count"></span>'+
           '<button type="button" class="dy-ph-edit" id="dy-ph-edit" hidden>Edytuj</button></label>'+
@@ -834,10 +835,12 @@ function ensureDom(){
     if(ev.target.closest('[data-later]')) return closeInviteModal();
   });
   $('dy-share-go').onclick = sendInvite;
+  $('dy-share-wa').onclick = sendLinkInvite;
   $('dy-share-in').addEventListener('keydown', function(ev){ if(ev.key==='Enter'){ ev.preventDefault(); sendInvite(); } });
   $('dy-share-list').addEventListener('click', function(ev){
     var r = ev.target.closest('[data-remind]'); if(r) return remindInvite(r.getAttribute('data-remind'), r);
     var u = ev.target.closest('[data-offer]'); if(u) return sendOffer(u.getAttribute('data-offer'), u);
+    var cp = ev.target.closest('[data-copylink]'); if(cp) return copyInviteLink(cp.getAttribute('data-copylink'));
     var b = ev.target.closest('[data-cancel]'); if(b) cancelInvite(b.getAttribute('data-cancel'));
   });
   $('dl-invites').addEventListener('click', function(ev){
@@ -1848,13 +1851,13 @@ function setPendingLink(x){ try{ x ? localStorage.setItem(LINK_KEY, JSON.stringi
   if(!INVITES_ON) return;
   var id = hashInvite();
   if(!id) return;
-  setPendingLink({id:id, reg:hashWantsRegister(), t:Date.now()});
+  setPendingLink({id:id, reg:hashWantsRegister(), link:urlParam('link')==='1', t:Date.now()});
   clearInviteUrl();
   if(location.hash){ try{ history.replaceState(null, '', location.pathname + location.search); }catch(e){} }
 })();
 function clearInviteUrl(){
   try{
-    var p = new URLSearchParams(location.search); p.delete('zaproszenie'); p.delete('rejestracja');
+    var p = new URLSearchParams(location.search); p.delete('zaproszenie'); p.delete('rejestracja'); p.delete('link');
     var q = p.toString();
     history.replaceState(null, '', location.pathname + (q ? '?'+q : ''));
   }catch(e){}
@@ -1866,7 +1869,8 @@ function askLogin(){
   var sub = document.querySelector('#auth-overlay .auth-sub');
   if(sub){
     if(!sub.getAttribute('data-orig')) sub.setAttribute('data-orig', sub.textContent);
-    sub.textContent = pl ? 'Masz zaproszenie do wspólnego wejścia. Zaloguj się albo załóż konto na adres e-mail, na który przyszło zaproszenie — zaraz potem je przyjmiesz.'
+    sub.textContent = pl && pl.link ? 'Masz zaproszenie do wspólnego wejścia. Zaloguj się albo załóż konto — zaraz potem je przyjmiesz.'
+      : pl ? 'Masz zaproszenie do wspólnego wejścia. Zaloguj się albo załóż konto na adres e-mail, na który przyszło zaproszenie — zaraz potem je przyjmiesz.'
       : sub.getAttribute('data-orig');
   }
   if(pl && pl.reg && typeof authTab==='function') authTab('reg');
@@ -1888,12 +1892,14 @@ function handleLinkInvite(user){
     var pk = peakById(d.peakId);
     showInviteModal([], d.status==='accepted' && d.copyVisitId
       ? 'To zaproszenie zostało już przyjęte — wejście'+(pk ? ' („'+pk.p.name+'”)' : '')+' jest w Twoim pamiętniku („Moje wejścia”).'
+      : d.status==='accepted' && d.link
+      ? 'Ten link przyjęła już inna osoba — każdy link jest dla jednej osoby. Poproś nadawcę o osobny.'
       : 'To zaproszenie jest już nieaktualne ('+(STATUS_PL[d.status]||d.status)+'). Poproś nadawcę o nowe.');
   }).catch(function(e){
     linkBusy = false;
     var code = e && e.code || '';
-    if(code==='functions/permission-denied' || code==='functions/not-found'){
-      if(code==='functions/not-found') setPendingLink(null);
+    if(code==='functions/permission-denied' || code==='functions/not-found' || code==='functions/failed-precondition'){
+      if(code!=='functions/permission-denied') setPendingLink(null);   // nie ma / własny link; zły adres: można się przelogować
       showInviteModal([], e.message || 'Nie znaleziono zaproszenia.');
     } else console.warn('Podgląd zaproszenia nieudany', e);
   });
@@ -2013,16 +2019,18 @@ function renderShare(){
   if(!cur.visitId) hint = 'Najpierw zapisz wejście — potem możesz je udostępnić uczestnikom.';
   else if(!user || !user.emailVerified) hint = 'Aby wysyłać zaproszenia, potwierdź swój adres e-mail (menu konta).';
   else { can = true; hint = 'Uczestnik dostanie e-mail z zaproszeniem. Po przyjęciu zobaczy u siebie kopię tego wejścia (data, trasa, zdjęcia) i szczyt jako zdobyty. '+
+    'WhatsApp: zamiast adresu jednorazowy link — przyjmie go pierwsza osoba, która go otworzy i się zaloguje, więc każdemu wyślij osobny. '+
     'Zdjęcia i dane dodane później możecie sobie nawzajem przesłać przyciskiem „Wyślij zmiany”.'; }
   // wspólne wejście (przyjęte zaproszenie, w którąkolwiek stronę): wyjaśnienie przycisku „Wyślij zmiany”
   var shared = linked.length || sent.some(function(x){ return statusOf(x)==='accepted'; });
   if(shared) hint += (hint ? ' ' : '') + '„Wyślij zmiany” proponuje drugiej osobie Twoje nowe zdjęcia i dane, których ona nie ma — '+
     'nic jej nie nadpisuje, a ona sama decyduje, czy je przyjąć. Najpierw zapisz wejście.';
-  $('dy-share-in').disabled = $('dy-share-go').disabled = !can;
+  $('dy-share-in').disabled = $('dy-share-go').disabled = $('dy-share-wa').disabled = !can;
   renderWho(can);
   $('dy-share-hint').textContent = hint;
   $('dy-share-list').innerHTML = sent.map(function(inv){
     var st = statusOf(inv);
+    if(inv.channel==='link') return linkRow(inv, st);
     return '<div class="dy-inv"><span class="dy-inv-mail">'+esc(inv.toEmail)+'</span>'+
       '<span class="dy-inv-st '+st+'">'+STATUS_PL[st]+'</span>'+
       (st==='pending' && canRemind(inv) ? '<button type="button" class="dy-inv-x dy-inv-re" data-remind="'+esc(inv.id)+'">Przypomnij</button>' : '')+
@@ -2262,6 +2270,59 @@ function loadSent(){
     snap.forEach(function(d){ var x = d.data(); x.id = d.id; if(x.status==='accepted') next.push(x); });
     linked = next; renderShare();
   }).catch(function(e){ console.warn('Odczyt wspólnego wejścia nieudany', e); });
+}
+/* ── P68: zaproszenie linkiem (WhatsApp). Dokument tworzy serwer (createLinkInvite), bez maila;
+   link jednorazowy — przyjmuje pierwsza zalogowana osoba poza nadawcą. ── */
+var INVITE_URL = 'https://viasudetica.eu/';
+function linkUrl(inv){ return inv.url || INVITE_URL + '?zaproszenie=' + inv.id + '&link=1'; }
+function waText(inv){
+  var pk = peakById(inv.peakId), d = inv.date ? ', ' + (inv.dateApprox ? 'ok. ' : '') + fmtDate(inv.date) : '';
+  return 'Zapraszam Cię drogą sudecką: ' + (pk ? pk.p.name : 'wspólne wejście') + d + '. ' +
+    'Przyjmij zaproszenie, a nasze wspólne wejście zapisze się także u Ciebie, z datą, trasą i zdjęciami. Via Sudetica: ' + linkUrl(inv);
+}
+function waHref(inv){ return 'https://wa.me/?text=' + encodeURIComponent(waText(inv)); }
+function linkRow(inv, st){
+  return '<div class="dy-inv"><span class="dy-inv-mail">🔗 link'+(inv.toName ? ': '+esc(inv.toName) : '')+'</span>'+
+    '<span class="dy-inv-st '+st+'">'+STATUS_PL[st]+'</span>'+
+    (st==='pending' ? '<a class="dy-inv-x dy-inv-re dy-inv-wa" href="'+esc(waHref(inv))+'" target="_blank" rel="noopener">WhatsApp</a>'+
+      '<button type="button" class="dy-inv-x dy-inv-re" data-copylink="'+esc(inv.id)+'">Kopiuj link</button>'+
+      '<button type="button" class="dy-inv-x" data-cancel="'+esc(inv.id)+'">Anuluj</button>' : '')+
+    (st==='accepted' ? '<button type="button" class="dy-inv-x dy-inv-re" data-offer="'+esc(inv.id)+'" title="'+OFFER_TIP+'">Wyślij zmiany</button>' : '')+'</div>';
+}
+function copyInviteLink(id){
+  var inv = sent.filter(function(x){ return x.id===id; })[0]; if(!inv) return;
+  var txt = waText(inv);
+  var ok = function(){ toast('Skopiowano zaproszenie z linkiem — wklej je w dowolnym komunikatorze'); };
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(ok, function(){ prompt('Skopiuj zaproszenie:', txt); });
+  else prompt('Skopiuj zaproszenie:', txt);
+}
+function sendLinkInvite(){
+  if(!cur || !cur.visitId) return;
+  var f = fb(), user = curUser(), err = $('dy-err');
+  if(!user || !user.emailVerified || !f || !f.callable) return;
+  if(isDirty()){ err.textContent = 'Najpierw zapisz zmiany w wejściu — uczestnik dostanie zapisaną wersję.'; return; }
+  var active = sent.filter(function(x){ var st = statusOf(x); return st!=='cancelled' && st!=='expired'; });
+  if(active.length >= MAX_INVITES){ err.textContent = 'Maksymalnie '+MAX_INVITES+' zaproszeń na wejście.'; return; }
+  var who = cleanLabel($('dy-share-who').value), tok = cur, v = visits[cur.visitId] || {};
+  var btn = $('dy-share-wa'); btn.disabled = true; err.textContent = '';
+  f.callable('createLinkInvite').then(function(fn){ return fn({visitId: tok.visitId, toName: who || null}); }).then(function(res){
+    var d = res.data || {};
+    var inv = {id: d.id, url: d.url, channel: 'link', fromUid: user.uid, visitId: tok.visitId, peakId: tok.p.id,
+      date: v.date || null, dateApprox: !!(v.date && v.dateApprox), toEmail: null, status: 'pending',
+      createdAt: {toMillis: function(){ return Date.now(); }}};
+    if(who) inv.toName = who;
+    if(cur === tok){ sent.push(inv); renderShare(); }
+    // WhatsApp w nowej karcie (na telefonie: aplikacja). Gdy przeglądarka zablokuje okno po odpowiedzi serwera,
+    // zostaje przycisk „WhatsApp” przy zaproszeniu na liście.
+    var w = null;
+    try{ w = window.open(waHref(inv), '_blank'); if(w) w.opener = null; }catch(e){}
+    toast(w ? 'Link gotowy — wyślij go w WhatsAppie' : 'Link gotowy — kliknij „WhatsApp” przy zaproszeniu');
+  }).catch(function(e){
+    console.warn('Zaproszenie linkiem nieudane', e);
+    var code = e && e.code || '';
+    var known = ['functions/failed-precondition','functions/resource-exhausted','functions/not-found'];
+    if(cur === tok){ btn.disabled = false; err.textContent = known.indexOf(code)!==-1 && e.message ? e.message : 'Nie udało się utworzyć zaproszenia. Spróbuj ponownie.'; }
+  });
 }
 function sendInvite(){
   if(!cur || !cur.visitId) return;

@@ -310,12 +310,12 @@ function drawUser(uid, d){
     return '<div class="ad-scroll"><table class="ad-table small"><thead><tr><th>Utworzone</th><th>Szczyt</th><th>Data wejścia</th>'+
       (mine ? '<th>Do</th>' : '<th>Od</th>')+'<th>Status</th><th>Przypomnienia</th>'+(mine ? '<th></th>' : '')+'</tr></thead><tbody>'+
       list.slice().sort(function(x, y){ return (y.created||0)-(x.created||0); }).map(function(i){
-        var who = mine ? esc(i.toEmail||'—')+(i.toName?' <span class="ad-muted">('+esc(i.toName)+')</span>':'')
+        var who = mine ? esc(i.toEmail||(i.channel==='link' ? 'link (WhatsApp)' : '—'))+(i.toName?' <span class="ad-muted">('+esc(i.toName)+')</span>':'')
                        : (i.fromUid ? '<a href="#u/'+encodeURIComponent(i.fromUid)+'">'+esc(i.fromName||i.fromUid)+'</a>' : '—');
         return '<tr><td>'+fmtDay(i.created)+'</td><td>'+esc(PEAK[i.peakId]||i.peakId||'—')+'</td><td>'+fmtIso(i.date)+'</td>'+
           '<td>'+who+'</td><td>'+statusPl(i.status)+'</td><td class="n">'+i.reminders+'</td>'+
           (mine ? '<td class="acts">'+(i.status==='pending'
-            ? btn('remindInvite','Przypomnij',' data-inv="'+esc(i.id)+'"','small')+btn('cancelInvite','Anuluj',' data-inv="'+esc(i.id)+'"','small danger') : '')+'</td>' : '')+'</tr>';
+            ? (i.channel==='link' ? '' : btn('remindInvite','Przypomnij',' data-inv="'+esc(i.id)+'"','small'))+btn('cancelInvite','Anuluj',' data-inv="'+esc(i.id)+'"','small danger') : '')+'</td>' : '')+'</tr>';
       }).join('')+'</tbody></table></div>';
   }
   out += section('Zaproszenia wysłane ('+(d.sent||[]).length+')', invTable(d.sent||[], true));
@@ -420,7 +420,7 @@ function doAct(el){
   if(act==='editVisit'){ var ev = visit(); if(ev) openVisitDialog(ev); return; }
   if(act==='remindInvite' || act==='cancelInvite'){
     var i = inv(); if(!i) return;
-    var q = act==='remindInvite' ? 'Wysłać przypomnienie o zaproszeniu na '+i.toEmail+'?' : 'Anulować zaproszenie dla '+i.toEmail+'?';
+    var q = act==='remindInvite' ? 'Wysłać przypomnienie o zaproszeniu na '+i.toEmail+'?' : 'Anulować zaproszenie dla '+(i.toEmail || 'linku'+(i.toName ? ' ('+i.toName+')' : ''))+'?';
     if(confirm(q)) return run(el, act, {inviteId: i.id}, act==='remindInvite' ? 'Przypomnienie wysłane.' : 'Zaproszenie anulowane.');
   }
 }
