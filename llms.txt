@@ -8,7 +8,7 @@ Autor: Wojciech Rogala. Strona: https://viasudetica.eu/ (PL/EN). Mapa do zapisyw
 
 - Korona Sudetów: 8 szczytów. Wybitność powyżej 500 m lub izolacja powyżej 21 km.
 - Wielka Korona Sudetów: kolejne 15 szczytów. Wybitność co najmniej 350 m lub izolacja powyżej 14 km.
-- Diamentowa Korona Sudetów: kolejne 34 szczyty. Wybitność powyżej 270 m lub izolacja co najmniej 10 km, a także najwybitniejszy szczyt każdego pasma, pogórza i kotliny niereprezentowanych w wyższych koronach, jeśli ma co najmniej 150 m wybitności (przy różnicy wybitności do 3 m wybierany jest wyższy szczyt).
+- Diamentowa Korona Sudetów: kolejne 34 szczyty, które uzupełniają 8 szczytów Korony i 15 Wielkiej Korony do kompletu 57. Wybitność powyżej 270 m lub izolacja co najmniej 10 km, a także najwybitniejszy szczyt każdego pasma, pogórza i kotliny niereprezentowanych w wyższych koronach, jeśli ma co najmniej 150 m wybitności (przy różnicy wybitności do 3 m wybierany jest wyższy szczyt).
 
 Poziomy są rozłączne (8 + 15 + 34 = 57). Ukończenie poziomu odblokowuje następny. Progi wyznaczono z rozkładu wybitności i izolacji wszystkich szczytów Sudetów, m.in. metodą naturalnych przełamań Jenksa.
 
