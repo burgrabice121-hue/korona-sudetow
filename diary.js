@@ -700,10 +700,10 @@ function ensureDom(){
           '<div class="dy-comp" id="dy-comp"><span id="dy-chips"></span>'+
           '<input type="text" id="dy-comp-in" maxlength="'+MAX_COMP_LEN+'" placeholder="Imię i Enter" autocomplete="off"></div>'+
           '<div class="dy-suggest" id="dy-suggest"></div></div>'+
-        '<div class="dy-field c12" id="dy-share" hidden><label for="dy-share-in">Udostępnij uczestnikom (e-mail)</label>'+
+        '<div class="dy-field c12" id="dy-share" hidden><label for="dy-share-in">Zaproś drogą sudecką (e-mail)</label>'+
           '<div class="dy-share-row"><input type="email" id="dy-share-in" maxlength="254" placeholder="adres@przyklad.pl" autocomplete="off">'+
           '<select id="dy-share-who" title="Kto to z listy towarzyszy? Połączy tę osobę z jej kontem."></select>'+
-          '<button type="button" class="dy-btn ghost" id="dy-share-go">Wyślij zaproszenie</button></div>'+
+          '<button type="button" class="dy-btn ghost" id="dy-share-go">Wyślij</button></div>'+
           '<div class="dy-share-hint" id="dy-share-hint"></div><div class="dy-share-list" id="dy-share-list"></div></div>'+
         '<div class="dy-field c12"><label>Zdjęcia <span class="dy-count" id="dy-ph-count"></span>'+
           '<button type="button" class="dy-ph-edit" id="dy-ph-edit" hidden>Edytuj</button></label>'+

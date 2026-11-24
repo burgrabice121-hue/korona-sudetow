@@ -284,7 +284,7 @@ function nudge(t){
     '<p>' + langSpans('Uzupełnij w „Moje wejścia” trasy, zdjęcia i towarzyszy — z kompletnych wpisów przygotujemy pełny pamiętnik tej wyprawy.',
                       'Complete the routes, photos and companions in “My climbs” — complete entries let us make a full journal of this journey.') +
     (n && gaps.length ? ' <span class="aw-muted">(' + langSpans('wejścia ', 'climbs ') + gaps.join(', ') + ')</span>' : '') + '</p>' +
-    '<p>' + langSpans('Zaproś towarzyszy do wspólnych wejść: dostaną kopię wpisu ze zdjęciami, a ich wejścia też się policzą.',
+    '<p>' + langSpans('Zaproś towarzyszy drogą sudecką: dostaną kopię wpisu ze zdjęciami, a ich wejścia też się policzą.',
                       'Invite your companions to shared climbs: they get a copy of the entry with photos, and their climbs count too.') + '</p>' +
     '<div class="aw-row">' +
       '<button type="button" class="aw-btn ghost" onclick="if(window.closeUnlock)closeUnlock(null);window.Diary&&Diary.openList()">📖 ' + langSpans('Uzupełnij wejścia i zaproś towarzyszy', 'Complete climbs and invite companions') + '</button>' +
@@ -293,8 +293,9 @@ function nudge(t){
 }
 function recommend(btn){
   var E = en();
-  var text = E ? 'Crown of the Sudetes: the most prominent summits of the Sudetes in Poland, Czechia and Germany — map, progress and ascent diary.'
-               : 'Korona Sudetów: najwybitniejsze szczyty Sudetów w Polsce, Czechach i Niemczech — mapa, postępy i dziennik wejść.';
+  // P67: hasło „Idziemy razem? Via Sudetica.”
+  var text = E ? 'Shall we go together? Via Sudetica. The most prominent summits of the Sudetes in Poland, Czechia and Germany — map, progress and ascent diary.'
+               : 'Idziemy razem? Via Sudetica. Najwybitniejsze szczyty Sudetów w Polsce, Czechach i Niemczech — mapa, postępy i dziennik wejść.';
   var url = 'https://' + SITE + '/';
   if(navigator.share){ navigator.share({title: 'ViaSudetica', text: text, url: url}).catch(function(){}); return; }
   var done = function(){ if(btn) btn.innerHTML = '✓ ' + langSpans('Link skopiowany — wklej go znajomym', 'Link copied — paste it to your friends'); };
@@ -745,7 +746,7 @@ function shareImg(){
   var text = (t === 'all'
     ? (E ? 'All three crowns of the Sudetes: ' + N + ' summits in Poland, Czechia and Germany. I’m now Sudetes Local no. ' + dip.no + '.'
          : 'Wszystkie trzy korony Sudetów: ' + N + ' szczytów w Polsce, Czechach i Niemczech. Jestem ' + (dip.form === 'f' ? 'Sudetczanką' : 'Sudetczykiem') + ' nr ' + dip.no + '.')
-    : E ? NAME[t][1] + ' completed: ' + desc(t, true) : 'Ukończona ' + NAME[t][0] + ': ' + desc(t, false)) + ' https://' + SITE;
+    : E ? NAME[t][1] + ' completed: ' + desc(t, true) : 'Ukończona ' + NAME[t][0] + ': ' + desc(t, false)) + ' Veni, vidi, via Sudetica. https://' + SITE;   // P67
   cv.toBlob(function(blob){
     if(!blob) return;
     var file = new File([blob], fname, {type: 'image/png'});

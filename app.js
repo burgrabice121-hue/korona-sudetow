@@ -11,8 +11,12 @@ function toggleMore(btn){
 
 function shareApp(){
   const url = 'https://viasudetica.eu/';
-  const title = 'Wielka Korona Sudetów';
-  const text = 'cześć, zapraszam cię do odkrywania Sudetów. Poznaj najwybitniejsze szczyty Sudetów po stronie polskiej, czeskiej i niemieckiej i zdobądź trzy sudeckie korony.';
+  // P67 („drogą sudecką”, Promocja 2026-11-24): marka ViaSudetica, hasło „Idziemy razem? Via Sudetica.”
+  const title = 'ViaSudetica';
+  const isEn = !!(document.getElementById('btn-en') && document.getElementById('btn-en').classList.contains('active'));
+  const text = isEn
+    ? 'Shall we go together? Via Sudetica. The most prominent summits of the Sudetes in Poland, Czechia and Germany, three crowns to complete and a diary of shared ascents.'
+    : 'Idziemy razem? Via Sudetica. Najwybitniejsze szczyty Sudetów w Polsce, Czechach i Niemczech, trzy korony do zdobycia i dziennik wspólnych wejść.';
   if(navigator.share){
     navigator.share({title, text, url}).catch(()=>{});
   } else {
