@@ -1869,8 +1869,8 @@ function askLogin(){
   var sub = document.querySelector('#auth-overlay .auth-sub');
   if(sub){
     if(!sub.getAttribute('data-orig')) sub.setAttribute('data-orig', sub.textContent);
-    sub.textContent = pl && pl.link ? 'Masz zaproszenie do wspólnego wejścia. Zaloguj się albo załóż konto — zaraz potem je przyjmiesz.'
-      : pl ? 'Masz zaproszenie do wspólnego wejścia. Zaloguj się albo załóż konto na adres e-mail, na który przyszło zaproszenie — zaraz potem je przyjmiesz.'
+    // P69: konto może być na dowolny adres (przyjmuje ten, kto ma link)
+    sub.textContent = pl ? 'Masz zaproszenie do wspólnego wejścia. Zaloguj się albo załóż konto — zaraz potem je przyjmiesz.'
       : sub.getAttribute('data-orig');
   }
   if(pl && pl.reg && typeof authTab==='function') authTab('reg');
@@ -1927,6 +1927,8 @@ function showInviteModal(list, msg){
         (pk ? ' <small>'+esc(pk.p.pasmo)+'</small>' : '')+'</div>'+
       (pk ? '<div class="iv-tier"><span class="dl-badge '+pk.type+'">'+tierName(pk.type)+'</span></div>' : '')+
       (meta.length ? '<div class="iv-meta">'+meta.join(' · ')+'</div>' : '')+
+      (inv.otherAddress ? '<div class="iv-after">Zaproszenie wysłano na adres '+esc(inv.otherAddress)+'. Przyjmiesz je na to konto'+
+        (curUser() && curUser().email ? ' ('+esc(curUser().email)+')' : '')+'.</div>' : '')+
       (many ? '' : '<div class="iv-after">'+AFTER+'</div>')+
       '<div class="iv-btns">'+(many ? '' : '<button type="button" class="dy-btn ghost" data-later="1">Później</button>')+
         '<button type="button" class="dy-btn primary" data-accept="'+esc(inv.id)+'">Przyjmij</button></div>'+
@@ -2335,6 +2337,19 @@ function sendInvite(){
   var active = sent.filter(function(x){ var st = statusOf(x); return st!=='cancelled' && st!=='expired'; });
   if(active.some(function(x){ return x.toEmail===email; })){ err.textContent = 'Ta osoba ma już zaproszenie do tego wejścia.'; return; }
   if(active.length >= MAX_INVITES){ err.textContent = 'Maksymalnie '+MAX_INVITES+' zaproszeń na wejście.'; return; }
+  var who0 = cleanLabel($('dy-share-who').value), tok0 = cur;
+  // P69: literówka w adresie (np. d.cr@wp.pl zamiast dc-r@wp.pl) — porównanie z adresami wcześniejszych zaproszeń
+  if(!sendInvite._checked){
+    $('dy-share-go').disabled = true;
+    return knownInvites(f, user).then(function(known){
+      if(cur !== tok0) return;
+      $('dy-share-go').disabled = false;
+      var w = addressWarning(email, who0, known);
+      if(w && !confirm(w+'\n\nWysłać na '+email+' mimo to?')) return;
+      sendInvite._checked = true;
+      try{ sendInvite(); } finally { sendInvite._checked = false; }
+    });
+  }
   var v = visits[cur.visitId] || {};
   var data = {
     fromUid: user.uid,
@@ -2357,6 +2372,7 @@ function sendInvite(){
     if(cur !== tok) return;
     data.createdAt = {toMillis:function(){ return Date.now(); }};
     data.id = ref.id; sent.push(data);
+    if(knownCache) knownCache.list.push({toEmail: email, toName: data.toName || '', status: 'pending'});
     $('dy-share-in').value = '';
     renderShare();
     toast('Zaproszenie wysłane do '+email);
@@ -2364,6 +2380,54 @@ function sendInvite(){
     console.warn('Wysłanie zaproszenia nieudane', e);
     if(cur === tok){ $('dy-share-go').disabled = false; err.textContent = 'Nie udało się wysłać zaproszenia. Spróbuj ponownie.'; }
   });
+}
+/* P69: adresy wcześniejszych zaproszeń nadawcy (wszystkie wejścia), raz na sesję */
+var knownCache = null;
+function knownInvites(f, user){
+  if(knownCache && knownCache.uid===user.uid) return Promise.resolve(knownCache.list.concat(sent));
+  return f.getDocs(f.query(invitesCol(f), f.where('fromUid','==',user.uid))).then(function(snap){
+    var list = [];
+    snap.forEach(function(d){ var x = d.data(); if(x.toEmail) list.push({toEmail: x.toEmail, toName: x.toName || '', status: x.status}); });
+    knownCache = {uid: user.uid, list: list};
+    return list.concat(sent);
+  }).catch(function(e){ console.warn('Odczyt wcześniejszych zaproszeń nieudany', e); return sent.slice(); });
+}
+function lev(a, b){
+  if(Math.abs(a.length - b.length) > 2) return 9;
+  // odległość edycyjna z zamianą sąsiednich znaków (gmial → gmail = 1)
+  var q = null, p = [], i, j;
+  for(j=0; j<=b.length; j++) p[j] = j;
+  for(i=1; i<=a.length; i++){
+    var c = [i];
+    for(j=1; j<=b.length; j++){
+      c[j] = Math.min(p[j]+1, c[j-1]+1, p[j-1]+(a[i-1]===b[j-1]?0:1));
+      if(q && i>1 && j>1 && a[i-1]===b[j-2] && a[i-2]===b[j-1]) c[j] = Math.min(c[j], q[j-2]+1);
+    }
+    q = p; p = c;
+  }
+  return p[b.length];
+}
+var MAIL_DOMAINS = ['gmail.com','wp.pl','o2.pl','onet.pl','op.pl','poczta.onet.pl','onet.eu','interia.pl','interia.eu','poczta.fm','gazeta.pl',
+  'tlen.pl','vp.pl','buziaczek.pl','icloud.com','me.com','outlook.com','hotmail.com','live.com','yahoo.com','proton.me','protonmail.com',
+  'seznam.cz','email.cz','centrum.cz','gmx.de','gmx.net','web.de','t-online.de'];
+/* ostrzeżenie (tekst) albo null: ta sama osoba („Kto to?”) pod innym adresem, adres podobny do użytego wcześniej,
+   domena podobna do popularnej (gmial.com, wp.lp) */
+function addressWarning(email, who, known){
+  var seen = {}, i;
+  known.forEach(function(x){ if(x.toEmail) seen[x.toEmail] = x; });
+  if(seen[email]) return null;
+  if(who){
+    var same = known.filter(function(x){ return x.toEmail && x.toName && pnorm(x.toName)===pnorm(who); }).map(function(x){ return x.toEmail; });
+    same = same.filter(function(e, k){ return same.indexOf(e)===k; });
+    if(same.length) return 'Osobę „'+who+'” zapraszano już na adres: '+same.join(', ')+'. Teraz wpisany jest inny: '+email+'. Sprawdź, czy nie ma literówki.';
+  }
+  var near = Object.keys(seen).filter(function(e){ return e.length >= 6 && lev(e, email) <= 2; });
+  if(near.length) return 'Podobny adres był już używany w Twoich zaproszeniach: '+near.slice(0, 3).join(', ')+'. Sprawdź, czy w '+email+' nie ma literówki.';
+  var dom = email.split('@')[1] || '';
+  if(MAIL_DOMAINS.indexOf(dom)===-1){
+    for(i=0; i<MAIL_DOMAINS.length; i++) if(lev(dom, MAIL_DOMAINS[i]) <= (dom.length > 6 ? 2 : 1)) return 'Czy na pewno @'+dom+'? Może chodziło o @'+MAIL_DOMAINS[i]+'.';
+  }
+  return null;
 }
 function cancelInvite(id){
   var f = fb();
